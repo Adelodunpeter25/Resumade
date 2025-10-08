@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invoice {{ invoice.invoice_number }}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            padding: 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .invoice-container {
+            max-width: 850px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px 50px;
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+        }
+        
+        .company-details h1 {
+            font-size: 36px;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+        
+        .company-details p {
+            opacity: 0.9;
+            line-height: 1.6;
+        }
+        
+        .invoice-badge {
+            background: rgba(255,255,255,0.2);
+            padding: 15px 25px;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .invoice-badge h2 {
+            font-size: 28px;
+            margin-bottom: 5px;
+        }
+        
+        .invoice-badge p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        .content {
+            padding: 50px;
+        }
+        
+        .info-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        
+        .info-card {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 12px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .info-card h3 {
+            color: #667eea;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+        
+        .info-card p {
+            color: #333;
+            line-height: 1.8;
+            font-size: 14px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        
+        thead {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        thead th {
+            padding: 18px 15px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        tbody td {
+            padding: 20px 15px;
+            border-bottom: 1px solid #e9ecef;
+            color: #333;
+            font-size: 14px;
+        }
+        
+        tbody tr:hover {
+            background: #f8f9fa;
+        }
+        
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .text-right {
+            text-align: right;
+        }
+        
+        .totals-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 12px;
+            margin-top: 30px;
+        }
+        
+        .totals-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            font-size: 15px;
+        }
+        
+        .totals-row.subtotal {
+            opacity: 0.8;
+        }
+        
+        .totals-row.total {
+            border-top: 2px solid rgba(255,255,255,0.3);
+            margin-top: 15px;
+            padding-top: 20px;
+            font-size: 24px;
+            font-weight: 700;
+        }
+        
+        .payment-terms {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 30px;
+        }
+        
+        .payment-terms h4 {
+            color: #856404;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+        
+        .payment-terms p {
+            color: #856404;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+        
+        .footer {
+            background: #f8f9fa;
+            padding: 25px 50px;
+            text-align: center;
+            color: #6c757d;
+            font-size: 13px;
+        }
+
+        @media print {
+            body {
+                padding: 0;
+                background: white;
+            }
+            .invoice-container {
+                box-shadow: none;
+                border-radius: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="invoice-container">
+        <div class="header">
+            <div class="header-content">
+                <div class="company-details">
+                    <h1>QuickInvoice</h1>
+                    <p>
+                        Professional Invoice System<br>
+                        Streamlined Business Solutions<br>
+                        support@quickinvoice.com
+                    </p>
+                </div>
+                <div class="invoice-badge">
+                    <h2>INVOICE</h2>
+                    <p>#{{ invoice.invoice_number }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="content">
+            <div class="info-section">
+                <div class="info-card">
+                    <h3>Bill To</h3>
+                    <p>
+                        <strong>{{ invoice.customer.name }}</strong><br>
+                        {% if invoice.customer.address %}{{ invoice.customer.address }}<br>{% endif %}
+                        {{ invoice.customer.email }}{% if invoice.customer.phone %}<br>{{ invoice.customer.phone }}{% endif %}
+                    </p>
+                </div>
+                <div class="info-card">
+                    <h3>Invoice Details</h3>
+                    <p>
+                        <strong>Invoice Date:</strong> {{ invoice.issue_date.strftime('%B %d, %Y') }}<br>
+                        {% if invoice.due_date %}<strong>Due Date:</strong> {{ invoice.due_date.strftime('%B %d, %Y') }}<br>{% endif %}
+                        <strong>Status:</strong> {{ invoice.status.title() }}
+                    </p>
+                </div>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 50%;">Description</th>
+                        <th class="text-right">Qty</th>
+                        <th class="text-right">Rate</th>
+                        <th class="text-right">Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in invoice.items %}
+                    <tr>
+                        <td>
+                            <strong>{{ item.description }}</strong>
+                            {% if item.notes %}<br><small style="color: #6c757d;">{{ item.notes }}</small>{% endif %}
+                        </td>
+                        <td class="text-right">{{ item.quantity }}</td>
+                        <td class="text-right">${{ "%.2f"|format(item.unit_price) }}</td>
+                        <td class="text-right">${{ "%.2f"|format(item.total_price) }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <div class="totals-section">
+                <div class="totals-row subtotal">
+                    <span>Subtotal</span>
+                    <span>${{ "%.2f"|format(invoice.subtotal) }}</span>
+                </div>
+                <div class="totals-row subtotal">
+                    <span>Tax</span>
+                    <span>${{ "%.2f"|format(invoice.tax_amount) }}</span>
+                </div>
+                <div class="totals-row total">
+                    <span>TOTAL DUE</span>
+                    <span>${{ "%.2f"|format(invoice.total_amount) }}</span>
+                </div>
+            </div>
+
+            {% if invoice.notes %}
+            <div class="payment-terms">
+                <h4>Notes</h4>
+                <p>{{ invoice.notes }}</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="footer">
+            <p>Thank you for choosing QuickInvoice! Generated on {{ invoice.created_at.strftime('%B %d, %Y at %I:%M %p') }}</p>
+        </div>
+    </div>
+</body>
+</html>

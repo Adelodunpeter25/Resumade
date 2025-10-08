@@ -1,0 +1,274 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invoice {{ invoice.invoice_number }}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 40px;
+            background: #f5f5f5;
+        }
+        
+        .invoice-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 50px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 40px;
+            padding-bottom: 30px;
+            border-bottom: 3px solid #2c3e50;
+        }
+        
+        .company-details h1 {
+            color: #2c3e50;
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+        
+        .company-details p {
+            color: #7f8c8d;
+            line-height: 1.6;
+        }
+        
+        .invoice-details {
+            text-align: right;
+        }
+        
+        .invoice-title {
+            font-size: 48px;
+            color: #2c3e50;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+        
+        .invoice-meta {
+            color: #7f8c8d;
+            line-height: 1.8;
+        }
+        
+        .invoice-meta strong {
+            color: #2c3e50;
+        }
+        
+        .parties {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 40px;
+        }
+        
+        .party {
+            flex: 1;
+        }
+        
+        .party h3 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .party p {
+            color: #7f8c8d;
+            line-height: 1.8;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+        }
+        
+        thead {
+            background: #2c3e50;
+            color: white;
+        }
+        
+        thead th {
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 12px;
+            letter-spacing: 1px;
+        }
+        
+        tbody td {
+            padding: 15px;
+            border-bottom: 1px solid #ecf0f1;
+            color: #2c3e50;
+        }
+        
+        tbody tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .text-right {
+            text-align: right;
+        }
+        
+        .totals {
+            margin-left: auto;
+            width: 300px;
+        }
+        
+        .totals-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            color: #7f8c8d;
+        }
+        
+        .totals-row.total {
+            border-top: 2px solid #2c3e50;
+            margin-top: 10px;
+            padding-top: 15px;
+            font-size: 20px;
+            font-weight: 700;
+            color: #2c3e50;
+        }
+        
+        .footer {
+            margin-top: 50px;
+            padding-top: 30px;
+            border-top: 2px solid #ecf0f1;
+            text-align: center;
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+        
+        .notes {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-left: 4px solid #3498db;
+        }
+        
+        .notes h4 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        
+        .notes p {
+            color: #7f8c8d;
+            line-height: 1.6;
+        }
+
+        @media print {
+            body {
+                padding: 0;
+                background: white;
+            }
+            .invoice-container {
+                box-shadow: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="invoice-container">
+        <div class="header">
+            <div class="company-details">
+                <h1>QuickInvoice</h1>
+                <p>Professional Invoice System<br>
+                Streamlined Business Solutions<br>
+                Email: support@quickinvoice.com</p>
+            </div>
+            <div class="invoice-details">
+                <div class="invoice-title">INVOICE</div>
+                <div class="invoice-meta">
+                    <strong>Invoice #:</strong> {{ invoice.invoice_number }}<br>
+                    <strong>Date:</strong> {{ invoice.issue_date.strftime('%B %d, %Y') }}<br>
+                    {% if invoice.due_date %}<strong>Due Date:</strong> {{ invoice.due_date.strftime('%B %d, %Y') }}<br>{% endif %}
+                    <strong>Status:</strong> {{ invoice.status.title() }}
+                </div>
+            </div>
+        </div>
+
+        <div class="parties">
+            <div class="party">
+                <h3>Bill To</h3>
+                <p>
+                    <strong>{{ invoice.customer.name }}</strong><br>
+                    {% if invoice.customer.address %}{{ invoice.customer.address }}<br>{% endif %}
+                    {{ invoice.customer.email }}{% if invoice.customer.phone %}<br>{{ invoice.customer.phone }}{% endif %}
+                </p>
+            </div>
+            <div class="party">
+                <h3>Ship To</h3>
+                <p>
+                    <strong>{{ invoice.customer.name }}</strong><br>
+                    {% if invoice.customer.address %}{{ invoice.customer.address }}{% else %}Same as billing address{% endif %}
+                </p>
+            </div>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Description</th>
+                    <th class="text-right">Qty</th>
+                    <th class="text-right">Rate</th>
+                    <th class="text-right">Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in invoice.items %}
+                <tr>
+                    <td>
+                        {{ item.description }}
+                        {% if item.notes %}<br><small style="color: #95a5a6;">{{ item.notes }}</small>{% endif %}
+                    </td>
+                    <td class="text-right">{{ item.quantity }}</td>
+                    <td class="text-right">${{ "%.2f"|format(item.unit_price) }}</td>
+                    <td class="text-right">${{ "%.2f"|format(item.total_price) }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div class="totals">
+            <div class="totals-row">
+                <span>Subtotal:</span>
+                <span>${{ "%.2f"|format(invoice.subtotal) }}</span>
+            </div>
+            <div class="totals-row">
+                <span>Tax:</span>
+                <span>${{ "%.2f"|format(invoice.tax_amount) }}</span>
+            </div>
+            <div class="totals-row total">
+                <span>Total:</span>
+                <span>${{ "%.2f"|format(invoice.total_amount) }}</span>
+            </div>
+        </div>
+
+        {% if invoice.notes %}
+        <div class="notes">
+            <h4>Notes</h4>
+            <p>{{ invoice.notes }}</p>
+        </div>
+        {% endif %}
+
+        <div class="footer">
+            <p>Thank you for your business!</p>
+            <p style="margin-top: 10px; font-size: 12px;">
+                Generated on {{ invoice.created_at.strftime('%B %d, %Y at %I:%M %p') }}
+            </p>
+        </div>
+    </div>
+</body>
+</html>

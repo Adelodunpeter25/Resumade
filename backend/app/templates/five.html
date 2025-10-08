@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invoice {{ invoice.invoice_number }}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            padding: 50px;
+            background: white;
+            color: #333;
+        }
+        
+        .invoice-container {
+            max-width: 800px;
+            margin: 0 auto;
+            border: 2px solid #333;
+            padding: 40px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #333;
+        }
+        
+        .header h1 {
+            font-size: 42px;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+        }
+        
+        .header p {
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .company-client-section {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #333;
+        }
+        
+        .company-info, .client-info {
+            flex: 1;
+        }
+        
+        .company-info h2, .client-info h2 {
+            font-size: 16px;
+            margin-bottom: 10px;
+            text-decoration: underline;
+        }
+        
+        .company-info p, .client-info p {
+            font-size: 13px;
+            line-height: 1.6;
+        }
+        
+        .invoice-details {
+            margin-bottom: 30px;
+            background: #f5f5f5;
+            padding: 15px;
+            border: 1px solid #333;
+        }
+        
+        .invoice-details-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+        }
+        
+        .detail-item {
+            font-size: 13px;
+        }
+        
+        .detail-item strong {
+            display: block;
+            margin-bottom: 3px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            border: 2px solid #333;
+        }
+        
+        thead {
+            background: #333;
+            color: white;
+        }
+        
+        thead th {
+            padding: 12px;
+            text-align: left;
+            font-size: 13px;
+            font-weight: bold;
+            border-right: 1px solid #666;
+        }
+        
+        thead th:last-child {
+            border-right: none;
+        }
+        
+        tbody td {
+            padding: 12px;
+            border-bottom: 1px solid #333;
+            border-right: 1px solid #333;
+            font-size: 13px;
+        }
+        
+        tbody td:last-child {
+            border-right: none;
+        }
+        
+        .text-right {
+            text-align: right;
+        }
+        
+        .text-center {
+            text-align: center;
+        }
+        
+        .totals {
+            margin-left: auto;
+            width: 350px;
+            border: 2px solid #333;
+            margin-top: 20px;
+        }
+        
+        .totals-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 15px;
+            border-bottom: 1px solid #333;
+            font-size: 14px;
+        }
+        
+        .totals-row:last-child {
+            border-bottom: none;
+        }
+        
+        .totals-row.total {
+            background: #333;
+            color: white;
+            font-weight: bold;
+            font-size: 18px;
+        }
+        
+        .notes {
+            margin-top: 30px;
+            padding: 15px;
+            border: 1px solid #333;
+            background: #f9f9f9;
+        }
+        
+        .notes h3 {
+            font-size: 14px;
+            margin-bottom: 10px;
+            text-decoration: underline;
+        }
+        
+        .notes p {
+            font-size: 12px;
+            line-height: 1.6;
+        }
+        
+        .footer {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px solid #333;
+            text-align: center;
+            font-size: 12px;
+        }
+
+        @media print {
+            body { padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="invoice-container">
+        <div class="header">
+            <h1>INVOICE</h1>
+            <p>Professional Services</p>
+        </div>
+
+        <div class="company-client-section">
+            <div class="company-info">
+                <h2>From:</h2>
+                <p>
+                    <strong>QuickInvoice</strong><br>
+                    Professional Invoice System<br>
+                    Streamlined Business Solutions<br>
+                    <br>
+                    Email: support@quickinvoice.com
+                </p>
+            </div>
+            <div class="client-info">
+                <h2>To:</h2>
+                <p>
+                    <strong>{{ invoice.customer.name }}</strong><br>
+                    {% if invoice.customer.address %}{{ invoice.customer.address }}<br>{% endif %}
+                    {{ invoice.customer.email }}{% if invoice.customer.phone %}<br>Phone: {{ invoice.customer.phone }}{% endif %}
+                </p>
+            </div>
+        </div>
+
+        <div class="invoice-details">
+            <div class="invoice-details-grid">
+                <div class="detail-item">
+                    <strong>Invoice Number:</strong>
+                    <span>{{ invoice.invoice_number }}</span>
+                </div>
+                <div class="detail-item">
+                    <strong>Invoice Date:</strong>
+                    <span>{{ invoice.issue_date.strftime('%d %B %Y') }}</span>
+                </div>
+                {% if invoice.due_date %}
+                <div class="detail-item">
+                    <strong>Due Date:</strong>
+                    <span>{{ invoice.due_date.strftime('%d %B %Y') }}</span>
+                </div>
+                {% endif %}
+                <div class="detail-item">
+                    <strong>Status:</strong>
+                    <span>{{ invoice.status.title() }}</span>
+                </div>
+                <div class="detail-item">
+                    <strong>Terms:</strong>
+                    <span>Net 30</span>
+                </div>
+                <div class="detail-item">
+                    <strong>Currency:</strong>
+                    <span>USD ($)</span>
+                </div>
+            </div>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th style="width: 8%;">No.</th>
+                    <th style="width: 47%;">Description</th>
+                    <th class="text-center" style="width: 10%;">Qty</th>
+                    <th class="text-right" style="width: 15%;">Unit Price</th>
+                    <th class="text-right" style="width: 20%;">Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in invoice.items %}
+                <tr>
+                    <td class="text-center">{{ loop.index }}</td>
+                    <td>
+                        {{ item.description }}
+                        {% if item.notes %}<br><small>{{ item.notes }}</small>{% endif %}
+                    </td>
+                    <td class="text-center">{{ item.quantity }}</td>
+                    <td class="text-right">${{ "%.2f"|format(item.unit_price) }}</td>
+                    <td class="text-right">${{ "%.2f"|format(item.total_price) }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div class="totals">
+            <div class="totals-row">
+                <span>Subtotal:</span>
+                <span>${{ "%.2f"|format(invoice.subtotal) }}</span>
+            </div>
+            <div class="totals-row">
+                <span>Tax:</span>
+                <span>${{ "%.2f"|format(invoice.tax_amount) }}</span>
+            </div>
+            <div class="totals-row total">
+                <span>TOTAL DUE:</span>
+                <span>${{ "%.2f"|format(invoice.total_amount) }}</span>
+            </div>
+        </div>
+
+        {% if invoice.notes %}
+        <div class="notes">
+            <h3>Notes:</h3>
+            <p>{{ invoice.notes }}</p>
+        </div>
+        {% endif %}
+
+        <div class="footer">
+            <p><strong>Thank you for your business!</strong></p>
+            <p>Generated on {{ invoice.created_at.strftime('%B %d, %Y at %I:%M %p') }}</p>
+        </div>
+    </div>
+</body>
+</html>
