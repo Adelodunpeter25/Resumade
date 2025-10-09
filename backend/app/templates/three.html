@@ -3,300 +3,523 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Invoice {{ invoice.invoice_number }}</title>
+    <title>Resume - Maya Rodriguez</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-        
+
+        @page {
+            size: Letter;
+            margin: 0;
+        }
+
         body {
-            font-family: 'Arial', sans-serif;
-            padding: 40px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-        }
-        
-        .invoice-container {
-            max-width: 850px;
-            margin: 0 auto;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #2d3436;
+            font-size: 10pt;
             background: white;
-            border-radius: 20px;
-            overflow: hidden;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
         }
-        
-        .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+
+        .resume {
+            display: grid;
+            grid-template-columns: 260px 1fr;
+            min-height: 11in;
+        }
+
+        /* Left Sidebar */
+        .sidebar {
+            background: linear-gradient(180deg, #2d3436 0%, #34495e 100%);
             color: white;
-            padding: 40px 50px;
+            padding: 40px 30px;
         }
-        
-        .header-content {
+
+        .profile-section {
+            text-align: center;
+            margin-bottom: 35px;
+            padding-bottom: 30px;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .profile-photo {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            font-weight: 600;
+            border: 4px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .profile-name {
+            font-size: 20pt;
+            font-weight: 700;
+            margin-bottom: 8px;
+            letter-spacing: 0.5px;
+        }
+
+        .profile-role {
+            font-size: 11pt;
+            color: rgba(255, 255, 255, 0.85);
+            font-weight: 300;
+        }
+
+        /* Sidebar Sections */
+        .sidebar-section {
+            margin-bottom: 30px;
+        }
+
+        .sidebar-title {
+            font-size: 12pt;
+            font-weight: 700;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #fff;
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: start;
+            margin-bottom: 12px;
+            font-size: 9pt;
+            line-height: 1.4;
+        }
+
+        .contact-icon {
+            width: 20px;
+            flex-shrink: 0;
+            margin-right: 10px;
+            font-size: 10pt;
+        }
+
+        .contact-item a {
+            color: rgba(255, 255, 255, 0.9);
+            text-decoration: none;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        /* Skills in Sidebar */
+        .skill-item {
+            margin-bottom: 15px;
+        }
+
+        .skill-name {
+            font-size: 9pt;
+            margin-bottom: 6px;
+            font-weight: 500;
+        }
+
+        .skill-bar {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .skill-level {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            border-radius: 3px;
+        }
+
+        /* Languages */
+        .language-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 9pt;
+        }
+
+        .language-name {
+            font-weight: 500;
+        }
+
+        .language-level {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        /* Interests */
+        .interests-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .interest-tag {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 6px 12px;
+            border-radius: 12px;
+            font-size: 8pt;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        /* Main Content */
+        .main-content {
+            padding: 40px 45px;
+            background: white;
+        }
+
+        .main-section {
+            margin-bottom: 30px;
+        }
+
+        .main-title {
+            font-size: 16pt;
+            font-weight: 700;
+            color: #2d3436;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #667eea;
+            display: inline-block;
+        }
+
+        /* About */
+        .about-text {
+            font-size: 10pt;
+            line-height: 1.7;
+            color: #636e72;
+            text-align: justify;
+        }
+
+        /* Experience */
+        .experience-item {
+            margin-bottom: 25px;
+            page-break-inside: avoid;
+        }
+
+        .experience-header {
             display: flex;
             justify-content: space-between;
             align-items: start;
-        }
-        
-        .company-details h1 {
-            font-size: 36px;
-            margin-bottom: 10px;
-            font-weight: 700;
-        }
-        
-        .company-details p {
-            opacity: 0.9;
-            line-height: 1.6;
-        }
-        
-        .invoice-badge {
-            background: rgba(255,255,255,0.2);
-            padding: 15px 25px;
-            border-radius: 10px;
-            backdrop-filter: blur(10px);
-        }
-        
-        .invoice-badge h2 {
-            font-size: 28px;
-            margin-bottom: 5px;
-        }
-        
-        .invoice-badge p {
-            font-size: 14px;
-            opacity: 0.9;
-        }
-        
-        .content {
-            padding: 50px;
-        }
-        
-        .info-section {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 30px;
-            margin-bottom: 40px;
-        }
-        
-        .info-card {
-            background: #f8f9fa;
-            padding: 25px;
-            border-radius: 12px;
-            border-left: 4px solid #667eea;
-        }
-        
-        .info-card h3 {
-            color: #667eea;
-            font-size: 12px;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            margin-bottom: 15px;
-            font-weight: 700;
-        }
-        
-        .info-card p {
-            color: #333;
-            line-height: 1.8;
-            font-size: 14px;
-        }
-        
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 30px;
-            border-radius: 12px;
-            overflow: hidden;
-        }
-        
-        thead {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
-        
-        thead th {
-            padding: 18px 15px;
-            text-align: left;
-            font-weight: 600;
-            font-size: 13px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        
-        tbody td {
-            padding: 20px 15px;
-            border-bottom: 1px solid #e9ecef;
-            color: #333;
-            font-size: 14px;
-        }
-        
-        tbody tr:hover {
-            background: #f8f9fa;
-        }
-        
-        tbody tr:last-child td {
-            border-bottom: none;
-        }
-        
-        .text-right {
-            text-align: right;
-        }
-        
-        .totals-section {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 30px;
-            border-radius: 12px;
-            margin-top: 30px;
-        }
-        
-        .totals-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 10px 0;
-            font-size: 15px;
-        }
-        
-        .totals-row.subtotal {
-            opacity: 0.8;
-        }
-        
-        .totals-row.total {
-            border-top: 2px solid rgba(255,255,255,0.3);
-            margin-top: 15px;
-            padding-top: 20px;
-            font-size: 24px;
-            font-weight: 700;
-        }
-        
-        .payment-terms {
-            background: #fff3cd;
-            border-left: 4px solid #ffc107;
-            padding: 20px;
-            border-radius: 8px;
-            margin-top: 30px;
-        }
-        
-        .payment-terms h4 {
-            color: #856404;
-            margin-bottom: 10px;
-            font-size: 14px;
-        }
-        
-        .payment-terms p {
-            color: #856404;
-            font-size: 13px;
-            line-height: 1.6;
-        }
-        
-        .footer {
-            background: #f8f9fa;
-            padding: 25px 50px;
-            text-align: center;
-            color: #6c757d;
-            font-size: 13px;
+            margin-bottom: 8px;
         }
 
+        .job-title {
+            font-size: 12pt;
+            font-weight: 700;
+            color: #2d3436;
+        }
+
+        .job-date {
+            font-size: 9pt;
+            color: #667eea;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .company-name {
+            font-size: 10pt;
+            color: #636e72;
+            margin-bottom: 10px;
+        }
+
+        .job-description {
+            font-size: 10pt;
+            color: #636e72;
+            line-height: 1.6;
+        }
+
+        .experience-item ul {
+            margin-top: 8px;
+            padding-left: 20px;
+        }
+
+        .experience-item li {
+            margin-bottom: 6px;
+            color: #636e72;
+            font-size: 10pt;
+        }
+
+        /* Projects */
+        .project-item {
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #e9ecef;
+            page-break-inside: avoid;
+        }
+
+        .project-item:last-child {
+            border-bottom: none;
+        }
+
+        .project-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .project-name {
+            font-size: 11pt;
+            font-weight: 700;
+            color: #2d3436;
+        }
+
+        .project-link {
+            font-size: 9pt;
+            color: #667eea;
+            text-decoration: none;
+            border-bottom: 1px solid #667eea;
+        }
+
+        .project-description {
+            font-size: 10pt;
+            color: #636e72;
+            line-height: 1.6;
+            margin-bottom: 8px;
+        }
+
+        .project-tech {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 8px;
+        }
+
+        .tech-tag {
+            background: #f8f9fa;
+            color: #495057;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 8pt;
+            font-weight: 500;
+        }
+
+        /* Education */
+        .education-item {
+            margin-bottom: 18px;
+        }
+
+        .degree {
+            font-size: 11pt;
+            font-weight: 700;
+            color: #2d3436;
+            margin-bottom: 4px;
+        }
+
+        .school-name {
+            font-size: 10pt;
+            color: #636e72;
+            margin-bottom: 4px;
+        }
+
+        .education-date {
+            font-size: 9pt;
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        /* Certifications */
+        .cert-item {
+            margin-bottom: 12px;
+        }
+
+        .cert-name {
+            font-size: 10pt;
+            font-weight: 600;
+            color: #2d3436;
+            margin-bottom: 2px;
+        }
+
+        .cert-issuer {
+            font-size: 9pt;
+            color: #636e72;
+        }
+
+        /* Print Styles */
         @media print {
             body {
-                padding: 0;
                 background: white;
-            }
-            .invoice-container {
-                box-shadow: none;
-                border-radius: 0;
             }
         }
     </style>
 </head>
 <body>
-    <div class="invoice-container">
-        <div class="header">
-            <div class="header-content">
-                <div class="company-details">
-                    <h1>QuickInvoice</h1>
-                    <p>
-                        Professional Invoice System<br>
-                        Streamlined Business Solutions<br>
-                        support@quickinvoice.com
-                    </p>
-                </div>
-                <div class="invoice-badge">
-                    <h2>INVOICE</h2>
-                    <p>#{{ invoice.invoice_number }}</p>
-                </div>
+    <div class="resume">
+        <!-- Left Sidebar -->
+        <aside class="sidebar">
+            <div class="profile-section">
+                <div class="profile-photo">MR</div>
+                <h1 class="profile-name">Maya Rodriguez</h1>
+                <div class="profile-role">Full Stack Developer</div>
             </div>
-        </div>
 
-        <div class="content">
-            <div class="info-section">
-                <div class="info-card">
-                    <h3>Bill To</h3>
-                    <p>
-                        <strong>{{ invoice.customer.name }}</strong><br>
-                        {% if invoice.customer.address %}{{ invoice.customer.address }}<br>{% endif %}
-                        {{ invoice.customer.email }}{% if invoice.customer.phone %}<br>{{ invoice.customer.phone }}{% endif %}
-                    </p>
+            <!-- Contact -->
+            <div class="sidebar-section">
+                <h2 class="sidebar-title">Contact</h2>
+                <div class="contact-item">
+                    <span class="contact-icon">📧</span>
+                    <div>maya.rodriguez@email.com</div>
                 </div>
-                <div class="info-card">
-                    <h3>Invoice Details</h3>
-                    <p>
-                        <strong>Invoice Date:</strong> {{ invoice.issue_date.strftime('%B %d, %Y') }}<br>
-                        {% if invoice.due_date %}<strong>Due Date:</strong> {{ invoice.due_date.strftime('%B %d, %Y') }}<br>{% endif %}
-                        <strong>Status:</strong> {{ invoice.status.title() }}
-                    </p>
+                <div class="contact-item">
+                    <span class="contact-icon">📱</span>
+                    <div>(555) 987-6543</div>
+                </div>
+                <div class="contact-item">
+                    <span class="contact-icon">🔗</span>
+                    <div><a href="https://github.com/mayarodriguez">github.com/mayarodriguez</a></div>
+                </div>
+                <div class="contact-item">
+                    <span class="contact-icon">🌐</span>
+                    <div><a href="https://mayarodriguez.dev">mayarodriguez.dev</a></div>
+                </div>
+                <div class="contact-item">
+                    <span class="contact-icon">📍</span>
+                    <div>Miami, FL</div>
                 </div>
             </div>
 
-            <table>
-                <thead>
-                    <tr>
-                        <th style="width: 50%;">Description</th>
-                        <th class="text-right">Qty</th>
-                        <th class="text-right">Rate</th>
-                        <th class="text-right">Amount</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for item in invoice.items %}
-                    <tr>
-                        <td>
-                            <strong>{{ item.description }}</strong>
-                            {% if item.notes %}<br><small style="color: #6c757d;">{{ item.notes }}</small>{% endif %}
-                        </td>
-                        <td class="text-right">{{ item.quantity }}</td>
-                        <td class="text-right">${{ "%.2f"|format(item.unit_price) }}</td>
-                        <td class="text-right">${{ "%.2f"|format(item.total_price) }}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+            <!-- Skills -->
+            <div class="sidebar-section">
+                <h2 class="sidebar-title">Skills</h2>
+                
+                <div class="skill-item">
+                    <div class="skill-name">JavaScript / TypeScript</div>
+                    <div class="skill-bar">
+                        <div class="skill-level" style="width: 95%;"></div>
+                    </div>
+                </div>
 
-            <div class="totals-section">
-                <div class="totals-row subtotal">
-                    <span>Subtotal</span>
-                    <span>${{ "%.2f"|format(invoice.subtotal) }}</span>
+                <div class="skill-item">
+                    <div class="skill-name">React / Next.js</div>
+                    <div class="skill-bar">
+                        <div class="skill-level" style="width: 90%;"></div>
+                    </div>
                 </div>
-                <div class="totals-row subtotal">
-                    <span>Tax</span>
-                    <span>${{ "%.2f"|format(invoice.tax_amount) }}</span>
+
+                <div class="skill-item">
+                    <div class="skill-name">Node.js / Express</div>
+                    <div class="skill-bar">
+                        <div class="skill-level" style="width: 85%;"></div>
+                    </div>
                 </div>
-                <div class="totals-row total">
-                    <span>TOTAL DUE</span>
-                    <span>${{ "%.2f"|format(invoice.total_amount) }}</span>
+
+                <div class="skill-item">
+                    <div class="skill-name">Python / FastAPI</div>
+                    <div class="skill-bar">
+                        <div class="skill-level" style="width: 80%;"></div>
+                    </div>
+                </div>
+
+                <div class="skill-item">
+                    <div class="skill-name">PostgreSQL / MongoDB</div>
+                    <div class="skill-bar">
+                        <div class="skill-level" style="width: 85%;"></div>
+                    </div>
+                </div>
+
+                <div class="skill-item">
+                    <div class="skill-name">Docker / AWS</div>
+                    <div class="skill-bar">
+                        <div class="skill-level" style="width: 75%;"></div>
+                    </div>
                 </div>
             </div>
 
-            {% if invoice.notes %}
-            <div class="payment-terms">
-                <h4>Notes</h4>
-                <p>{{ invoice.notes }}</p>
+            <!-- Languages -->
+            <div class="sidebar-section">
+                <h2 class="sidebar-title">Languages</h2>
+                
+                <div class="language-item">
+                    <span class="language-name">English</span>
+                    <span class="language-level">Native</span>
+                </div>
+                <div class="language-item">
+                    <span class="language-name">Spanish</span>
+                    <span class="language-level">Native</span>
+                </div>
+                <div class="language-item">
+                    <span class="language-name">Portuguese</span>
+                    <span class="language-level">Intermediate</span>
+                </div>
             </div>
-            {% endif %}
-        </div>
 
-        <div class="footer">
-            <p>Thank you for choosing QuickInvoice! Generated on {{ invoice.created_at.strftime('%B %d, %Y at %I:%M %p') }}</p>
-        </div>
-    </div>
-</body>
-</html>
+            <!-- Interests -->
+            <div class="sidebar-section">
+                <h2 class="sidebar-title">Interests</h2>
+                <div class="interests-list">
+                    <span class="interest-tag">Open Source</span>
+                    <span class="interest-tag">AI/ML</span>
+                    <span class="interest-tag">Photography</span>
+                    <span class="interest-tag">Hiking</span>
+                    <span class="interest-tag">Tech Blogs</span>
+                    <span class="interest-tag">Gaming</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- About -->
+            <section class="main-section">
+                <h2 class="main-title">About Me</h2>
+                <p class="about-text">
+                    Passionate full-stack developer with 5+ years of experience building modern web applications. 
+                    Specialized in React ecosystem and Node.js backend development. Strong problem-solver with a 
+                    keen eye for user experience and performance optimization. Love collaborating with cross-functional 
+                    teams to deliver high-quality products that make a real impact.
+                </p>
+            </section>
+
+            <!-- Experience -->
+            <section class="main-section">
+                <h2 class="main-title">Work Experience</h2>
+
+                <div class="experience-item">
+                    <div class="experience-header">
+                        <div class="job-title">Senior Full Stack Developer</div>
+                        <div class="job-date">2022 - Present</div>
+                    </div>
+                    <div class="company-name">Innovation Labs · Miami, FL</div>
+                    <ul>
+                        <li>Lead development of customer-facing SaaS platform using React, TypeScript, and Node.js</li>
+                        <li>Architected scalable microservices infrastructure processing 5M+ API requests daily</li>
+                        <li>Implemented real-time features using WebSockets and Redis, improving user engagement by 40%</li>
+                        <li>Mentor junior developers and conduct code reviews to maintain high code quality standards</li>
+                    </ul>
+                </div>
+
+                <div class="experience-item">
+                    <div class="experience-header">
+                        <div class="job-title">Full Stack Developer</div>
+                        <div class="job-date">2020 - 2022</div>
+                    </div>
+                    <div class="company-name">TechFlow Solutions · Remote</div>
+                    <ul>
+                        <li>Built and maintained 8+ production web applications using React, Next.js, and Express</li>
+                        <li>Integrated payment systems (Stripe) and third-party APIs for e-commerce platforms</li>
+                        <li>Reduced page load times by 60% through code splitting and lazy loading optimization</li>
+                        <li>Collaborated in agile teams using Scrum methodology to deliver features bi-weekly</li>
+                    </ul>
+                </div>
+
+                <div class="experience-item">
+                    <div class="experience-header">
+                        <div class="job-title">Frontend Developer</div>
+                        <div class="job-date">2019 - 2020</div>
+                    </div>
+                    <div class="company-name">Digital Creative Agency · Miami, FL</div>
+                    <ul>
+                        <li>Developed responsive web interfaces using React, Redux, and Material-UI</li>
+                        <li>Implemented RESTful APIs with Node.js and MongoDB for content management systems</li>
+                        <li>Worked closely with designers to translate Figma mockups into pixel-perfect components</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Projects -->
+            <section class="main-section">
+                <h2 class="main-title">Featured Projects</h2>
+
+                <div class="project-item">
+                    <div class="project-header">
+                        <div class="project-name">TaskFlow Pro</div>
+                        <a href="https://taskflow.dev" class="project-link
