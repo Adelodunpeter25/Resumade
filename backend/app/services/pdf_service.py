@@ -28,15 +28,32 @@ class PDFService:
         return os.path.join(current_dir, "templates")
     
     @staticmethod
-    def get_available_templates() -> dict:
+    def get_available_templates() -> list:
         """Get list of available templates"""
-        return {
-            "professional-blue": "Professional Blue - Elegant with blue accents",
-            "linkedin-style": "LinkedIn Style - Card-based social media layout",
-            "gradient-sidebar": "Gradient Sidebar - Dark sidebar with purple gradients",
-            "minimalist-two-column": "Minimalist Two-Column - Clean layout with dates on left"
-        }
-    
+        templates = [
+            {
+                "name": "professional-blue",
+                "display_name": "Professional Blue",
+                "description": "Elegant with blue accents"
+            },
+            {
+                "name": "linkedin-style",
+                "display_name": "LinkedIn Style",
+                "description": "Card-based social media layout"
+            },
+            {
+                "name": "gradient-sidebar",
+                "display_name": "Gradient Sidebar",
+                "description": "Dark sidebar with purple gradients"
+            },
+            {
+                "name": "minimalist-two-column",
+                "display_name": "Minimalist Two-Column",
+                "description": "Clean layout with dates on left"
+            }
+        ]
+        return templates
+
     def render_resume_html(self, resume: Resume, template: str = "professional-blue") -> str:
         """Render resume HTML from template"""
         template_file = self.TEMPLATES.get(template, self.TEMPLATES["professional-blue"])

@@ -47,7 +47,7 @@ export const resumeService = {
   },
 
   getTemplates: async (): Promise<APIResponse<Template[]>> => {
-    return api.get('/api/resumes/templates');
+    return api.get('/api/resumes/templates/list');
   },
 
   previewTemplate: async (templateName: string, resumeId?: number): Promise<Blob> => {
