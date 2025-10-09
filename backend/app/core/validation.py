@@ -1,8 +1,8 @@
 """Input validation and sanitization utilities"""
-import re
 import bleach
 from typing import Optional
 from app.core.constants import ValidationConfig
+from app.core.validators import Validators
 
 class InputValidator:
     """Validate and sanitize user inputs"""
@@ -13,10 +13,8 @@ class InputValidator:
         if not text:
             return text
         
-        # Remove HTML tags and scripts
         cleaned = bleach.clean(text, tags=[], strip=True)
         
-        # Limit length
         if max_length and len(cleaned) > max_length:
             cleaned = cleaned[:max_length]
         
@@ -25,22 +23,17 @@ class InputValidator:
     @staticmethod
     def validate_email(email: str) -> bool:
         """Validate email format"""
-        pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
-        return bool(re.match(pattern, email))
+        return Validators.validate_email(email)
     
     @staticmethod
     def validate_phone(phone: str) -> bool:
         """Validate phone format"""
-        # Remove common separators
-        cleaned = re.sub(r'[-.\s()]', '', phone)
-        # Check if it's 10-15 digits
-        return bool(re.match(r'^\+?\d{10,15}$', cleaned))
+        return Validators.validate_phone(phone)
     
     @staticmethod
     def validate_url(url: str) -> bool:
         """Validate URL format"""
-        pattern = r'^https?://[^\s<>"{}|\\^`\[\]]+$'
-        return bool(re.match(pattern, url))
+        return Validators.validate_url(url)
     
     @staticmethod
     def sanitize_resume_data(resume_data: dict) -> dict:

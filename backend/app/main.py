@@ -1,9 +1,10 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.exc import IntegrityError
 import logging
 
 from app.models import User, Resume
-from app.endpoints import users_router, resumes_router, auth_router
+from app.endpoints import users_router, resumes_router, auth_router, admin_router
 from app.core.exceptions import (
     QuickInvoiceException, 
     quickinvoice_exception_handler,
@@ -23,6 +24,15 @@ app = FastAPI(
     redoc_url="/redoc"
 )
 
+# CORS Configuration
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000", "https://resumade.vercel.app"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 app.add_exception_handler(QuickInvoiceException, quickinvoice_exception_handler)
 app.add_exception_handler(IntegrityError, integrity_error_handler)
 app.add_exception_handler(Exception, general_exception_handler)
@@ -30,6 +40,7 @@ app.add_exception_handler(Exception, general_exception_handler)
 app.include_router(auth_router, prefix="/api")
 app.include_router(users_router, prefix="/api")
 app.include_router(resumes_router, prefix="/api")
+app.include_router(admin_router, prefix="/api")
 
 @app.on_event("startup")
 async def startup_event():
