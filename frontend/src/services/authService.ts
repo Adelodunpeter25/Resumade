@@ -1,0 +1,20 @@
+import { api } from './api';
+import { User, APIResponse } from '../types';
+
+export const authService = {
+  register: async (email: string, password: string, full_name: string): Promise<APIResponse<User>> => {
+    return api.post('/api/auth/register', { email, password, full_name });
+  },
+
+  login: async (email: string, password: string): Promise<APIResponse<{ access_token: string; user: User }>> => {
+    return api.post('/api/auth/login', { email, password });
+  },
+
+  logout: async (): Promise<APIResponse<null>> => {
+    return api.post('/api/auth/logout', {});
+  },
+
+  getCurrentUser: async (): Promise<APIResponse<User>> => {
+    return api.get('/api/auth/me');
+  }
+};
