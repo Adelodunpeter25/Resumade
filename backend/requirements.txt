@@ -16,3 +16,4 @@ httpx
 weasyprint
 jinja2
 supabase
+python-docx

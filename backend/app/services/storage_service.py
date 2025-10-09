@@ -19,9 +19,9 @@ class StorageService:
         )
         self.bucket_name = settings.bucket_name  # Updated to match config
     
-    def generate_pdf_filename(self, invoice_id: int, template: str) -> str:
+    def generate_pdf_filename(self, resume_id: int, template: str) -> str:
         """Generate consistent filename for PDF storage"""
-        return f"invoice_{invoice_id}_{template}.pdf"
+        return f"resume_{resume_id}_{template}.pdf"
     
     def upload_pdf(self, pdf_bytes: bytes, filename: str) -> bool:
         """
