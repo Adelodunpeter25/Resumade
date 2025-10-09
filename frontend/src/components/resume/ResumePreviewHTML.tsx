@@ -1,4 +1,5 @@
 import type { Resume } from '../../types'
+import type { JSX } from 'react'
 
 interface Props {
   resume: Partial<Resume>
