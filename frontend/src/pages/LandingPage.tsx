@@ -46,14 +46,14 @@ const sampleResume = {
     }
   ],
   skills: [
-    { name: 'JavaScript', level: 'Expert' },
-    { name: 'React', level: 'Expert' },
-    { name: 'Node.js', level: 'Advanced' },
-    { name: 'Python', level: 'Advanced' },
-    { name: 'TypeScript', level: 'Advanced' },
-    { name: 'AWS', level: 'Intermediate' },
-    { name: 'Docker', level: 'Intermediate' },
-    { name: 'PostgreSQL', level: 'Advanced' }
+    { name: 'JavaScript', level: 'Expert' as const },
+    { name: 'React', level: 'Expert' as const },
+    { name: 'Node.js', level: 'Advanced' as const },
+    { name: 'Python', level: 'Advanced' as const },
+    { name: 'TypeScript', level: 'Advanced' as const },
+    { name: 'AWS', level: 'Intermediate' as const },
+    { name: 'Docker', level: 'Intermediate' as const },
+    { name: 'PostgreSQL', level: 'Advanced' as const }
   ],
   certifications: [
     {
@@ -75,10 +75,73 @@ const sampleResume = {
 
 export default function LandingPage() {
   const [openFaq, setOpenFaq] = useState<number | null>(null)
+  const [currentFeatureIndex, setCurrentFeatureIndex] = useState(5) // Start from middle set
+  const [isTransitioning, setIsTransitioning] = useState(true)
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [typedText, setTypedText] = useState('Professional') // Show first word immediately
   const [isDeleting, setIsDeleting] = useState(false)
   const [loopNum, setLoopNum] = useState(0)
   const [typingSpeed, setTypingSpeed] = useState(150)
+
+  const features = [
+    {
+      icon: '📝',
+      title: 'Easy to Use',
+      description: 'Simple form-based interface with live preview. No design skills required. Build your resume in minutes.'
+    },
+    {
+      icon: '🎨',
+      title: 'Professional Templates',
+      description: 'Choose from 15+ expertly designed templates that are ATS-friendly and recruiter-approved.'
+    },
+    {
+      icon: '⚡',
+      title: 'Instant Download',
+      description: 'Download your resume as PDF instantly. Multiple formats available for different needs.'
+    },
+    {
+      icon: '🚀',
+      title: 'Want Quick Edit?',
+      description: 'Import your existing resume and edit. No signup required.'
+    },
+    {
+      icon: '🔓',
+      title: 'Flexible Access',
+      description: 'Quick edit with no signup, or unlock more features like version history by signing up easily with Google.'
+    }
+  ]
+
+  const getCardsPerView = () => {
+    if (typeof window === 'undefined') return 1
+    if (window.innerWidth >= 1536) return 4 // 2xl
+    if (window.innerWidth >= 1024) return 3 // lg
+    return 1 // mobile
+  }
+
+  const nextFeature = () => {
+    setIsTransitioning(true)
+    setCurrentFeatureIndex((prev) => prev + 1)
+  }
+
+  const prevFeature = () => {
+    setIsTransitioning(true)
+    setCurrentFeatureIndex((prev) => prev - 1)
+  }
+
+  // Infinite loop: reset position without animation when reaching end of clones
+  useEffect(() => {
+    if (currentFeatureIndex === features.length * 2) {
+      setTimeout(() => {
+        setIsTransitioning(false)
+        setCurrentFeatureIndex(features.length)
+      }, 500)
+    } else if (currentFeatureIndex === features.length - 1) {
+      setTimeout(() => {
+        setIsTransitioning(false)
+        setCurrentFeatureIndex(features.length * 2 - 1)
+      }, 500)
+    }
+  }, [currentFeatureIndex, features.length])
 
   const words = ['Professional', 'ATS-Friendly', 'Modern', 'Job-Winning']
   const subtitles = {
@@ -161,16 +224,79 @@ export default function LandingPage() {
               </h1>
             </div>
             <div className="flex items-center space-x-4">
-              <a href="/login" className="text-gray-600 hover:text-gray-900 font-medium transition-colors">
+              {/* Desktop Menu */}
+              <div className="hidden md:flex items-center space-x-4">
+                <a href="/login" className="text-gray-600 hover:text-gray-900 font-medium transition-colors">
+                  Login
+                </a>
+                <a href="/resume/new" className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white px-6 py-2 rounded-full font-medium transition-all transform hover:scale-105 shadow-lg">
+                  Build Resume
+                </a>
+              </div>
+
+              {/* Mobile Hamburger */}
+              <button
+                onClick={() => setMobileMenuOpen(true)}
+                className="md:hidden p-2 text-gray-600 hover:text-gray-900"
+                aria-label="Open menu"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* Mobile Sidebar - Outside header */}
+      <>
+        {/* Overlay */}
+        <div 
+          className={`fixed inset-0 bg-black/50 z-[100] md:hidden transition-opacity duration-300 ${mobileMenuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+          onClick={() => setMobileMenuOpen(false)}
+        />
+        
+        {/* Sidebar */}
+        <div className={`fixed top-0 right-0 h-full w-64 bg-white shadow-2xl z-[101] md:hidden transform transition-transform duration-300 ease-in-out ${mobileMenuOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+          <div className="p-6">
+            <button
+              onClick={() => setMobileMenuOpen(false)}
+              className="absolute top-4 right-4 p-2 text-gray-600 hover:text-gray-900"
+              aria-label="Close menu"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+
+            {/* Logo */}
+            <div className="flex items-center space-x-2 mb-8">
+              <div className="w-8 h-8 bg-gradient-to-br from-emerald-600 to-teal-600 rounded-lg flex items-center justify-center">
+                <span className="text-white font-bold text-sm">R</span>
+              </div>
+              <h1 className="text-xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
+                Resumade
+              </h1>
+            </div>
+
+            <div className="space-y-4">
+              <a 
+                href="/login" 
+                className="block w-full text-center py-3 text-gray-700 hover:bg-gray-100 rounded-lg font-medium transition-colors"
+              >
                 Login
               </a>
-              <a href="/resume/new" className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white px-6 py-2 rounded-full font-medium transition-all transform hover:scale-105 shadow-lg">
+              <a 
+                href="/resume/new" 
+                className="block w-full text-center py-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white rounded-lg font-medium shadow-lg transition-all"
+              >
                 Build Resume
               </a>
             </div>
           </div>
         </div>
-      </header>
+      </>
 
       {/* Hero Section */}
       <section className="relative pt-20 pb-32 overflow-hidden">
@@ -294,6 +420,113 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* How It Works Section */}
+      <section className="py-20 bg-gradient-to-br from-emerald-50 to-teal-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+              How It Works
+            </h2>
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+              Create your professional resume in just 3 simple steps
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12">
+            {/* Step 1 */}
+            <div className="relative">
+              <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-shadow">
+                <div className="absolute -top-6 left-1/2 transform -translate-x-1/2">
+                  <div className="w-12 h-12 bg-gradient-to-r from-emerald-600 to-teal-600 rounded-full flex items-center justify-center text-white font-bold text-xl shadow-lg">
+                    1
+                  </div>
+                </div>
+                <div className="mt-6 text-center">
+                  <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <svg className="w-10 h-10 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
+                    </svg>
+                  </div>
+                  <h3 className="text-2xl font-bold text-gray-900 mb-3">Choose Template</h3>
+                  <p className="text-gray-600">
+                    Select from our collection of professional, ATS-friendly templates designed by experts
+                  </p>
+                </div>
+              </div>
+              {/* Arrow */}
+              <div className="hidden md:block absolute top-1/2 -right-6 transform -translate-y-1/2">
+                <svg className="w-12 h-12 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                </svg>
+              </div>
+            </div>
+
+            {/* Step 2 */}
+            <div className="relative">
+              <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-shadow">
+                <div className="absolute -top-6 left-1/2 transform -translate-x-1/2">
+                  <div className="w-12 h-12 bg-gradient-to-r from-emerald-600 to-teal-600 rounded-full flex items-center justify-center text-white font-bold text-xl shadow-lg">
+                    2
+                  </div>
+                </div>
+                <div className="mt-6 text-center">
+                  <div className="w-20 h-20 bg-teal-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <svg className="w-10 h-10 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                  </div>
+                  <h3 className="text-2xl font-bold text-gray-900 mb-3">Fill in Details</h3>
+                  <p className="text-gray-600">
+                    Add your information with our easy-to-use editor and see live preview as you type
+                  </p>
+                </div>
+              </div>
+              {/* Arrow */}
+              <div className="hidden md:block absolute top-1/2 -right-6 transform -translate-y-1/2">
+                <svg className="w-12 h-12 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                </svg>
+              </div>
+            </div>
+
+            {/* Step 3 */}
+            <div className="relative">
+              <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-shadow">
+                <div className="absolute -top-6 left-1/2 transform -translate-x-1/2">
+                  <div className="w-12 h-12 bg-gradient-to-r from-emerald-600 to-teal-600 rounded-full flex items-center justify-center text-white font-bold text-xl shadow-lg">
+                    3
+                  </div>
+                </div>
+                <div className="mt-6 text-center">
+                  <div className="w-20 h-20 bg-cyan-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <svg className="w-10 h-10 text-cyan-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                    </svg>
+                  </div>
+                  <h3 className="text-2xl font-bold text-gray-900 mb-3">Download PDF</h3>
+                  <p className="text-gray-600">
+                    Download your professional resume as a PDF and start applying to your dream jobs
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* CTA */}
+          <div className="text-center mt-12">
+            <a
+              href="/resume/new"
+              className="inline-flex items-center gap-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white px-8 py-4 rounded-full font-semibold text-lg transition-all transform hover:scale-105 shadow-xl"
+            >
+              Get Started Now - It's Free
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+              </svg>
+            </a>
+          </div>
+        </div>
+      </section>
+
       {/* Features Section */}
       <section className="py-20 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -306,35 +539,74 @@ export default function LandingPage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="bg-white p-8 rounded-2xl shadow-lg hover:shadow-xl transition-shadow">
-              <div className="w-12 h-12 bg-gradient-to-br from-emerald-600 to-teal-600 rounded-lg flex items-center justify-center mb-6">
-                <span className="text-white text-xl">📝</span>
+          {/* Carousel */}
+          <div className="relative">
+            <div className="overflow-hidden">
+              <div 
+                className={`flex ${isTransitioning ? 'transition-transform duration-500 ease-in-out' : ''}`}
+                style={{ 
+                  transform: `translateX(calc(-${currentFeatureIndex} * (100% / ${getCardsPerView()})))` 
+                }}
+              >
+                {[...features, ...features, ...features].map((feature, index) => (
+                  <div
+                    key={index}
+                    className="w-full lg:w-1/3 2xl:w-1/4 flex-shrink-0 px-4"
+                  >
+                    <div className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 h-full">
+                      <div className="p-8 flex flex-col items-center text-center h-full">
+                        <div className="w-16 h-16 bg-gradient-to-br from-emerald-600 to-teal-600 rounded-lg flex items-center justify-center mb-6">
+                          <span className="text-white text-3xl">{feature.icon}</span>
+                        </div>
+                        <h3 className="text-xl font-bold text-gray-900 mb-4">
+                          {feature.title}
+                        </h3>
+                        <p className="text-gray-600 text-sm leading-relaxed">
+                          {feature.description}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-4">Easy to Use</h3>
-              <p className="text-gray-600">
-                Simple drag-and-drop interface. No design skills required. Build your resume in minutes.
-              </p>
             </div>
 
-            <div className="bg-white p-8 rounded-2xl shadow-lg hover:shadow-xl transition-shadow">
-              <div className="w-12 h-12 bg-gradient-to-br from-emerald-600 to-teal-600 rounded-lg flex items-center justify-center mb-6">
-                <span className="text-white text-xl">🎨</span>
-              </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-4">Professional Templates</h3>
-              <p className="text-gray-600">
-                Choose from 15+ expertly designed templates that are ATS-friendly and recruiter-approved.
-              </p>
-            </div>
+            {/* Navigation */}
+            <div className="flex justify-center items-center gap-4 mt-8">
+              <button
+                onClick={prevFeature}
+                className="p-2 rounded-full bg-gray-200 hover:bg-emerald-600 hover:text-white transition-colors"
+                aria-label="Previous"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
 
-            <div className="bg-white p-8 rounded-2xl shadow-lg hover:shadow-xl transition-shadow">
-              <div className="w-12 h-12 bg-gradient-to-br from-emerald-600 to-teal-600 rounded-lg flex items-center justify-center mb-6">
-                <span className="text-white text-xl">⚡</span>
+              <div className="flex gap-2">
+                {features.map((_, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setCurrentFeatureIndex(features.length + index)}
+                    className={`w-3 h-3 rounded-full transition-all ${
+                      (currentFeatureIndex % features.length) === index
+                        ? 'bg-emerald-600 w-8'
+                        : 'bg-gray-300 hover:bg-gray-400'
+                    }`}
+                    aria-label={`Go to feature ${index + 1}`}
+                  />
+                ))}
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-4">Instant Download</h3>
-              <p className="text-gray-600">
-                Download your resume as PDF instantly. Multiple formats available for different needs.
-              </p>
+
+              <button
+                onClick={nextFeature}
+                className="p-2 rounded-full bg-gray-200 hover:bg-emerald-600 hover:text-white transition-colors"
+                aria-label="Next"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
             </div>
           </div>
         </div>
@@ -379,13 +651,13 @@ export default function LandingPage() {
       <section className="py-20 bg-gradient-to-r from-emerald-600 to-teal-600">
         <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
           <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
-            Ready to Land Your Dream Job?
+            Want Resume.io Without the Paywall?
           </h2>
           <p className="text-xl text-emerald-100 mb-8">
-            Join thousands of job seekers who've successfully built their careers with Resumade.
+            Get all the features you need, completely free. No hidden costs, no premium tiers.
           </p>
-          <a href="/resume/new" className="bg-white text-emerald-600 hover:bg-gray-100 px-8 py-4 rounded-full font-semibold text-lg transition-all transform hover:scale-105 shadow-xl">
-            Start Building Your Resume
+          <a href="/register" className="bg-white text-emerald-600 hover:bg-gray-100 px-8 py-4 rounded-full font-semibold text-lg transition-all transform hover:scale-105 shadow-xl">
+            Join Resumade - Free Forever
           </a>
         </div>
       </section>
@@ -400,7 +672,7 @@ export default function LandingPage() {
             <h3 className="text-xl font-bold">Resumade</h3>
           </div>
           <p className="text-gray-400">
-            © 2024 Resumade. All rights reserved. Build your future today.
+            © 2025 Resumade. All rights reserved.
           </p>
         </div>
       </footer>
