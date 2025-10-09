@@ -12,15 +12,10 @@ logger = logging.getLogger(__name__)
 class PDFService:
     
     TEMPLATES = {
-        "modern": "modern.html",
-        "classic": "classic.html", 
-        "minimal": "minimal.html",
         "professional-blue": "professional-blue.html",
         "linkedin-style": "linkedin-style.html",
-        "gradient": "three.html",
-        "formal": "four.html",
-        "bordered": "five.html",
-        "tech": "six.html"
+        "gradient-sidebar": "gradient-sidebar.html",
+        "minimalist-two-column": "minimalist-two-column.html"
     }
     
     def __init__(self):
@@ -36,20 +31,15 @@ class PDFService:
     def get_available_templates() -> dict:
         """Get list of available templates"""
         return {
-            "modern": "Modern - Clean and colorful design",
-            "classic": "Classic - Traditional professional style", 
-            "minimal": "Minimal - Clean and simple typography",
-            "corporate": "Corporate - Professional elegant styling",
-            "minimalist": "Minimalist - Ultra-clean simple lines",
-            "gradient": "Gradient - Vibrant modern design",
-            "formal": "Formal - Corporate letterhead style",
-            "bordered": "Bordered - Structured layout",
-            "tech": "Tech - Dark theme with gradients"
+            "professional-blue": "Professional Blue - Elegant with blue accents",
+            "linkedin-style": "LinkedIn Style - Card-based social media layout",
+            "gradient-sidebar": "Gradient Sidebar - Dark sidebar with purple gradients",
+            "minimalist-two-column": "Minimalist Two-Column - Clean layout with dates on left"
         }
     
-    def render_resume_html(self, resume: Resume, template: str = "modern") -> str:
+    def render_resume_html(self, resume: Resume, template: str = "professional-blue") -> str:
         """Render resume HTML from template"""
-        template_file = self.TEMPLATES.get(template, self.TEMPLATES["modern"])
+        template_file = self.TEMPLATES.get(template, self.TEMPLATES["professional-blue"])
         template_path = self.get_template_path()
         
         env = Environment(loader=FileSystemLoader(template_path))
@@ -57,7 +47,7 @@ class PDFService:
         
         return template_obj.render(resume=resume)
     
-    def generate_resume_pdf(self, resume: Resume, template: str = "modern") -> bytes:
+    def generate_resume_pdf(self, resume: Resume, template: str = "professional-blue") -> bytes:
         """Generate PDF from resume"""
         html_content = self.render_resume_html(resume, template)
         pdf_bytes = HTML(string=html_content).write_pdf()

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Resume - Maya Rodriguez</title>
+    <title>Resume - {{ resume.personal_info.full_name }}</title>
     <style>
         * {
             margin: 0;
@@ -29,9 +29,8 @@
             min-height: 11in;
         }
 
-        /* Left Sidebar */
         .sidebar {
-            background: linear-gradient(180deg, #2d3436 0%, #34495e 100%);
+            background: linear-gradient(to bottom, #2d3436 0%, #34495e 100%);
             color: white;
             padding: 40px 30px;
         }
@@ -47,7 +46,7 @@
             width: 120px;
             height: 120px;
             border-radius: 50%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(to bottom right, #667eea 0%, #764ba2 100%);
             margin: 0 auto 20px;
             display: flex;
             align-items: center;
@@ -70,7 +69,6 @@
             font-weight: 300;
         }
 
-        /* Sidebar Sections */
         .sidebar-section {
             margin-bottom: 30px;
         }
@@ -105,7 +103,6 @@
             border-bottom: 1px solid rgba(255, 255, 255, 0.3);
         }
 
-        /* Skills in Sidebar */
         .skill-item {
             margin-bottom: 15px;
         }
@@ -126,42 +123,10 @@
 
         .skill-level {
             height: 100%;
-            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(to right, #667eea 0%, #764ba2 100%);
             border-radius: 3px;
         }
 
-        /* Languages */
-        .language-item {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 10px;
-            font-size: 9pt;
-        }
-
-        .language-name {
-            font-weight: 500;
-        }
-
-        .language-level {
-            color: rgba(255, 255, 255, 0.7);
-        }
-
-        /* Interests */
-        .interests-list {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-        }
-
-        .interest-tag {
-            background: rgba(255, 255, 255, 0.15);
-            padding: 6px 12px;
-            border-radius: 12px;
-            font-size: 8pt;
-            color: rgba(255, 255, 255, 0.9);
-        }
-
-        /* Main Content */
         .main-content {
             padding: 40px 45px;
             background: white;
@@ -181,7 +146,6 @@
             display: inline-block;
         }
 
-        /* About */
         .about-text {
             font-size: 10pt;
             line-height: 1.7;
@@ -189,7 +153,6 @@
             text-align: justify;
         }
 
-        /* Experience */
         .experience-item {
             margin-bottom: 25px;
             page-break-inside: avoid;
@@ -221,12 +184,6 @@
             margin-bottom: 10px;
         }
 
-        .job-description {
-            font-size: 10pt;
-            color: #636e72;
-            line-height: 1.6;
-        }
-
         .experience-item ul {
             margin-top: 8px;
             padding-left: 20px;
@@ -238,7 +195,6 @@
             font-size: 10pt;
         }
 
-        /* Projects */
         .project-item {
             margin-bottom: 20px;
             padding-bottom: 20px;
@@ -293,7 +249,6 @@
             font-weight: 500;
         }
 
-        /* Education */
         .education-item {
             margin-bottom: 18px;
         }
@@ -317,7 +272,6 @@
             font-weight: 600;
         }
 
-        /* Certifications */
         .cert-item {
             margin-bottom: 12px;
         }
@@ -334,7 +288,6 @@
             color: #636e72;
         }
 
-        /* Print Styles */
         @media print {
             body {
                 background: white;
@@ -344,182 +297,154 @@
 </head>
 <body>
     <div class="resume">
-        <!-- Left Sidebar -->
         <aside class="sidebar">
             <div class="profile-section">
-                <div class="profile-photo">MR</div>
-                <h1 class="profile-name">Maya Rodriguez</h1>
-                <div class="profile-role">Full Stack Developer</div>
+                <div class="profile-photo">
+                    {% if resume.personal_info.full_name %}
+                        {{ resume.personal_info.full_name.split()[0][0] }}{{ resume.personal_info.full_name.split()[-1][0] if resume.personal_info.full_name.split()|length > 1 else '' }}
+                    {% endif %}
+                </div>
+                <h1 class="profile-name">{{ resume.personal_info.full_name }}</h1>
+                {% if resume.personal_info.summary %}
+                <div class="profile-role">{{ resume.personal_info.summary[:60] }}...</div>
+                {% endif %}
             </div>
 
-            <!-- Contact -->
             <div class="sidebar-section">
                 <h2 class="sidebar-title">Contact</h2>
+                {% if resume.personal_info.email %}
                 <div class="contact-item">
                     <span class="contact-icon">📧</span>
-                    <div>maya.rodriguez@email.com</div>
+                    <div>{{ resume.personal_info.email }}</div>
                 </div>
+                {% endif %}
+                {% if resume.personal_info.phone %}
                 <div class="contact-item">
                     <span class="contact-icon">📱</span>
-                    <div>(555) 987-6543</div>
+                    <div>{{ resume.personal_info.phone }}</div>
                 </div>
+                {% endif %}
+                {% if resume.personal_info.linkedin %}
                 <div class="contact-item">
                     <span class="contact-icon">🔗</span>
-                    <div><a href="https://github.com/mayarodriguez">github.com/mayarodriguez</a></div>
+                    <div><a href="{{ resume.personal_info.linkedin }}">{{ resume.personal_info.linkedin.replace('https://', '').replace('http://', '') }}</a></div>
                 </div>
+                {% endif %}
+                {% if resume.personal_info.website %}
                 <div class="contact-item">
                     <span class="contact-icon">🌐</span>
-                    <div><a href="https://mayarodriguez.dev">mayarodriguez.dev</a></div>
+                    <div><a href="{{ resume.personal_info.website }}">{{ resume.personal_info.website.replace('https://', '').replace('http://', '') }}</a></div>
                 </div>
+                {% endif %}
+                {% if resume.personal_info.location %}
                 <div class="contact-item">
                     <span class="contact-icon">📍</span>
-                    <div>Miami, FL</div>
+                    <div>{{ resume.personal_info.location }}</div>
                 </div>
+                {% endif %}
             </div>
 
-            <!-- Skills -->
+            {% if resume.skills %}
             <div class="sidebar-section">
                 <h2 class="sidebar-title">Skills</h2>
-                
+                {% for skill in resume.skills[:8] %}
                 <div class="skill-item">
-                    <div class="skill-name">JavaScript / TypeScript</div>
+                    <div class="skill-name">{{ skill.name }}</div>
                     <div class="skill-bar">
-                        <div class="skill-level" style="width: 95%;"></div>
+                        <div class="skill-level" style="width: {{ skill.percent_level or 70 }}%"></div>
                     </div>
                 </div>
-
-                <div class="skill-item">
-                    <div class="skill-name">React / Next.js</div>
-                    <div class="skill-bar">
-                        <div class="skill-level" style="width: 90%;"></div>
-                    </div>
-                </div>
-
-                <div class="skill-item">
-                    <div class="skill-name">Node.js / Express</div>
-                    <div class="skill-bar">
-                        <div class="skill-level" style="width: 85%;"></div>
-                    </div>
-                </div>
-
-                <div class="skill-item">
-                    <div class="skill-name">Python / FastAPI</div>
-                    <div class="skill-bar">
-                        <div class="skill-level" style="width: 80%;"></div>
-                    </div>
-                </div>
-
-                <div class="skill-item">
-                    <div class="skill-name">PostgreSQL / MongoDB</div>
-                    <div class="skill-bar">
-                        <div class="skill-level" style="width: 85%;"></div>
-                    </div>
-                </div>
-
-                <div class="skill-item">
-                    <div class="skill-name">Docker / AWS</div>
-                    <div class="skill-bar">
-                        <div class="skill-level" style="width: 75%;"></div>
-                    </div>
-                </div>
+                {% endfor %}
             </div>
-
-            <!-- Languages -->
-            <div class="sidebar-section">
-                <h2 class="sidebar-title">Languages</h2>
-                
-                <div class="language-item">
-                    <span class="language-name">English</span>
-                    <span class="language-level">Native</span>
-                </div>
-                <div class="language-item">
-                    <span class="language-name">Spanish</span>
-                    <span class="language-level">Native</span>
-                </div>
-                <div class="language-item">
-                    <span class="language-name">Portuguese</span>
-                    <span class="language-level">Intermediate</span>
-                </div>
-            </div>
-
-            <!-- Interests -->
-            <div class="sidebar-section">
-                <h2 class="sidebar-title">Interests</h2>
-                <div class="interests-list">
-                    <span class="interest-tag">Open Source</span>
-                    <span class="interest-tag">AI/ML</span>
-                    <span class="interest-tag">Photography</span>
-                    <span class="interest-tag">Hiking</span>
-                    <span class="interest-tag">Tech Blogs</span>
-                    <span class="interest-tag">Gaming</span>
-                </div>
-            </div>
+            {% endif %}
         </aside>
 
-        <!-- Main Content -->
         <main class="main-content">
-            <!-- About -->
+            {% if resume.personal_info.summary %}
             <section class="main-section">
                 <h2 class="main-title">About Me</h2>
-                <p class="about-text">
-                    Passionate full-stack developer with 5+ years of experience building modern web applications. 
-                    Specialized in React ecosystem and Node.js backend development. Strong problem-solver with a 
-                    keen eye for user experience and performance optimization. Love collaborating with cross-functional 
-                    teams to deliver high-quality products that make a real impact.
-                </p>
+                <p class="about-text">{{ resume.personal_info.summary }}</p>
             </section>
+            {% endif %}
 
-            <!-- Experience -->
+            {% if resume.experience %}
             <section class="main-section">
                 <h2 class="main-title">Work Experience</h2>
-
+                {% for exp in resume.experience %}
                 <div class="experience-item">
                     <div class="experience-header">
-                        <div class="job-title">Senior Full Stack Developer</div>
-                        <div class="job-date">2022 - Present</div>
+                        <div class="job-title">{{ exp.position }}</div>
+                        <div class="job-date">{{ exp.start_date }} - {{ exp.end_date or 'Present' }}</div>
                     </div>
-                    <div class="company-name">Innovation Labs · Miami, FL</div>
+                    <div class="company-name">{{ exp.company }}</div>
+                    {% if exp.description or exp.achievements %}
                     <ul>
-                        <li>Lead development of customer-facing SaaS platform using React, TypeScript, and Node.js</li>
-                        <li>Architected scalable microservices infrastructure processing 5M+ API requests daily</li>
-                        <li>Implemented real-time features using WebSockets and Redis, improving user engagement by 40%</li>
-                        <li>Mentor junior developers and conduct code reviews to maintain high code quality standards</li>
+                        {% if exp.description %}
+                        <li>{{ exp.description }}</li>
+                        {% endif %}
+                        {% if exp.achievements %}
+                            {% for achievement in exp.achievements %}
+                            <li>{{ achievement }}</li>
+                            {% endfor %}
+                        {% endif %}
                     </ul>
+                    {% endif %}
                 </div>
-
-                <div class="experience-item">
-                    <div class="experience-header">
-                        <div class="job-title">Full Stack Developer</div>
-                        <div class="job-date">2020 - 2022</div>
-                    </div>
-                    <div class="company-name">TechFlow Solutions · Remote</div>
-                    <ul>
-                        <li>Built and maintained 8+ production web applications using React, Next.js, and Express</li>
-                        <li>Integrated payment systems (Stripe) and third-party APIs for e-commerce platforms</li>
-                        <li>Reduced page load times by 60% through code splitting and lazy loading optimization</li>
-                        <li>Collaborated in agile teams using Scrum methodology to deliver features bi-weekly</li>
-                    </ul>
-                </div>
-
-                <div class="experience-item">
-                    <div class="experience-header">
-                        <div class="job-title">Frontend Developer</div>
-                        <div class="job-date">2019 - 2020</div>
-                    </div>
-                    <div class="company-name">Digital Creative Agency · Miami, FL</div>
-                    <ul>
-                        <li>Developed responsive web interfaces using React, Redux, and Material-UI</li>
-                        <li>Implemented RESTful APIs with Node.js and MongoDB for content management systems</li>
-                        <li>Worked closely with designers to translate Figma mockups into pixel-perfect components</li>
-                    </ul>
-                </div>
+                {% endfor %}
             </section>
+            {% endif %}
 
-            <!-- Projects -->
+            {% if resume.projects %}
             <section class="main-section">
                 <h2 class="main-title">Featured Projects</h2>
-
+                {% for project in resume.projects %}
                 <div class="project-item">
                     <div class="project-header">
-                        <div class="project-name">TaskFlow Pro</div>
-                        <a href="https://taskflow.dev" class="project-link
+                        <div class="project-name">{{ project.name }}</div>
+                        {% if project.link %}
+                        <a href="{{ project.link }}" class="project-link">View Project →</a>
+                        {% endif %}
+                    </div>
+                    {% if project.description %}
+                    <p class="project-description">{{ project.description }}</p>
+                    {% endif %}
+                    {% if project.technologies %}
+                    <div class="project-tech">
+                        {% for tech in project.technologies %}
+                        <span class="tech-tag">{{ tech }}</span>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </section>
+            {% endif %}
+
+            {% if resume.education %}
+            <section class="main-section">
+                <h2 class="main-title">Education</h2>
+                {% for edu in resume.education %}
+                <div class="education-item">
+                    <div class="degree">{{ edu.degree }} in {{ edu.field }}</div>
+                    <div class="school-name">{{ edu.institution }}</div>
+                    <div class="education-date">{{ edu.start_date }} - {{ edu.end_date or 'Present' }}{% if edu.gpa %} | GPA: {{ edu.gpa }}{% endif %}</div>
+                </div>
+                {% endfor %}
+            </section>
+            {% endif %}
+
+            {% if resume.certifications %}
+            <section class="main-section">
+                <h2 class="main-title">Certifications</h2>
+                {% for cert in resume.certifications %}
+                <div class="cert-item">
+                    <div class="cert-name">{{ cert.name }}</div>
+                    <div class="cert-issuer">{{ cert.issuer }}{% if cert.date %} · {{ cert.date }}{% endif %}</div>
+                </div>
+                {% endfor %}
+            </section>
+            {% endif %}
+        </main>
+    </div>
+</body>
+</html>
