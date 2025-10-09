@@ -50,14 +50,14 @@ const sampleResume = {
     }
   ],
   skills: [
-    { name: 'JavaScript', level: 'Expert' },
-    { name: 'React', level: 'Expert' },
-    { name: 'Node.js', level: 'Advanced' },
-    { name: 'Python', level: 'Advanced' },
-    { name: 'TypeScript', level: 'Advanced' },
-    { name: 'AWS', level: 'Intermediate' },
-    { name: 'Docker', level: 'Intermediate' },
-    { name: 'PostgreSQL', level: 'Advanced' }
+    { name: 'JavaScript', level: 'Expert' as const },
+    { name: 'React', level: 'Expert' as const },
+    { name: 'Node.js', level: 'Advanced' as const },
+    { name: 'Python', level: 'Advanced' as const },
+    { name: 'TypeScript', level: 'Advanced' as const },
+    { name: 'AWS', level: 'Intermediate' as const },
+    { name: 'Docker', level: 'Intermediate' as const },
+    { name: 'PostgreSQL', level: 'Advanced' as const }
   ],
   certifications: [
     {

@@ -176,6 +176,10 @@ export default function ResumeBuilder() {
     }
   }
 
+  const handleLoginPrompt = () => {
+    navigate('/login')
+  }
+
   const handleDownload = async () => {
     setDownloading(true)
     try {
