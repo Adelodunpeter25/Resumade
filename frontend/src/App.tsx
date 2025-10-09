@@ -12,12 +12,14 @@ import ResumeShare from './pages/ResumeShare'
 import SharedResume from './pages/SharedResume'
 import VersionHistory from './pages/VersionHistory'
 import ResumePreview from './pages/ResumePreview'
+import Templates from './pages/Templates'
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<LandingPage />} />
+        <Route path="/templates" element={<Templates />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />

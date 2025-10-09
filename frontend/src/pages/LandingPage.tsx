@@ -1,7 +1,47 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 export default function LandingPage() {
   const [openFaq, setOpenFaq] = useState<number | null>(null)
+  const [typedText, setTypedText] = useState('Professional') // Show first word immediately
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [loopNum, setLoopNum] = useState(0)
+  const [typingSpeed, setTypingSpeed] = useState(150)
+
+  const words = ['Professional', 'ATS-Friendly', 'Modern', 'Job-Winning']
+  const subtitles = {
+    'Professional': 'Designed by HR experts to make the best first impression',
+    'ATS-Friendly': 'Pass automated screenings and reach human recruiters',
+    'Modern': 'Stand out from the crowd with contemporary designs',
+    'Job-Winning': 'Get more interviews with optimized resume templates'
+  }
+  const fullText = words[loopNum % words.length]
+  const currentSubtitle = subtitles[fullText as keyof typeof subtitles]
+
+  useEffect(() => {
+    const handleTyping = () => {
+      const currentText = fullText
+
+      if (!isDeleting) {
+        setTypedText(currentText.substring(0, typedText.length + 1))
+        setTypingSpeed(150)
+
+        if (typedText === currentText) {
+          setTimeout(() => setIsDeleting(true), 2000)
+        }
+      } else {
+        setTypedText(currentText.substring(0, typedText.length - 1))
+        setTypingSpeed(75)
+
+        if (typedText === '') {
+          setIsDeleting(false)
+          setLoopNum(loopNum + 1)
+        }
+      }
+    }
+
+    const timer = setTimeout(handleTyping, typingSpeed)
+    return () => clearTimeout(timer)
+  }, [typedText, isDeleting, loopNum, typingSpeed, fullText])
 
   const toggleFaq = (index: number) => {
     setOpenFaq(openFaq === index ? null : index)
@@ -51,7 +91,7 @@ export default function LandingPage() {
               <a href="/login" className="text-gray-600 hover:text-gray-900 font-medium transition-colors">
                 Login
               </a>
-              <a href="/register" className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white px-6 py-2 rounded-full font-medium transition-all transform hover:scale-105 shadow-lg">
+              <a href="/resume/new" className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white px-6 py-2 rounded-full font-medium transition-all transform hover:scale-105 shadow-lg">
                 Build Resume
               </a>
             </div>
@@ -79,16 +119,15 @@ export default function LandingPage() {
 
             {/* Main Headline */}
             <h1 className="text-5xl md:text-7xl font-bold text-gray-900 mb-6 leading-tight">
-              Build Your Perfect
+              Build Your <span className="bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">{typedText}</span>
+              <span className="animate-pulse text-emerald-600">|</span>
               <br />
-              <span className="bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 bg-clip-text text-transparent">
-                Resume
-              </span>
+              Resume in Minutes
             </h1>
 
             {/* Subtitle */}
-            <p className="text-xl md:text-2xl text-gray-600 mb-12 max-w-3xl mx-auto leading-relaxed">
-              Create professional resumes that get you hired. Choose from expertly designed templates and build your resume in minutes.
+            <p className="text-xl md:text-2xl text-gray-600 mb-12 max-w-3xl mx-auto leading-relaxed transition-all duration-500">
+              {currentSubtitle}
             </p>
 
             {/* CTA Buttons */}
@@ -96,7 +135,7 @@ export default function LandingPage() {
               <a href="/resume/new" className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white px-8 py-4 rounded-full font-semibold text-lg transition-all transform hover:scale-105 shadow-xl">
                 Start Building Free
               </a>
-              <a href="/resume/new" className="border-2 border-emerald-600 text-emerald-600 hover:bg-emerald-600 hover:text-white px-8 py-4 rounded-full font-semibold text-lg transition-all">
+              <a href="/templates" className="border-2 border-emerald-600 text-emerald-600 hover:bg-emerald-600 hover:text-white px-8 py-4 rounded-full font-semibold text-lg transition-all">
                 View Templates
               </a>
             </div>

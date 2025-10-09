@@ -154,10 +154,26 @@ export default function ResumeBuilder() {
     setShowTemplateDropdown(false)
   }
 
-  const handleLoginPrompt = () => {
-    // Save current work before redirecting
-    localStorage.setItem(GUEST_RESUME_KEY, JSON.stringify(resume))
-    navigate('/login')
+  const handleFeatureClick = (feature: string) => {
+    if (!isAuthenticated) {
+      if (confirm(`${feature} requires an account. Would you like to login or sign up?`)) {
+        handleLoginPrompt()
+      }
+      return
+    }
+    
+    // Navigate to feature
+    switch(feature) {
+      case 'versions':
+        navigate(`/resume/${id}/versions`)
+        break
+      case 'ats':
+        navigate(`/resume/${id}/ats-score`)
+        break
+      case 'preview':
+        navigate(`/resume/${id}/preview`)
+        break
+    }
   }
 
   const handleDownload = async () => {
@@ -227,71 +243,62 @@ export default function ResumeBuilder() {
             </div>
             <div className="flex items-center gap-2">
               {!isAuthenticated && (
-                <>
-                  <button
-                    onClick={handleDownload}
-                    disabled={downloading}
-                    className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 disabled:opacity-50"
-                  >
-                    <Download size={20} />
-                    <span>{downloading ? 'Downloading...' : 'Download PDF'}</span>
-                  </button>
-                  <button
-                    onClick={handleLoginPrompt}
-                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-                  >
-                    <LogIn size={20} />
-                    <span>Login to Save</span>
-                  </button>
-                </>
+                <button
+                  onClick={handleLoginPrompt}
+                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                >
+                  <LogIn size={20} />
+                  <span>Login to Save</span>
+                </button>
               )}
-              {isAuthenticated && (
-                <>
-                  <div className="relative">
-                    <button
-                      onClick={() => setShowTemplateDropdown(!showTemplateDropdown)}
-                      className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
-                    >
-                      <Palette size={20} />
-                      <span>Template</span>
-                    </button>
-                    {showTemplateDropdown && (
-                      <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-xl border border-gray-200 z-20">
-                        {templates.map((template) => (
-                          <button
-                            key={template.name}
-                            onClick={() => changeTemplate(template.name)}
-                            className={`w-full text-left px-4 py-3 hover:bg-gray-50 border-b border-gray-100 last:border-0 ${
-                              resume.template_name === template.name ? 'bg-emerald-50' : ''
-                            }`}
-                          >
-                            <div className="font-medium text-gray-900">{template.display_name}</div>
-                            <div className="text-xs text-gray-500">{template.description}</div>
-                          </button>
-                        ))}
-                      </div>
-                    )}
+              <div className="relative">
+                <button
+                  onClick={() => setShowTemplateDropdown(!showTemplateDropdown)}
+                  className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+                >
+                  <Palette size={20} />
+                  <span>Template</span>
+                </button>
+                {showTemplateDropdown && (
+                  <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-xl border border-gray-200 z-20">
+                    {templates.map((template) => (
+                      <button
+                        key={template.name}
+                        onClick={() => changeTemplate(template.name)}
+                        className={`w-full text-left px-4 py-3 hover:bg-gray-50 border-b border-gray-100 last:border-0 ${
+                          resume.template_name === template.name ? 'bg-emerald-50' : ''
+                        }`}
+                      >
+                        <div className="font-medium text-gray-900">{template.display_name}</div>
+                        <div className="text-xs text-gray-500">{template.description}</div>
+                      </button>
+                    ))}
                   </div>
-                  <button
-                    onClick={() => navigate(`/resume/${id}/versions`)}
-                    className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
-                  >
-                    <History size={20} />
-                  </button>
-                  <button
-                    onClick={() => navigate(`/resume/${id}/ats-score`)}
-                    className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
-                  >
-                    <BarChart3 size={20} />
-                  </button>
-                  <button
-                    onClick={() => navigate(`/resume/${id}/preview`)}
-                    className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
-                  >
-                    <Eye size={20} />
-                  </button>
-                </>
-              )}
+                )}
+              </div>
+              <button
+                onClick={() => handleFeatureClick('versions')}
+                className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+                title={!isAuthenticated ? 'Login required' : 'Version History'}
+              >
+                <History size={20} />
+              </button>
+              <button
+                onClick={() => handleFeatureClick('ats')}
+                className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+                title={!isAuthenticated ? 'Login required' : 'ATS Score'}
+              >
+                <BarChart3 size={20} />
+              </button>
+              <button
+                onClick={!isAuthenticated ? handleDownload : () => handleFeatureClick('preview')}
+                disabled={!isAuthenticated && downloading}
+                className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50"
+                title={!isAuthenticated ? 'Download PDF' : 'Preview & Download'}
+              >
+                {!isAuthenticated ? <Download size={20} /> : <Eye size={20} />}
+                {!isAuthenticated && downloading && <span className="text-xs">...</span>}
+              </button>
               <button
                 onClick={() => handleSave(false)}
                 disabled={saving}
