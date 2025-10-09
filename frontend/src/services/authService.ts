@@ -16,5 +16,9 @@ export const authService = {
 
   getCurrentUser: async (): Promise<APIResponse<User>> => {
     return api.get('/api/auth/me');
+  },
+
+  forgotPassword: async (email: string): Promise<APIResponse<null>> => {
+    return api.post('/api/auth/forgot-password', { email });
   }
 };

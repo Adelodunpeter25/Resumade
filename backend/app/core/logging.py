@@ -15,7 +15,7 @@ def setup_logging():
     console_handler.setFormatter(formatter)
     
     # File handler
-    file_handler = logging.FileHandler('quickinvoice.log')
+    file_handler = logging.FileHandler('resumade.log')
     file_handler.setFormatter(formatter)
     
     # Root logger

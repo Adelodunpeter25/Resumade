@@ -1,4 +1,4 @@
-import { api } from './api';
+import { api, API_BASE_URL } from './api';
 import type { Resume, APIResponse, ShareLink, ResumeVersion, Template } from '../types';
 
 export const resumeService = {
@@ -55,7 +55,7 @@ export const resumeService = {
       ? `/api/resumes/templates/preview?template=${templateName}&resume_id=${resumeId}`
       : `/api/resumes/templates/preview?template=${templateName}`;
     
-    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}${endpoint}`);
+    const response = await fetch(`${API_BASE_URL}${endpoint}`);
     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
     return response.blob();
   },
@@ -65,7 +65,7 @@ export const resumeService = {
       ? `/api/resumes/${id}/pdf?template=${template}`
       : `/api/resumes/${id}/pdf`;
     
-    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}${endpoint}`);
+    const response = await fetch(`${API_BASE_URL}${endpoint}`);
     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
     return response.blob();
   }
