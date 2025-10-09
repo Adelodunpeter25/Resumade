@@ -53,7 +53,7 @@ async def shutdown_event():
 @app.api_route("/", methods=["GET", "HEAD"])
 def root():
     """Root endpoint - API status check"""
-    return {"message": "Resumade API", "status": "running", "docs": "/docs"}
+    return {"message": "Resumade API", "status": "running"}
 
 @app.get("/health")
 def health_check():
