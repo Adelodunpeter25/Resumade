@@ -1,5 +1,5 @@
 import { api } from './api';
-import { APIResponse } from '../types';
+import type { APIResponse } from '../types';
 
 export interface ATSScore {
   overall_score: number;

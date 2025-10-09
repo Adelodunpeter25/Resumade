@@ -1,5 +1,5 @@
 import { api } from './api';
-import { Resume, APIResponse, ShareLink, ResumeVersion, Template } from '../types';
+import type { Resume, APIResponse, ShareLink, ResumeVersion, Template } from '../types';
 
 export const resumeService = {
   getResumes: async (page = 1, size = 20): Promise<APIResponse<{ items: Resume[]; total: number; page: number; size: number }>> => {

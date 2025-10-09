@@ -1,5 +1,5 @@
 import { api } from './api';
-import { User, Resume, APIResponse } from '../types';
+import type { User, Resume, APIResponse } from '../types';
 
 export interface DashboardStats {
   total_users: number;
