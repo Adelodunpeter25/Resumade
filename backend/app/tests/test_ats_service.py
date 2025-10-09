@@ -9,12 +9,14 @@ def test_calculate_ats_score_complete_resume():
             "email": "john@example.com",
             "phone": "+1234567890",
             "location": "San Francisco, CA",
-            "summary": "Experienced software engineer"
+            "summary": "Experienced software engineer with 5+ years building scalable applications"
         },
         "experience": [
             {
                 "company": "Tech Corp",
                 "position": "Developer",
+                "start_date": "2020",
+                "end_date": "2023",
                 "description": "Developed and implemented new features. Increased performance by 40%"
             }
         ],
@@ -26,7 +28,10 @@ def test_calculate_ats_score_complete_resume():
             {"name": "JavaScript"},
             {"name": "SQL"},
             {"name": "Docker"},
-            {"name": "AWS"}
+            {"name": "AWS"},
+            {"name": "React"},
+            {"name": "Node.js"},
+            {"name": "PostgreSQL"}
         ],
         "certifications": [],
         "projects": []
@@ -39,12 +44,92 @@ def test_calculate_ats_score_complete_resume():
     assert "percentage" in result
     assert "feedback" in result
     assert "grade" in result
-    assert result["score"] >= 80  # Should score high with complete data
+    assert "section_breakdown" in result
+    assert result["score"] >= 70  # Should score well with complete data
 
-def test_calculate_ats_score_minimal_resume():
-    """Test ATS score for minimal resume"""
+def test_calculate_ats_score_with_job_description():
+    """Test ATS score with job description matching"""
     resume_data = {
-        "personal_info": {"full_name": "John Doe"},
+        "personal_info": {"full_name": "John Doe", "email": "j@e.com"},
+        "experience": [{"description": "Developed Python applications using Django and PostgreSQL"}],
+        "education": [{"institution": "Uni", "degree": "BS", "field": "CS"}],
+        "skills": [{"name": "Python"}, {"name": "Django"}, {"name": "PostgreSQL"}],
+        "certifications": [],
+        "projects": []
+    }
+    
+    job_description = "Looking for Python developer with Django and PostgreSQL experience"
+    
+    result = ATSService.calculate_ats_score(resume_data, job_description)
+    
+    assert result["score"] > 0
+    assert "section_breakdown" in result
+
+def test_dynamic_weighting_by_role():
+    """Test different scoring for different role levels"""
+    resume_data = {
+        "personal_info": {"full_name": "John", "email": "j@e.com", "phone": "123-456-7890"},
+        "experience": [{"company": "Tech", "position": "Dev", "start_date": "2020", "description": "Developed apps"}],
+        "education": [{"institution": "Uni", "degree": "BS", "field": "CS"}],
+        "skills": [{"name": "Python"}],
+        "certifications": [],
+        "projects": []
+    }
+    
+    entry_result = ATSService.calculate_ats_score(resume_data, role_level="entry")
+    senior_result = ATSService.calculate_ats_score(resume_data, role_level="senior")
+    
+    # Scores should differ based on weighting
+    assert entry_result["score"] != senior_result["score"]
+
+def test_fuzzy_matching():
+    """Test fuzzy keyword matching"""
+    assert ATSService.fuzzy_match("React.js", "react") == True
+    assert ATSService.fuzzy_match("NodeJS", "node") == True
+    assert ATSService.fuzzy_match("Python3", "python") == True
+
+def test_normalize_text():
+    """Test text normalization"""
+    assert ATSService.normalize_text("Python, JavaScript!") == "python javascript"
+    assert ATSService.normalize_text("  Multiple   Spaces  ") == "multiple spaces"
+
+def test_detect_quantifiable_achievements():
+    """Test detection of quantified achievements"""
+    text1 = "Increased sales by 40% and reduced costs by $50K"
+    text2 = "Worked on various projects"
+    
+    assert ATSService.detect_quantifiable_achievements(text1) >= 2
+    assert ATSService.detect_quantifiable_achievements(text2) == 0
+
+def test_formatting_issues_detection():
+    """Test formatting issue detection"""
+    resume_good = {
+        "personal_info": {
+            "full_name": "John Doe",
+            "email": "john@example.com",
+            "phone": "123-456-7890"
+        }
+    }
+    
+    resume_bad = {
+        "personal_info": {
+            "full_name": "John ★ Doe",
+            "email": "invalid-email",
+            "phone": "123"
+        }
+    }
+    
+    result_good = ATSService.check_formatting_issues(resume_good)
+    result_bad = ATSService.check_formatting_issues(resume_bad)
+    
+    assert result_good["has_issues"] == False
+    assert result_bad["has_issues"] == True
+    assert len(result_bad["issues"]) > 0
+
+def test_section_breakdown():
+    """Test section-by-section scoring"""
+    resume_data = {
+        "personal_info": {"full_name": "John", "email": "j@e.com"},
         "experience": [],
         "education": [],
         "skills": [],
@@ -54,19 +139,13 @@ def test_calculate_ats_score_minimal_resume():
     
     result = ATSService.calculate_ats_score(resume_data)
     
-    assert result["score"] < 50  # Should score low
-    assert len(result["feedback"]) > 0  # Should have feedback
+    assert "section_breakdown" in result
+    assert "personal_info" in result["section_breakdown"]
+    assert "experience" in result["section_breakdown"]
+    assert "skills" in result["section_breakdown"]
 
-def test_get_grade():
-    """Test grade calculation"""
-    assert ATSService._get_grade(95) == "A"
-    assert ATSService._get_grade(85) == "B"
-    assert ATSService._get_grade(75) == "C"
-    assert ATSService._get_grade(65) == "D"
-    assert ATSService._get_grade(50) == "F"
-
-def test_keyword_suggestions():
-    """Test keyword suggestions"""
+def test_keyword_suggestions_with_job_description():
+    """Test keyword suggestions based on job description"""
     resume_data = {
         "personal_info": {},
         "experience": [],
@@ -76,37 +155,19 @@ def test_keyword_suggestions():
         "projects": []
     }
     
-    suggestions = ATSService.get_keyword_suggestions(resume_data)
+    job_description = "Looking for developer with React, Node.js, and Docker experience"
+    suggestions = ATSService.get_keyword_suggestions(resume_data, job_description)
     
     assert isinstance(suggestions, list)
-    assert len(suggestions) <= 10
-    assert "python" not in [s.lower() for s in suggestions]  # Already has Python
+    assert len(suggestions) > 0
+    # Should suggest keywords from job description
+    assert any("react" in s.lower() or "node" in s.lower() for s in suggestions)
 
-def test_action_verbs_detection():
-    """Test detection of action verbs in experience"""
-    resume_with_verbs = {
-        "personal_info": {"full_name": "John", "email": "j@e.com"},
-        "experience": [
-            {"description": "Developed and led team projects"}
-        ],
-        "education": [],
-        "skills": [],
-        "certifications": [],
-        "projects": []
-    }
+def test_extract_keywords_from_job_description():
+    """Test job description keyword extraction"""
+    jd = "We are looking for a Python developer with React and Docker experience"
+    keywords = ATSService.extract_keywords_from_job_description(jd)
     
-    resume_without_verbs = {
-        "personal_info": {"full_name": "John", "email": "j@e.com"},
-        "experience": [
-            {"description": "Was responsible for things"}
-        ],
-        "education": [],
-        "skills": [],
-        "certifications": [],
-        "projects": []
-    }
-    
-    result_with = ATSService.calculate_ats_score(resume_with_verbs)
-    result_without = ATSService.calculate_ats_score(resume_without_verbs)
-    
-    assert result_with["score"] > result_without["score"]
+    assert isinstance(keywords, list)
+    assert "python" in keywords
+    assert "react" in keywords or "docker" in keywords

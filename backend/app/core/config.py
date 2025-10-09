@@ -11,8 +11,16 @@ class Settings(BaseSettings):
     
     # Supabase settings
     supabase_url: str = ""
-    service_role: str = ""  # Changed from supabase_service_role_key
-    bucket_name: str = "invoices"  # Changed from supabase_bucket_name
+    service_role: str = ""
+    bucket_name: str = "resumes"
+    
+    # OAuth settings
+    google_client_id: str = ""
+    google_client_secret: str = ""
+    google_redirect_uri: str = ""
+    
+    # Frontend URL
+    frontend_url: str = ""
     
     class Config:
         env_file = ".env"
