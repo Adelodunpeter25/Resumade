@@ -1,22 +1,23 @@
 import { api } from './api';
-import type { APIResponse } from '../types';
 
 export interface ATSScore {
-  overall_score: number;
-  section_scores: {
-    personal_info: number;
-    experience: number;
-    education: number;
-    skills: number;
-    certifications: number;
-    projects: number;
+  resume_id: number;
+  ats_score: number;
+  grade: string;
+  feedback: string;
+  section_breakdown: {
+    [key: string]: number;
+  };
+  formatting_check: {
+    [key: string]: boolean;
   };
   suggestions: string[];
-  missing_sections: string[];
+  role_level: string;
+  job_matched: boolean;
 }
 
 export const atsService = {
-  calculateScore: async (resumeId: number): Promise<APIResponse<ATSScore>> => {
-    return api.post(`/api/ats/calculate/${resumeId}`, {});
+  calculateScore: async (resumeId: number): Promise<ATSScore> => {
+    return api.get(`/api/resumes/${resumeId}/score`);
   }
 };

@@ -93,10 +93,10 @@ export default function LandingPage() {
 
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16">
-              <a href="/register" className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white px-8 py-4 rounded-full font-semibold text-lg transition-all transform hover:scale-105 shadow-xl">
+              <a href="/resume/new" className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white px-8 py-4 rounded-full font-semibold text-lg transition-all transform hover:scale-105 shadow-xl">
                 Start Building Free
               </a>
-              <a href="/register" className="border-2 border-emerald-600 text-emerald-600 hover:bg-emerald-600 hover:text-white px-8 py-4 rounded-full font-semibold text-lg transition-all">
+              <a href="/resume/new" className="border-2 border-emerald-600 text-emerald-600 hover:bg-emerald-600 hover:text-white px-8 py-4 rounded-full font-semibold text-lg transition-all">
                 View Templates
               </a>
             </div>
@@ -210,7 +210,7 @@ export default function LandingPage() {
           <p className="text-xl text-emerald-100 mb-8">
             Join thousands of job seekers who've successfully built their careers with Resumade.
           </p>
-          <a href="/register" className="bg-white text-emerald-600 hover:bg-gray-100 px-8 py-4 rounded-full font-semibold text-lg transition-all transform hover:scale-105 shadow-xl">
+          <a href="/resume/new" className="bg-white text-emerald-600 hover:bg-gray-100 px-8 py-4 rounded-full font-semibold text-lg transition-all transform hover:scale-105 shadow-xl">
             Start Building Your Resume
           </a>
         </div>

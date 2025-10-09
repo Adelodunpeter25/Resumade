@@ -120,9 +120,14 @@ def update_resume(
         if field in ["personal_info", "experience", "education", "skills", "certifications", "projects"]:
             if value is not None:
                 if field == "personal_info":
-                    setattr(resume, field, value.dict())
+                    # Handle both dict and Pydantic model
+                    setattr(resume, field, value.dict() if hasattr(value, 'dict') else value)
                 else:
-                    setattr(resume, field, [item.dict() for item in value])
+                    # Handle both list of dicts and list of Pydantic models
+                    if value and hasattr(value[0], 'dict'):
+                        setattr(resume, field, [item.dict() for item in value])
+                    else:
+                        setattr(resume, field, value)
         else:
             setattr(resume, field, value)
     
@@ -157,6 +162,39 @@ def delete_resume(
     db.delete(resume)
     db.commit()
     return {"message": "Resume deleted"}
+
+@router.post("/generate-pdf")
+def generate_guest_pdf(
+    resume_data: dict,
+    template: str = Query("professional-blue"),
+):
+    """Generate PDF for guest users (no authentication required)"""
+    try:
+        # Create a temporary Resume-like object
+        from types import SimpleNamespace
+        
+        resume_obj = SimpleNamespace(
+            title=resume_data.get("title", "Resume"),
+            template=template,
+            personal_info=resume_data.get("personal_info", {}),
+            experience=resume_data.get("experience", []),
+            education=resume_data.get("education", []),
+            skills=resume_data.get("skills", []),
+            certifications=resume_data.get("certifications", []),
+            projects=resume_data.get("projects", [])
+        )
+        
+        pdf_service = PDFService()
+        content = pdf_service.generate_resume_pdf(resume_obj, template)
+        
+        return Response(
+            content=content,
+            media_type="application/pdf",
+            headers={"Content-Disposition": f"attachment; filename=resume.pdf"}
+        )
+    except Exception as e:
+        logger.error(f"Guest PDF generation failed: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"PDF generation failed: {str(e)}")
 
 @router.get("/{resume_id}/export")
 def export_resume(

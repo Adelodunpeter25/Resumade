@@ -14,15 +14,18 @@ class PersonalInfo(BaseModel):
 class Experience(BaseModel):
     company: str
     position: str
+    location: Optional[str] = None
     start_date: str
     end_date: Optional[str] = None
+    current: Optional[bool] = False
     description: Optional[str] = None
     achievements: Optional[List[str]] = []
 
 class Education(BaseModel):
     institution: str
     degree: str
-    field: str
+    field_of_study: str
+    location: Optional[str] = None
     start_date: str
     end_date: Optional[str] = None
     gpa: Optional[str] = None

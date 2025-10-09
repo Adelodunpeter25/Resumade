@@ -55,7 +55,10 @@ export const resumeService = {
       ? `/api/resumes/templates/preview?template=${templateName}&resume_id=${resumeId}`
       : `/api/resumes/templates/preview?template=${templateName}`;
     
-    const response = await fetch(`${API_BASE_URL}${endpoint}`);
+    const token = localStorage.getItem('token');
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+      headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+    });
     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
     return response.blob();
   },
@@ -65,7 +68,20 @@ export const resumeService = {
       ? `/api/resumes/${id}/pdf?template=${template}`
       : `/api/resumes/${id}/pdf`;
     
-    const response = await fetch(`${API_BASE_URL}${endpoint}`);
+    const token = localStorage.getItem('token');
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+      headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+    });
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+    return response.blob();
+  },
+
+  generateGuestPDF: async (resumeData: any, template: string = 'professional-blue'): Promise<Blob> => {
+    const response = await fetch(`${API_BASE_URL}/api/resumes/generate-pdf?template=${template}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(resumeData)
+    });
     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
     return response.blob();
   }
