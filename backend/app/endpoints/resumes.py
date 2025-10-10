@@ -1,5 +1,5 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Query
-from fastapi.responses import Response
+from fastapi import APIRouter, Depends, HTTPException, status, Query, Request
+from fastapi.responses import Response, HTMLResponse
 from sqlalchemy.orm import Session
 from typing import List, Optional
 from datetime import datetime, timedelta
@@ -315,22 +315,138 @@ def list_templates():
         data=PDFService.get_available_templates()
     )
 
-@router.get("/templates/preview")
-def preview_templates():
-    """Get template previews with sample data"""
-    sample_resume = {
-        "personal_info": {"full_name": "John Doe", "email": "john@example.com", "phone": "+1234567890"},
-        "experience": [{"company": "Tech Corp", "position": "Developer", "start_date": "2020", "description": "Built applications"}],
-        "education": [{"institution": "University", "degree": "BS", "field": "Computer Science"}],
-        "skills": [{"name": "Python"}, {"name": "JavaScript"}]
-    }
+@router.get("/templates/preview", response_class=HTMLResponse)
+def preview_template(template: str = Query(default="professional-blue")):
+    """Render HTML preview of a template with sample data"""
+    from types import SimpleNamespace
     
-    templates = PDFService.get_available_templates()
-    return APIResponse(
-        success=True,
-        message="Template previews",
-        data={"templates": templates, "sample_data": sample_resume}
+    # Sample resume data as simple object
+    sample_data = SimpleNamespace(
+        id=0,
+        title="Sample Resume",
+        template=template,
+        personal_info={
+            "full_name": "John Doe",
+            "email": "john.doe@email.com",
+            "phone": "(555) 123-4567",
+            "location": "New York, NY",
+            "linkedin": "https://linkedin.com/in/johndoe",
+            "website": "https://johndoe.com",
+            "summary": "Results-driven professional with 5+ years of experience in delivering innovative solutions. Proven track record of leading cross-functional teams and driving business growth through strategic initiatives."
+        },
+        experience=[
+            {
+                "company": "Tech Solutions Inc",
+                "position": "Senior Software Engineer",
+                "location": "New York, NY",
+                "start_date": "2021",
+                "end_date": "",
+                "current": True,
+                "description": "Led development of microservices architecture serving 1M+ users\nMentored team of 5 junior developers and improved deployment efficiency by 40%\nImplemented CI/CD pipelines reducing release time by 60%"
+            },
+            {
+                "company": "Digital Innovations",
+                "position": "Software Engineer",
+                "location": "Boston, MA",
+                "start_date": "2019",
+                "end_date": "2021",
+                "current": False,
+                "description": "Developed RESTful APIs and React applications\nCollaborated with product team to deliver features on time\nOptimized database queries improving performance by 35%"
+            }
+        ],
+        education=[
+            {
+                "institution": "Massachusetts Institute of Technology",
+                "degree": "Bachelor of Science",
+                "field_of_study": "Computer Science",
+                "location": "Cambridge, MA",
+                "start_date": "2015",
+                "end_date": "2019",
+                "gpa": "3.8/4.0"
+            }
+        ],
+        skills=[
+            {"name": "JavaScript", "level": "Expert"},
+            {"name": "Python", "level": "Advanced"},
+            {"name": "React", "level": "Expert"},
+            {"name": "Node.js", "level": "Advanced"},
+            {"name": "AWS", "level": "Intermediate"},
+            {"name": "Docker", "level": "Intermediate"}
+        ],
+        certifications=[
+            {
+                "name": "AWS Certified Solutions Architect",
+                "issuer": "Amazon Web Services",
+                "date": "2022"
+            },
+            {
+                "name": "Professional Scrum Master",
+                "issuer": "Scrum.org",
+                "date": "2021"
+            }
+        ],
+        projects=[
+            {
+                "name": "E-Commerce Platform",
+                "description": "Built scalable e-commerce platform handling 10K+ daily transactions with real-time inventory management",
+                "technologies": ["React", "Node.js", "MongoDB", "Stripe"],
+                "url": "https://github.com/johndoe/ecommerce"
+            },
+            {
+                "name": "Analytics Dashboard",
+                "description": "Created data visualization dashboard processing 1M+ events daily with custom reporting features",
+                "technologies": ["Python", "Django", "PostgreSQL", "D3.js"],
+                "url": "https://github.com/johndoe/analytics"
+            }
+        ]
     )
+    
+    pdf_service = PDFService()
+    html_content = pdf_service.render_resume_html(sample_data, template)
+    
+    return HTMLResponse(content=html_content)
+
+@router.post("/preview", response_class=HTMLResponse)
+async def preview_resume_live(request: Request):
+    """Render HTML preview with user's live data"""
+    from types import SimpleNamespace
+    import json
+    
+    # Get form data
+    form_data = await request.form()
+    resume_json = form_data.get('resume_data')
+    
+    if resume_json:
+        resume_data = json.loads(resume_json)
+    else:
+        # Fallback to empty data
+        resume_data = {
+            'template_name': 'professional-blue',
+            'personal_info': {},
+            'experience': [],
+            'education': [],
+            'skills': [],
+            'certifications': [],
+            'projects': []
+        }
+    
+    # Convert dict to object for template rendering
+    resume_obj = SimpleNamespace(
+        id=resume_data.get('id', 0),
+        title=resume_data.get('title', 'Resume'),
+        template=resume_data.get('template_name', 'professional-blue'),
+        personal_info=resume_data.get('personal_info', {}),
+        experience=resume_data.get('experience', []),
+        education=resume_data.get('education', []),
+        skills=resume_data.get('skills', []),
+        certifications=resume_data.get('certifications', []),
+        projects=resume_data.get('projects', [])
+    )
+    
+    pdf_service = PDFService()
+    html_content = pdf_service.render_resume_html(resume_obj, resume_obj.template)
+    
+    return HTMLResponse(content=html_content)
 
 # Version History
 @router.get("/{resume_id}/versions")

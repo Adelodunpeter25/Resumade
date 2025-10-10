@@ -1,7 +1,8 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Save, Eye, Palette, BarChart3, History, Check, LogIn, Download } from 'lucide-react';
 import { resumeService } from '../services';
+import { API_BASE_URL } from '../services/api';
 import type { Resume, Template } from '../types';
 
 import PersonalInfoForm from '../components/resume/PersonalInfoForm';
@@ -10,7 +11,6 @@ import EducationForm from '../components/resume/EducationForm';
 import SkillsForm from '../components/resume/SkillsForm';
 import CertificationsForm from '../components/resume/CertificationsForm';
 import ProjectsForm from '../components/resume/ProjectsForm';
-import ResumePreviewHTML from '../components/resume/ResumePreviewHTML';
 
 const steps = [
   { id: 'personal', label: 'Personal Info', component: PersonalInfoForm },
@@ -52,6 +52,32 @@ export default function ResumeBuilder() {
   const [showTemplateDropdown, setShowTemplateDropdown] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [downloading, setDownloading] = useState(false);
+  const previewIframeRef = useRef<HTMLIFrameElement>(null);
+
+  // Update preview when resume data changes
+  useEffect(() => {
+    if (previewIframeRef.current) {
+      const iframe = previewIframeRef.current;
+      const previewUrl = `${API_BASE_URL}/api/resumes/preview`;
+      
+      // Create a form to POST data to iframe
+      const form = document.createElement('form');
+      form.method = 'POST';
+      form.action = previewUrl;
+      form.target = iframe.name || 'preview-frame';
+      form.style.display = 'none';
+      
+      const input = document.createElement('input');
+      input.type = 'hidden';
+      input.name = 'resume_data';
+      input.value = JSON.stringify(resume);
+      
+      form.appendChild(input);
+      document.body.appendChild(form);
+      form.submit();
+      document.body.removeChild(form);
+    }
+  }, [resume]);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -368,9 +394,12 @@ export default function ResumeBuilder() {
               <div className="p-4 border-b border-gray-200">
                 <h3 className="font-semibold text-gray-900">Live Preview</h3>
               </div>
-              <ResumePreviewHTML 
-                resume={resume} 
-                template={resume.template_name || 'professional-blue'} 
+              <iframe
+                ref={previewIframeRef}
+                name="preview-frame"
+                className="w-full border-0"
+                style={{ height: 'calc(100vh - 180px)' }}
+                title="Resume Preview"
               />
             </div>
           </div>

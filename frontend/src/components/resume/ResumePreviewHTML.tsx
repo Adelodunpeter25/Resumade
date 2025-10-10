@@ -1,5 +1,6 @@
 import type { Resume } from '../../types'
 import type { JSX } from 'react'
+import { API_BASE_URL } from '../../services/api'
 
 interface Props {
   resume: Partial<Resume>

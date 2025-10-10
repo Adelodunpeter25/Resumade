@@ -13,15 +13,18 @@ export default function RichTextEditor({ value, onChange, placeholder }: RichTex
 
   const modules = {
     toolbar: [
-      ['bold', 'italic', 'underline'],
+      ['bold', 'italic', 'underline', 'strike'],
       [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+      [{ 'indent': '-1'}, { 'indent': '+1' }],
+      ['link'],
       ['clean']
     ]
   };
 
   const formats = [
-    'bold', 'italic', 'underline',
-    'list', 'bullet'
+    'bold', 'italic', 'underline', 'strike',
+    'list', 'bullet', 'indent',
+    'link'
   ];
 
   useEffect(() => {

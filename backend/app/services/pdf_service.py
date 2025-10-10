@@ -15,7 +15,10 @@ class PDFService:
         "professional-blue": "professional-blue.html",
         "linkedin-style": "linkedin-style.html",
         "gradient-sidebar": "gradient-sidebar.html",
-        "minimalist-two-column": "minimalist-two-column.html"
+        "minimalist-two-column": "minimalist-two-column.html",
+        "executive-modern": "executive-modern.html",
+        "creative-gradient": "creative-gradient.html",
+        "classic-serif": "seven.html"
     }
     
     def __init__(self):
@@ -50,6 +53,21 @@ class PDFService:
                 "name": "minimalist-two-column",
                 "display_name": "Minimalist Two-Column",
                 "description": "Clean layout with dates on left"
+            },
+            {
+                "name": "executive-modern",
+                "display_name": "Executive Modern",
+                "description": "Professional layout with accent bar and clean typography"
+            },
+            {
+                "name": "creative-gradient",
+                "display_name": "Creative Gradient",
+                "description": "Modern design with gradient header and card-based sections"
+            },
+            {
+                "name": "classic-serif",
+                "display_name": "Classic Serif",
+                "description": "Traditional elegant design with serif fonts and centered header"
             }
         ]
         return templates

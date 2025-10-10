@@ -1,77 +1,5 @@
 import { useState, useEffect } from 'react'
-import ResumePreviewHTML from '../components/resume/ResumePreviewHTML'
-
-// Sample resume data for preview
-const sampleResume = {
-  title: 'Sample Resume',
-  template_name: 'professional-blue',
-  personal_info: {
-    full_name: 'John Doe',
-    email: 'john.doe@email.com',
-    phone: '(555) 123-4567',
-    location: 'New York, NY',
-    linkedin: 'linkedin.com/in/johndoe',
-    website: 'johndoe.com',
-    summary: 'Results-driven software engineer with 5+ years of experience in full-stack development. Proven track record of delivering scalable solutions and leading cross-functional teams to success.'
-  },
-  experience: [
-    {
-      company: 'Tech Solutions Inc.',
-      position: 'Senior Software Engineer',
-      location: 'New York, NY',
-      start_date: '2021-03',
-      end_date: '',
-      current: true,
-      description: 'Led development of microservices architecture serving 1M+ users. Mentored team of 5 junior developers and improved deployment efficiency by 40%.'
-    },
-    {
-      company: 'Digital Innovations',
-      position: 'Software Engineer',
-      location: 'Boston, MA',
-      start_date: '2019-06',
-      end_date: '2021-02',
-      current: false,
-      description: 'Developed and maintained RESTful APIs and React applications. Collaborated with product team to deliver features on time.'
-    }
-  ],
-  education: [
-    {
-      institution: 'Massachusetts Institute of Technology',
-      degree: "Bachelor's of Science",
-      field_of_study: 'Computer Science',
-      location: 'Cambridge, MA',
-      start_date: '2015-09',
-      end_date: '2019-05',
-      gpa: '3.8/4.0'
-    }
-  ],
-  skills: [
-    { name: 'JavaScript', level: 'Expert' as const },
-    { name: 'React', level: 'Expert' as const },
-    { name: 'Node.js', level: 'Advanced' as const },
-    { name: 'Python', level: 'Advanced' as const },
-    { name: 'TypeScript', level: 'Advanced' as const },
-    { name: 'AWS', level: 'Intermediate' as const },
-    { name: 'Docker', level: 'Intermediate' as const },
-    { name: 'PostgreSQL', level: 'Advanced' as const }
-  ],
-  certifications: [
-    {
-      name: 'AWS Certified Solutions Architect',
-      issuer: 'Amazon Web Services',
-      date: '2022-08',
-      credential_id: 'AWS-12345'
-    }
-  ],
-  projects: [
-    {
-      name: 'E-Commerce Platform',
-      description: 'Built scalable e-commerce platform handling 10K+ daily transactions',
-      technologies: ['React', 'Node.js', 'MongoDB', 'Stripe'],
-      url: 'github.com/johndoe/ecommerce'
-    }
-  ]
-}
+import { API_BASE_URL } from '../services/api'
 
 export default function LandingPage() {
   const [openFaq, setOpenFaq] = useState<number | null>(null)
@@ -384,12 +312,12 @@ export default function LandingPage() {
               >
                 <div className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
                   <div className="aspect-[8.5/11] bg-gray-50 relative overflow-hidden border-b border-gray-100">
-                    <div className="scale-[0.35] origin-top-left w-[285%] h-[285%]">
-                      <ResumePreviewHTML 
-                        resume={{ ...sampleResume, template_name: template.name }} 
-                        template={template.name}
-                      />
-                    </div>
+                    <iframe
+                      src={`${API_BASE_URL}/api/resumes/templates/preview?template=${template.name}`}
+                      className="w-full h-full border-0 pointer-events-none scale-[0.4] origin-top-left"
+                      style={{ width: '250%', height: '250%' }}
+                      title={`${template.display} Preview`}
+                    />
                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all duration-300 flex items-center justify-center">
                       <button className="opacity-0 group-hover:opacity-100 transform scale-90 group-hover:scale-100 transition-all duration-300 bg-white text-gray-900 px-6 py-2 rounded-lg font-semibold shadow-xl">
                         Use Template
