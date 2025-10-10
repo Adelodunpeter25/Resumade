@@ -19,6 +19,16 @@ class Resume(Base):
     certifications = Column(JSON, default=[])
     projects = Column(JSON, default=[])
     
+    # Template customization
+    customization = Column(JSON, default={
+        "primary_color": "#059669",  # emerald-600
+        "secondary_color": "#0d9488",  # teal-600
+        "font_family": "Inter",
+        "font_size": "14",
+        "line_height": "1.5",
+        "margin": "0.5"
+    })
+    
     # Analytics
     views = Column(Integer, default=0)
     downloads = Column(Integer, default=0)

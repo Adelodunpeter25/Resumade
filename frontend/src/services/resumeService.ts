@@ -84,5 +84,17 @@ export const resumeService = {
     });
     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
     return response.blob();
+  },
+
+  exportResume: async (id: number, format: 'pdf' | 'docx' | 'txt', template?: string): Promise<Blob> => {
+    const params = new URLSearchParams({ format });
+    if (template) params.append('template', template);
+    
+    const token = localStorage.getItem('token');
+    const response = await fetch(`${API_BASE_URL}/api/resumes/${id}/export?${params}`, {
+      headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+    });
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+    return response.blob();
   }
 };

@@ -17,9 +17,19 @@ export interface Resume {
   skills: Skill[];
   certifications: Certification[];
   projects: Project[];
+  customization?: TemplateCustomization;
   ats_score?: number;
   created_at: string;
   updated_at: string;
+}
+
+export interface TemplateCustomization {
+  primary_color: string;
+  secondary_color: string;
+  font_family: string;
+  font_size: string;
+  line_height: string;
+  margin: string;
 }
 
 export interface PersonalInfo {

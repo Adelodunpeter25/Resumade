@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Save, Eye, Palette, BarChart3, History, Check, LogIn, Download } from 'lucide-react';
+import { ArrowLeft, Save, Eye, Palette, BarChart3, History, Check, LogIn, Download, ChevronDown, Upload } from 'lucide-react';
 import { resumeService } from '../services';
 import { API_BASE_URL } from '../services/api';
 import type { Resume, Template } from '../types';
@@ -11,6 +11,8 @@ import EducationForm from '../components/resume/EducationForm';
 import SkillsForm from '../components/resume/SkillsForm';
 import CertificationsForm from '../components/resume/CertificationsForm';
 import ProjectsForm from '../components/resume/ProjectsForm';
+import TemplateCustomizer from '../components/resume/TemplateCustomizer';
+import PDFUploader from '../components/resume/PDFUploader';
 
 const steps = [
   { id: 'personal', label: 'Personal Info', component: PersonalInfoForm },
@@ -18,7 +20,8 @@ const steps = [
   { id: 'education', label: 'Education', component: EducationForm },
   { id: 'skills', label: 'Skills', component: SkillsForm },
   { id: 'certifications', label: 'Certifications', component: CertificationsForm },
-  { id: 'projects', label: 'Projects', component: ProjectsForm }
+  { id: 'projects', label: 'Projects', component: ProjectsForm },
+  { id: 'customize', label: 'Customize', component: TemplateCustomizer }
 ];
 
 const GUEST_RESUME_KEY = 'guest_resume';
@@ -50,6 +53,8 @@ export default function ResumeBuilder() {
   const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'unsaved'>('saved');
   const [loading, setLoading] = useState(!!id);
   const [showTemplateDropdown, setShowTemplateDropdown] = useState(false);
+  const [showExportDropdown, setShowExportDropdown] = useState(false);
+  const [showPDFUploader, setShowPDFUploader] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [downloading, setDownloading] = useState(false);
   const previewIframeRef = useRef<HTMLIFrameElement>(null);
@@ -156,32 +161,51 @@ export default function ResumeBuilder() {
     }
   };
 
-  const handleDownload = async () => {
+  const handlePDFDataExtracted = (extractedData: Partial<Resume>) => {
+    setResume(prev => ({
+      ...prev,
+      ...extractedData,
+      title: prev.title, // Keep existing title
+      template_name: prev.template_name // Keep existing template
+    }));
+    setSaveStatus('unsaved');
+  };
+
+  const handleDownload = async (format: 'pdf' | 'docx' | 'txt' = 'pdf') => {
     setDownloading(true);
     try {
       let blob: Blob;
+      let filename: string;
       
       if (isAuthenticated && id && id !== 'new') {
-        const response = await resumeService.downloadPDF(Number(id), resume.template_name);
-        blob = new Blob([response], { type: 'application/pdf' });
+        const response = await resumeService.exportResume(Number(id), format);
+        blob = new Blob([response], { 
+          type: format === 'pdf' ? 'application/pdf' : 
+                format === 'docx' ? 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' :
+                'text/plain'
+        });
+        filename = `${resume.title || 'resume'}.${format}`;
       } else {
-        // Guest download
+        // Guest download (PDF only for now)
         const response = await resumeService.generateGuestPDF(resume, resume.template_name || 'professional-blue');
         blob = new Blob([response], { type: 'application/pdf' });
+        filename = `${resume.title || 'resume'}.pdf`;
       }
       
       // Create a temporary link and trigger download
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `${resume.title || 'resume'}.pdf`;
+      link.download = filename;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
+      
+      setShowExportDropdown(false);
     } catch (err) {
-      console.error('Failed to download PDF:', err);
-      alert('Failed to download PDF. Please try again.');
+      console.error('Failed to download:', err);
+      alert('Failed to download. Please try again.');
     } finally {
       setDownloading(false);
     }
@@ -298,6 +322,14 @@ export default function ResumeBuilder() {
                 )}
               </div>
               <button
+                onClick={() => setShowPDFUploader(true)}
+                className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+                title="Import from LinkedIn PDF or existing resume"
+              >
+                <Upload size={20} />
+                <span>Import PDF</span>
+              </button>
+              <button
                 onClick={() => handleFeatureClick('versions')}
                 className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
                 title={!isAuthenticated ? 'Login required' : 'Version History'}
@@ -311,15 +343,47 @@ export default function ResumeBuilder() {
               >
                 <BarChart3 size={20} />
               </button>
-              <button
-                onClick={!isAuthenticated ? handleDownload : () => handleFeatureClick('preview')}
-                disabled={!isAuthenticated && downloading}
-                className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50"
-                title={!isAuthenticated ? 'Download PDF' : 'Preview & Download'}
-              >
-                {!isAuthenticated ? <Download size={20} /> : <Eye size={20} />}
-                {!isAuthenticated && downloading && <span className="text-xs">...</span>}
-              </button>
+              <div className="relative">
+                <button
+                  onClick={() => setShowExportDropdown(!showExportDropdown)}
+                  disabled={downloading}
+                  className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50"
+                  title="Export Resume"
+                >
+                  <Download size={20} />
+                  <span>Export</span>
+                  <ChevronDown size={16} />
+                </button>
+                {showExportDropdown && (
+                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-gray-200 z-20">
+                    <button
+                      onClick={() => handleDownload('pdf')}
+                      className="w-full text-left px-4 py-3 hover:bg-gray-50 border-b border-gray-100"
+                    >
+                      <div className="font-medium text-gray-900">PDF</div>
+                      <div className="text-xs text-gray-500">Portable Document Format</div>
+                    </button>
+                    {isAuthenticated && (
+                      <>
+                        <button
+                          onClick={() => handleDownload('docx')}
+                          className="w-full text-left px-4 py-3 hover:bg-gray-50 border-b border-gray-100"
+                        >
+                          <div className="font-medium text-gray-900">DOCX</div>
+                          <div className="text-xs text-gray-500">Microsoft Word Document</div>
+                        </button>
+                        <button
+                          onClick={() => handleDownload('txt')}
+                          className="w-full text-left px-4 py-3 hover:bg-gray-50"
+                        >
+                          <div className="font-medium text-gray-900">TXT</div>
+                          <div className="text-xs text-gray-500">Plain Text Format</div>
+                        </button>
+                      </>
+                    )}
+                  </div>
+                )}
+              </div>
               <button
                 onClick={() => handleSave(false)}
                 disabled={saving}
@@ -405,6 +469,13 @@ export default function ResumeBuilder() {
           </div>
         </div>
       </div>
+      
+      {showPDFUploader && (
+        <PDFUploader
+          onDataExtracted={handlePDFDataExtracted}
+          onClose={() => setShowPDFUploader(false)}
+        />
+      )}
     </div>
   );
 }

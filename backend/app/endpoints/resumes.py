@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Query, Request
+from fastapi import APIRouter, Depends, HTTPException, status, Query, Request, UploadFile, File
 from fastapi.responses import Response, HTMLResponse
 from sqlalchemy.orm import Session
 from typing import List, Optional
@@ -12,6 +12,7 @@ from app.models import Resume, User, ResumeVersion, ShareLink
 from app.schemas import Resume as ResumeSchema, ResumeCreate, ResumeUpdate
 from app.schemas.response import APIResponse, PaginatedResponse
 from app.services import PDFService, ATSService, DOCXService
+from app.services.pdf_parser_service import PDFParserService
 
 router = APIRouter(prefix="/resumes", tags=["Resumes"])
 logger = logging.getLogger(__name__)
@@ -196,15 +197,108 @@ def generate_guest_pdf(
         logger.error(f"Guest PDF generation failed: {str(e)}")
         raise HTTPException(status_code=500, detail=f"PDF generation failed: {str(e)}")
 
+def _generate_txt_resume(resume) -> bytes:
+    """Generate plain text resume"""
+    lines = []
+    
+    # Personal Info
+    if resume.personal_info:
+        pi = resume.personal_info
+        if pi.get('full_name'):
+            lines.append(pi['full_name'].upper())
+            lines.append('=' * len(pi['full_name']))
+            lines.append('')
+        
+        contact = []
+        if pi.get('email'): contact.append(f"Email: {pi['email']}")
+        if pi.get('phone'): contact.append(f"Phone: {pi['phone']}")
+        if pi.get('location'): contact.append(f"Location: {pi['location']}")
+        if pi.get('linkedin'): contact.append(f"LinkedIn: {pi['linkedin']}")
+        if pi.get('website'): contact.append(f"Website: {pi['website']}")
+        
+        if contact:
+            lines.extend(contact)
+            lines.append('')
+        
+        if pi.get('summary'):
+            lines.append('PROFESSIONAL SUMMARY')
+            lines.append('-' * 20)
+            lines.append(pi['summary'])
+            lines.append('')
+    
+    # Experience
+    if resume.experience:
+        lines.append('EXPERIENCE')
+        lines.append('-' * 10)
+        for exp in resume.experience:
+            lines.append(f"{exp.get('position', '')} | {exp.get('company', '')}")
+            dates = f"{exp.get('start_date', '')} - {exp.get('end_date', 'Present') if not exp.get('current') else 'Present'}"
+            lines.append(dates)
+            if exp.get('location'):
+                lines.append(exp['location'])
+            if exp.get('description'):
+                lines.append(exp['description'])
+            lines.append('')
+    
+    # Education
+    if resume.education:
+        lines.append('EDUCATION')
+        lines.append('-' * 9)
+        for edu in resume.education:
+            lines.append(f"{edu.get('degree', '')} in {edu.get('field_of_study', '')}")
+            lines.append(edu.get('institution', ''))
+            dates = f"{edu.get('start_date', '')} - {edu.get('end_date', '')}"
+            lines.append(dates)
+            if edu.get('gpa'):
+                lines.append(f"GPA: {edu['gpa']}")
+            lines.append('')
+    
+    # Skills
+    if resume.skills:
+        lines.append('SKILLS')
+        lines.append('-' * 6)
+        for skill in resume.skills:
+            skill_line = skill.get('name', '')
+            if skill.get('level'):
+                skill_line += f" ({skill['level']})"
+            lines.append(skill_line)
+        lines.append('')
+    
+    # Projects
+    if resume.projects:
+        lines.append('PROJECTS')
+        lines.append('-' * 8)
+        for project in resume.projects:
+            lines.append(project.get('name', ''))
+            if project.get('description'):
+                lines.append(project['description'])
+            if project.get('technologies'):
+                lines.append(f"Technologies: {', '.join(project['technologies'])}")
+            if project.get('url'):
+                lines.append(f"URL: {project['url']}")
+            lines.append('')
+    
+    # Certifications
+    if resume.certifications:
+        lines.append('CERTIFICATIONS')
+        lines.append('-' * 14)
+        for cert in resume.certifications:
+            lines.append(f"{cert.get('name', '')} | {cert.get('issuer', '')}")
+            if cert.get('date'):
+                lines.append(cert['date'])
+            lines.append('')
+    
+    return '\n'.join(lines).encode('utf-8')
+
 @router.get("/{resume_id}/export")
 def export_resume(
     resume_id: int,
-    format: str = Query("pdf", regex="^(pdf|docx)$"),
+    format: str = Query("pdf", regex="^(pdf|docx|txt)$"),
     template: Optional[str] = None,
     db: Session = Depends(get_db),
     current_user: Optional[User] = Depends(get_current_user_optional)
 ):
-    """Export resume as PDF or DOCX"""
+    """Export resume as PDF, DOCX, or TXT"""
     resume = db.query(Resume).filter(Resume.id == resume_id).first()
     if not resume:
         raise HTTPException(status_code=404, detail="Resume not found")
@@ -223,7 +317,7 @@ def export_resume(
             content = pdf_service.generate_resume_pdf(resume, template_name)
             media_type = "application/pdf"
             filename = f"resume_{resume_id}.pdf"
-        else:  # docx
+        elif format == "docx":
             docx_service = DOCXService()
             content = docx_service.generate_resume_docx({
                 "personal_info": resume.personal_info,
@@ -235,6 +329,10 @@ def export_resume(
             })
             media_type = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
             filename = f"resume_{resume_id}.docx"
+        else:  # txt
+            content = _generate_txt_resume(resume)
+            media_type = "text/plain"
+            filename = f"resume_{resume_id}.txt"
         
         return Response(
             content=content,
@@ -244,6 +342,32 @@ def export_resume(
     except Exception as e:
         logger.error(f"Export failed: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Export failed: {str(e)}")
+
+@router.post("/parse-pdf")
+async def parse_pdf_resume(
+    file: UploadFile = File(...),
+    current_user: Optional[User] = Depends(get_current_user_optional)
+):
+    """Parse resume data from uploaded PDF"""
+    if not file.filename.lower().endswith('.pdf'):
+        raise HTTPException(status_code=400, detail="Only PDF files are supported")
+    
+    if file.size > 10 * 1024 * 1024:  # 10MB limit
+        raise HTTPException(status_code=400, detail="File size too large (max 10MB)")
+    
+    try:
+        # Read PDF content
+        pdf_content = await file.read()
+        
+        # Parse the PDF
+        parser_service = PDFParserService()
+        resume_data = parser_service.parse_resume_pdf(pdf_content)
+        
+        return {"success": True, "data": resume_data}
+        
+    except Exception as e:
+        logger.error(f"PDF parsing failed: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to parse PDF: {str(e)}")
 
 @router.get("/{resume_id}/score")
 def get_resume_score(

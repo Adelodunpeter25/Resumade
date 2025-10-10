@@ -5,6 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Resume - {{ resume.personal_info.full_name }}</title>
     <style>
+        :root {
+            --primary-color: {{ resume.customization.primary_color if resume.customization else '#2563eb' }};
+            --secondary-color: {{ resume.customization.secondary_color if resume.customization else '#1d4ed8' }};
+            --font-family: {{ resume.customization.font_family if resume.customization else 'Segoe UI, Tahoma, Geneva, Verdana, sans-serif' }};
+            --font-size: {{ resume.customization.font_size if resume.customization else '11' }}pt;
+            --line-height: {{ resume.customization.line_height if resume.customization else '1.6' }};
+            --margin: {{ resume.customization.margin if resume.customization else '0.5' }}in;
+        }
+        
         * {
             margin: 0;
             padding: 0;
@@ -13,14 +22,14 @@
 
         @page {
             size: Letter;
-            margin: 0.5in;
+            margin: var(--margin);
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            line-height: 1.6;
+            font-family: var(--font-family);
+            line-height: var(--line-height);
             color: #2c3e50;
-            font-size: 11pt;
+            font-size: var(--font-size);
             background: white;
         }
 
@@ -34,7 +43,7 @@
             text-align: center;
             margin-bottom: 25px;
             padding-bottom: 15px;
-            border-bottom: 2px solid #3498db;
+            border-bottom: 2px solid var(--primary-color);
         }
 
         .header h1 {
@@ -58,7 +67,7 @@
         }
 
         .contact-info a {
-            color: #3498db;
+            color: var(--primary-color);
             text-decoration: none;
         }
 
