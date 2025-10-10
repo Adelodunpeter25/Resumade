@@ -31,3 +31,4 @@ class Resume(Base):
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     
     user = relationship("User")
+    progress = relationship("ResumeProgress", back_populates="resume", uselist=False, cascade="all, delete-orphan")

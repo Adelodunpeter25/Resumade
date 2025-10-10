@@ -170,20 +170,20 @@ def generate_guest_pdf(
 ):
     """Generate PDF for guest users (no authentication required)"""
     try:
-        # Create a temporary Resume-like object
-        from types import SimpleNamespace
+        # Create a mock Resume object with required attributes
+        class MockResume:
+            def __init__(self, data, template_name):
+                self.id = 0  # Mock ID for guest resumes
+                self.title = data.get("title", "Resume")
+                self.template = template_name
+                self.personal_info = data.get("personal_info", {})
+                self.experience = data.get("experience", [])
+                self.education = data.get("education", [])
+                self.skills = data.get("skills", [])
+                self.certifications = data.get("certifications", [])
+                self.projects = data.get("projects", [])
         
-        resume_obj = SimpleNamespace(
-            title=resume_data.get("title", "Resume"),
-            template=template,
-            personal_info=resume_data.get("personal_info", {}),
-            experience=resume_data.get("experience", []),
-            education=resume_data.get("education", []),
-            skills=resume_data.get("skills", []),
-            certifications=resume_data.get("certifications", []),
-            projects=resume_data.get("projects", [])
-        )
-        
+        resume_obj = MockResume(resume_data, template)
         pdf_service = PDFService()
         content = pdf_service.generate_resume_pdf(resume_obj, template)
         

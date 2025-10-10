@@ -1,16 +1,16 @@
-import { useState, useEffect, useCallback } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
-import { ArrowLeft, Save, Eye, Palette, BarChart3, History, Check, LogIn, Download } from 'lucide-react'
-import { resumeService } from '../services'
-import type { Resume, Template } from '../types'
+import { useState, useEffect, useCallback } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { ArrowLeft, Save, Eye, Palette, BarChart3, History, Check, LogIn, Download } from 'lucide-react';
+import { resumeService } from '../services';
+import type { Resume, Template } from '../types';
 
-import PersonalInfoForm from '../components/resume/PersonalInfoForm'
-import ExperienceForm from '../components/resume/ExperienceForm'
-import EducationForm from '../components/resume/EducationForm'
-import SkillsForm from '../components/resume/SkillsForm'
-import CertificationsForm from '../components/resume/CertificationsForm'
-import ProjectsForm from '../components/resume/ProjectsForm'
-import ResumePreviewHTML from '../components/resume/ResumePreviewHTML'
+import PersonalInfoForm from '../components/resume/PersonalInfoForm';
+import ExperienceForm from '../components/resume/ExperienceForm';
+import EducationForm from '../components/resume/EducationForm';
+import SkillsForm from '../components/resume/SkillsForm';
+import CertificationsForm from '../components/resume/CertificationsForm';
+import ProjectsForm from '../components/resume/ProjectsForm';
+import ResumePreviewHTML from '../components/resume/ResumePreviewHTML';
 
 const steps = [
   { id: 'personal', label: 'Personal Info', component: PersonalInfoForm },
@@ -19,14 +19,14 @@ const steps = [
   { id: 'skills', label: 'Skills', component: SkillsForm },
   { id: 'certifications', label: 'Certifications', component: CertificationsForm },
   { id: 'projects', label: 'Projects', component: ProjectsForm }
-]
+];
 
-const GUEST_RESUME_KEY = 'guest_resume'
+const GUEST_RESUME_KEY = 'guest_resume';
 
 export default function ResumeBuilder() {
-  const { id } = useParams()
-  const navigate = useNavigate()
-  const [currentStep, setCurrentStep] = useState(0)
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const [currentStep, setCurrentStep] = useState(0);
   const [resume, setResume] = useState<Partial<Resume>>({
     title: 'Untitled Resume',
     template_name: 'professional-blue',
@@ -44,176 +44,167 @@ export default function ResumeBuilder() {
     skills: [],
     certifications: [],
     projects: []
-  })
-  const [templates, setTemplates] = useState<Template[]>([])
-  const [saving, setSaving] = useState(false)
-  const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'unsaved'>('saved')
-  const [loading, setLoading] = useState(!!id)
-  const [showTemplateDropdown, setShowTemplateDropdown] = useState(false)
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
-  const [downloading, setDownloading] = useState(false)
+  });
+  const [templates, setTemplates] = useState<Template[]>([]);
+  const [saving, setSaving] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'unsaved'>('saved');
+  const [loading, setLoading] = useState(!!id);
+  const [showTemplateDropdown, setShowTemplateDropdown] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [downloading, setDownloading] = useState(false);
 
   useEffect(() => {
-    const token = localStorage.getItem('token')
-    setIsAuthenticated(!!token)
+    const token = localStorage.getItem('token');
+    setIsAuthenticated(!!token);
     
-    loadTemplates()
+    loadTemplates();
     
     if (id && id !== 'new') {
       if (token) {
-        loadResume()
+        loadResume();
       } else {
-        navigate('/login')
+        navigate('/login');
       }
     } else if (id === 'new' && !token) {
-      // Guest mode - load from localStorage
-      const savedResume = localStorage.getItem(GUEST_RESUME_KEY)
+      const savedResume = localStorage.getItem(GUEST_RESUME_KEY);
       if (savedResume) {
-        setResume(JSON.parse(savedResume))
+        setResume(JSON.parse(savedResume));
       }
-      setLoading(false)
+      setLoading(false);
     } else {
-      setLoading(false)
+      setLoading(false);
     }
-  }, [id])
-
-  // Autosave effect
-  useEffect(() => {
-    if (saveStatus === 'saved') return
-
-    const timer = setTimeout(() => {
-      handleSave(true)
-    }, 2000)
-
-    return () => clearTimeout(timer)
-  }, [resume, saveStatus])
+  }, [id]);
 
   const loadTemplates = async () => {
     try {
-      const response = await resumeService.getTemplates()
+      const response = await resumeService.getTemplates();
       if (response.success && response.data) {
-        setTemplates(response.data)
+        setTemplates(response.data);
       }
     } catch (err) {
-      // Fallback templates for guests
       setTemplates([
         { name: 'professional-blue', display_name: 'Professional Blue', description: 'Clean and professional', preview_url: '' },
         { name: 'minimalist-two-column', display_name: 'Minimalist', description: 'Simple and elegant', preview_url: '' }
-      ])
+      ]);
     }
-  }
+  };
 
   const loadResume = async () => {
     try {
-      const response = await resumeService.getResume(Number(id))
+      const response = await resumeService.getResume(Number(id));
       if (response.success && response.data) {
-        setResume(response.data)
+        setResume(response.data);
       }
     } catch (err) {
-      alert('Failed to load resume')
-      navigate('/dashboard')
+      alert('Failed to load resume');
+      navigate('/dashboard');
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleSave = async (isAutosave = false) => {
-    if (!isAutosave) setSaving(true)
-    setSaveStatus('saving')
+    if (!isAutosave) setSaving(true);
+    setSaveStatus('saving');
     
     try {
       if (!isAuthenticated) {
-        // Guest mode - save to localStorage
-        localStorage.setItem(GUEST_RESUME_KEY, JSON.stringify(resume))
-        setSaveStatus('saved')
+        localStorage.setItem(GUEST_RESUME_KEY, JSON.stringify(resume));
+        setSaveStatus('saved');
       } else if (id && id !== 'new') {
-        await resumeService.updateResume(Number(id), resume)
-        setSaveStatus('saved')
+        await resumeService.updateResume(Number(id), resume);
+        setSaveStatus('saved');
       } else {
-        const response = await resumeService.createResume(resume)
+        const response = await resumeService.createResume(resume);
         if (response.success && response.data) {
-          navigate(`/resume/${response.data.id}`, { replace: true })
+          navigate(`/resume/${response.data.id}`, { replace: true });
         }
-        setSaveStatus('saved')
+        setSaveStatus('saved');
       }
     } catch (err) {
-      alert('Failed to save resume')
-      setSaveStatus('unsaved')
+      alert('Failed to save resume');
+      setSaveStatus('unsaved');
     } finally {
-      if (!isAutosave) setSaving(false)
+      if (!isAutosave) setSaving(false);
     }
-  }
+  };
+
+  const handleDownload = async () => {
+    setDownloading(true);
+    try {
+      let blob: Blob;
+      
+      if (isAuthenticated && id && id !== 'new') {
+        const response = await resumeService.downloadPDF(Number(id), resume.template_name);
+        blob = new Blob([response], { type: 'application/pdf' });
+      } else {
+        // Guest download
+        const response = await resumeService.generateGuestPDF(resume, resume.template_name || 'professional-blue');
+        blob = new Blob([response], { type: 'application/pdf' });
+      }
+      
+      // Create a temporary link and trigger download
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${resume.title || 'resume'}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Failed to download PDF:', err);
+      alert('Failed to download PDF. Please try again.');
+    } finally {
+      setDownloading(false);
+    }
+  };
 
   const updateResumeData = useCallback((field: string, value: any) => {
-    setResume(prev => ({ ...prev, [field]: value }))
-    setSaveStatus('unsaved')
-  }, [])
+    setResume(prev => ({ ...prev, [field]: value }));
+    setSaveStatus('unsaved');
+  }, []);
 
   const changeTemplate = (templateName: string) => {
-    updateResumeData('template_name', templateName)
-    setShowTemplateDropdown(false)
-  }
+    updateResumeData('template_name', templateName);
+    setShowTemplateDropdown(false);
+  };
 
   const handleFeatureClick = (feature: string) => {
     if (!isAuthenticated) {
       if (confirm(`${feature} requires an account. Would you like to login or sign up?`)) {
-        handleLoginPrompt()
+        handleLoginPrompt();
       }
-      return
+      return;
     }
     
-    // Navigate to feature
     switch(feature) {
       case 'versions':
-        navigate(`/resume/${id}/versions`)
-        break
+        navigate(`/resume/${id}/versions`);
+        break;
       case 'ats':
-        navigate(`/resume/${id}/ats-score`)
-        break
+        navigate(`/resume/${id}/ats-score`);
+        break;
       case 'preview':
-        navigate(`/resume/${id}/preview`)
-        break
+        navigate(`/resume/${id}/preview`);
+        break;
     }
-  }
+  };
 
   const handleLoginPrompt = () => {
-    navigate('/login')
-  }
-
-  const handleDownload = async () => {
-    setDownloading(true)
-    try {
-      let blob: Blob
-      
-      if (isAuthenticated && id && id !== 'new') {
-        blob = await resumeService.downloadPDF(Number(id), resume.template_name)
-      } else {
-        // Guest download
-        blob = await resumeService.generateGuestPDF(resume, resume.template_name || 'professional-blue')
-      }
-      
-      const url = window.URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = `${resume.title || 'resume'}.pdf`
-      a.click()
-      window.URL.revokeObjectURL(url)
-    } catch (err) {
-      alert('Failed to download PDF')
-    } finally {
-      setDownloading(false)
-    }
-  }
-
-  const CurrentStepComponent = steps[currentStep].component
+    navigate('/login');
+  };
 
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="w-16 h-16 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin"></div>
       </div>
-    )
+    );
   }
+
+  const CurrentStepComponent = steps[currentStep].component;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -386,5 +377,5 @@ export default function ResumeBuilder() {
         </div>
       </div>
     </div>
-  )
+  );
 }

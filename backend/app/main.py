@@ -5,6 +5,7 @@ import logging
 
 from app.models import User, Resume
 from app.endpoints import users_router, resumes_router, auth_router, admin_router
+from app.endpoints.progress import router as progress_router
 from app.core.exceptions import (
     QuickInvoiceException, 
     quickinvoice_exception_handler,
@@ -41,6 +42,7 @@ app.include_router(auth_router, prefix="/api")
 app.include_router(users_router, prefix="/api")
 app.include_router(resumes_router, prefix="/api")
 app.include_router(admin_router, prefix="/api")
+app.include_router(progress_router, prefix="/api")
 
 @app.on_event("startup")
 async def startup_event():
