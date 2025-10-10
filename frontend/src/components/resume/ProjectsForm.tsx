@@ -1,6 +1,7 @@
 import { Plus, Trash2, X } from 'lucide-react'
 import { useState } from 'react'
 import type { Resume, Project } from '../../types'
+import RichTextEditor from '../common/RichTextEditor'
 
 interface Props {
   data: Partial<Resume>
@@ -94,13 +95,10 @@ export default function ProjectsForm({ data, onChange }: Props) {
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Description *
             </label>
-            <textarea
+            <RichTextEditor
               value={project.description}
-              onChange={(e) => updateProject(index, 'description', e.target.value)}
-              rows={3}
+              onChange={(value) => updateProject(index, 'description', value)}
               placeholder="Describe the project and your role..."
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
-              required
             />
           </div>
 

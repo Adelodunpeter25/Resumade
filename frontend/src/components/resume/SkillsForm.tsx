@@ -10,7 +10,7 @@ export default function SkillsForm({ data, onChange }: Props) {
   const skills = data.skills || []
 
   const addSkill = () => {
-    onChange('skills', [...skills, { name: '', level: 'Intermediate' as const }])
+    onChange('skills', [...skills, { name: '', level: '' }])
   }
 
   const updateSkill = (index: number, field: keyof Skill, value: any) => {
@@ -51,13 +51,14 @@ export default function SkillsForm({ data, onChange }: Props) {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Proficiency Level *
+                Proficiency Level
               </label>
               <select
                 value={skill.level}
                 onChange={(e) => updateSkill(index, 'level', e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
               >
+                <option value="">Do not specify</option>
                 <option value="Beginner">Beginner</option>
                 <option value="Intermediate">Intermediate</option>
                 <option value="Advanced">Advanced</option>

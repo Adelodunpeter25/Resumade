@@ -28,12 +28,25 @@ export default function RichTextEditor({ value, onChange, placeholder }: RichTex
   ];
 
   useEffect(() => {
-    // Ensure Quill is properly initialized
-    if (quillRef.current) {
-      const editor = quillRef.current.getEditor();
-      editor.enable(true);
-    }
+    return () => {
+      // Clear any active selections on unmount
+      if (quillRef.current) {
+        try {
+          const editor = quillRef.current.getEditor();
+          editor.blur();
+        } catch (e) {
+          // Ignore errors during cleanup
+        }
+      }
+    };
   }, []);
+
+  const handleChange = (content: string) => {
+    // Prevent onChange from firing during unmount
+    if (quillRef.current) {
+      onChange(content);
+    }
+  };
 
   return (
     <div className="rich-text-editor">
@@ -41,7 +54,7 @@ export default function RichTextEditor({ value, onChange, placeholder }: RichTex
         ref={quillRef}
         theme="snow"
         value={value || ''}
-        onChange={onChange}
+        onChange={handleChange}
         modules={modules}
         formats={formats}
         placeholder={placeholder}

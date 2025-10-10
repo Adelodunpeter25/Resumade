@@ -1,4 +1,5 @@
 import type { Resume } from '../../types'
+import RichTextEditor from '../common/RichTextEditor'
 
 interface Props {
   data: Partial<Resume>
@@ -98,12 +99,10 @@ export default function PersonalInfoForm({ data, onChange }: Props) {
         <label className="block text-sm font-medium text-gray-700 mb-2">
           Professional Summary
         </label>
-        <textarea
+        <RichTextEditor
           value={data.personal_info?.summary || ''}
-          onChange={(e) => updateField('summary', e.target.value)}
-          rows={4}
+          onChange={(value) => updateField('summary', value)}
           placeholder="Brief overview of your professional background and career goals..."
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
         />
       </div>
     </div>
