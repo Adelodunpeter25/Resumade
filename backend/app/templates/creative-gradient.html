@@ -491,7 +491,7 @@
                 {% for skill in resume.skills %}
                 <div class="skill-category">
                     <div class="skill-title">{{ skill.name }}</div>
-                    <div class="skill-list">{{ skill.level }}</div>
+                    <div class="skill-list">{% if skill.level %}{{ skill.level }}{% endif %}</div>
                 </div>
                 {% endfor %}
             </div>

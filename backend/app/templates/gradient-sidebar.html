@@ -350,9 +350,11 @@
                 {% for skill in resume.skills[:8] %}
                 <div class="skill-item">
                     <div class="skill-name">{{ skill.name }}</div>
+                    {% if skill.level %}
                     <div class="skill-bar">
-                        <div class="skill-level" style="width: {{ skill.percent_level or 70 }}%"></div>
+                        <div class="skill-level" style="width: {% if skill.level == 'Beginner' %}25{% elif skill.level == 'Intermediate' %}50{% elif skill.level == 'Advanced' %}75{% elif skill.level == 'Expert' %}95{% else %}0{% endif %}%"></div>
                     </div>
+                    {% endif %}
                 </div>
                 {% endfor %}
             </div>
