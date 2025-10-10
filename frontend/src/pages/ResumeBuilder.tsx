@@ -13,6 +13,8 @@ import CertificationsForm from '../components/resume/CertificationsForm';
 import ProjectsForm from '../components/resume/ProjectsForm';
 import TemplateCustomizer from '../components/resume/TemplateCustomizer';
 import PDFUploader from '../components/resume/PDFUploader';
+import SectionManager from '../components/resume/SectionManager';
+import CustomSectionForm from '../components/resume/CustomSectionForm';
 
 const steps = [
   { id: 'personal', label: 'Personal Info', component: PersonalInfoForm },
@@ -21,6 +23,7 @@ const steps = [
   { id: 'skills', label: 'Skills', component: SkillsForm },
   { id: 'certifications', label: 'Certifications', component: CertificationsForm },
   { id: 'projects', label: 'Projects', component: ProjectsForm },
+  { id: 'sections', label: 'Manage Sections', component: SectionManager },
   { id: 'customize', label: 'Customize', component: TemplateCustomizer }
 ];
 
@@ -431,6 +434,22 @@ export default function ResumeBuilder() {
                 data={resume}
                 onChange={updateResumeData}
               />
+              
+              {/* Render Custom Sections Forms */}
+              {currentStep !== 'sections' && resume.custom_sections && resume.custom_sections.map((section: any) => (
+                <div key={section.id} className="mt-8 pt-6 border-t border-gray-200">
+                  <CustomSectionForm
+                    sectionName={section.name}
+                    items={section.data || []}
+                    onChange={(items) => {
+                      const updatedSections = resume.custom_sections?.map((s: any) =>
+                        s.id === section.id ? { ...s, data: items } : s
+                      ) || []
+                      updateResumeData('custom_sections', updatedSections)
+                    }}
+                  />
+                </div>
+              ))}
               
               {/* Navigation Buttons */}
               <div className="flex justify-between mt-8 pt-6 border-t border-gray-200">

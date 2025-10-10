@@ -564,7 +564,10 @@ async def preview_resume_live(request: Request):
         education=resume_data.get('education', []),
         skills=resume_data.get('skills', []),
         certifications=resume_data.get('certifications', []),
-        projects=resume_data.get('projects', [])
+        projects=resume_data.get('projects', []),
+        customization=resume_data.get('customization', {}),
+        section_names=resume_data.get('section_names', {}),
+        custom_sections=resume_data.get('custom_sections', [])
     )
     
     pdf_service = PDFService()

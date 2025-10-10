@@ -6,12 +6,12 @@
     <title>Resume - {{ resume.personal_info.full_name }}</title>
     <style>
         :root {
-            --primary-color: {{ resume.customization.primary_color if resume.customization else '#2563eb' }};
-            --secondary-color: {{ resume.customization.secondary_color if resume.customization else '#1d4ed8' }};
-            --font-family: {{ resume.customization.font_family if resume.customization else 'Segoe UI, Tahoma, Geneva, Verdana, sans-serif' }};
-            --font-size: {{ resume.customization.font_size if resume.customization else '11' }}pt;
-            --line-height: {{ resume.customization.line_height if resume.customization else '1.6' }};
-            --margin: {{ resume.customization.margin if resume.customization else '0.5' }}in;
+            --primary-color: {{ resume.customization.primary_color if resume.customization and resume.customization.primary_color else '#2563eb' }};
+            --secondary-color: {{ resume.customization.secondary_color if resume.customization and resume.customization.secondary_color else '#1d4ed8' }};
+            --font-family: '{{ resume.customization.font_family if resume.customization and resume.customization.font_family else 'Segoe UI' }}', Tahoma, Geneva, Verdana, sans-serif;
+            --font-size: {{ resume.customization.font_size if resume.customization and resume.customization.font_size else '11' }}pt;
+            --line-height: {{ resume.customization.line_height if resume.customization and resume.customization.line_height else '1.6' }};
+            --margin: {{ resume.customization.margin if resume.customization and resume.customization.margin else '0.5' }}in;
         }
         
         * {
@@ -257,14 +257,14 @@
 
         {% if resume.personal_info.summary %}
         <section class="section">
-            <h2 class="section-title">Professional Summary</h2>
+            <h2 class="section-title">{{ resume.section_names.get('summary', 'Professional Summary') if resume.section_names else 'Professional Summary' }}</h2>
             <p class="summary">{{ resume.personal_info.summary }}</p>
         </section>
         {% endif %}
 
         {% if resume.experience %}
         <section class="section">
-            <h2 class="section-title">Professional Experience</h2>
+            <h2 class="section-title">{{ resume.section_names.get('experience', 'Professional Experience') if resume.section_names else 'Professional Experience' }}</h2>
             {% for exp in resume.experience %}
             <div class="job">
                 <div class="job-header">
@@ -289,7 +289,7 @@
 
         {% if resume.projects %}
         <section class="section">
-            <h2 class="section-title">Notable Projects</h2>
+            <h2 class="section-title">{{ resume.section_names.get('projects', 'Notable Projects') if resume.section_names else 'Notable Projects' }}</h2>
             {% for project in resume.projects %}
             <div class="project">
                 <div class="project-header">
@@ -311,7 +311,7 @@
 
         {% if resume.skills %}
         <section class="section">
-            <h2 class="section-title">Technical Skills</h2>
+            <h2 class="section-title">{{ resume.section_names.get('skills', 'Technical Skills') if resume.section_names else 'Technical Skills' }}</h2>
             <div class="skills-grid">
                 {% for skill in resume.skills %}
                 <div class="skill-category">
@@ -324,7 +324,7 @@
 
         {% if resume.education %}
         <section class="section">
-            <h2 class="section-title">Education</h2>
+            <h2 class="section-title">{{ resume.section_names.get('education', 'Education') if resume.section_names else 'Education' }}</h2>
             {% for edu in resume.education %}
             <div class="education-item">
                 <div class="education-header">
@@ -339,7 +339,7 @@
 
         {% if resume.certifications %}
         <section class="section">
-            <h2 class="section-title">Certifications</h2>
+            <h2 class="section-title">{{ resume.section_names.get('certifications', 'Certifications') if resume.section_names else 'Certifications' }}</h2>
             {% for cert in resume.certifications %}
             <div class="education-item">
                 <div class="education-header">

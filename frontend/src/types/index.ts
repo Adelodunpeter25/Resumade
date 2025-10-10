@@ -18,9 +18,17 @@ export interface Resume {
   certifications: Certification[];
   projects: Project[];
   customization?: TemplateCustomization;
+  section_names?: Record<string, string>;
+  custom_sections?: CustomSection[];
   ats_score?: number;
   created_at: string;
   updated_at: string;
+}
+
+export interface CustomSection {
+  id: string;
+  name: string;
+  data: any[];
 }
 
 export interface TemplateCustomization {
