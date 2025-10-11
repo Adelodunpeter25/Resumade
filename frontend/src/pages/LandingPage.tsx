@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { API_BASE_URL } from '../services/api'
 
 export default function LandingPage() {
+  const navigate = useNavigate()
   const [openFaq, setOpenFaq] = useState<number | null>(null)
   const [currentFeatureIndex, setCurrentFeatureIndex] = useState(5) // Start from middle set
   const [isTransitioning, setIsTransitioning] = useState(true)
@@ -305,10 +307,10 @@ export default function LandingPage() {
               { name: 'gradient-sidebar', display: 'Gradient Sidebar' },
               { name: 'minimalist-two-column', display: 'Minimalist Two Column' }
             ].map((template) => (
-              <a
+              <div
                 key={template.name}
-                href="/resume/new"
                 className="group cursor-pointer"
+                onClick={() => navigate(`/resume/new?template=${template.name}`)}
               >
                 <div className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
                   <div className="aspect-[8.5/11] bg-gray-50 relative overflow-hidden border-b border-gray-100">
@@ -330,20 +332,20 @@ export default function LandingPage() {
                     </h3>
                   </div>
                 </div>
-              </a>
+              </div>
             ))}
           </div>
 
           <div className="text-center">
-            <a
-              href="/templates"
+            <button
+              onClick={() => navigate('/templates')}
               className="inline-flex items-center gap-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white px-8 py-4 rounded-full font-semibold text-lg transition-all transform hover:scale-105 shadow-xl"
             >
               View All Templates
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
-            </a>
+            </button>
           </div>
         </div>
       </section>

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { resumeService } from '../services';
 import type { Resume, Template } from '../types';
 import { useErrorHandler } from './useErrorHandler';
@@ -9,12 +9,16 @@ const GUEST_RESUME_KEY = 'guest_resume';
 
 export const useResumeBuilder = (id?: string) => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { showError, showWarning } = useErrorHandler();
   const { saving, saveStatus, executeSave, debouncedSave, markUnsaved } = useSaveManager();
   
+  // Get template from URL parameter
+  const templateParam = searchParams.get('template');
+  
   const [resume, setResume] = useState<Partial<Resume>>({
     title: 'Untitled Resume',
-    template_name: 'professional-blue',
+    template_name: templateParam || 'professional-blue',
     personal_info: {
       full_name: '', email: '', phone: '', location: '',
       linkedin: '', website: '', summary: ''
@@ -36,6 +40,11 @@ export const useResumeBuilder = (id?: string) => {
     
     loadTemplates();
     
+    // Update template if parameter changes
+    if (templateParam && templateParam !== resume.template_name) {
+      setResume(prev => ({ ...prev, template_name: templateParam }));
+    }
+    
     if (id && id !== 'new') {
       if (token) {
         loadResume();
@@ -45,13 +54,18 @@ export const useResumeBuilder = (id?: string) => {
     } else if (id === 'new' && !token) {
       const savedResume = localStorage.getItem(GUEST_RESUME_KEY);
       if (savedResume) {
-        setResume(JSON.parse(savedResume));
+        const parsed = JSON.parse(savedResume);
+        // Override template if parameter is provided
+        if (templateParam) {
+          parsed.template_name = templateParam;
+        }
+        setResume(parsed);
       }
       setLoading(false);
     } else {
       setLoading(false);
     }
-  }, [id]);
+  }, [id, templateParam]);
 
   const loadTemplates = async () => {
     try {

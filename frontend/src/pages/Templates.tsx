@@ -72,7 +72,7 @@ export default function Templates() {
             <div
               key={template.name}
               className="group cursor-pointer"
-              onClick={() => navigate('/resume/new')}
+              onClick={() => navigate(`/resume/new?template=${template.name}`)}
             >
               {/* Card */}
               <div className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">

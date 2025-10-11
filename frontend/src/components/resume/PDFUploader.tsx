@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react'
 import { Upload, FileText, X, Loader } from 'lucide-react'
 import { resumeService } from '../../services'
+import { API_BASE_URL } from '../../services/api'
 import type { Resume } from '../../types'
 
 interface Props {
@@ -29,7 +30,7 @@ export default function PDFUploader({ onDataExtracted, onClose }: Props) {
       const formData = new FormData()
       formData.append('file', file)
 
-      const response = await fetch('/api/resumes/parse-pdf', {
+      const response = await fetch(`${API_BASE_URL}/api/resumes/parse-pdf`, {
         method: 'POST',
         body: formData
       })

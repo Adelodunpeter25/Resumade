@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Check, Star, Zap } from 'lucide-react';
+import { API_BASE_URL } from '../../services/api';
 import type { Template } from '../../types';
 
 interface Props {
@@ -35,6 +36,7 @@ const categoryDescriptions = {
 
 export default function TemplateSelector({ templates, currentTemplate, onTemplateChange, onClose }: Props) {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [loadingPreviews, setLoadingPreviews] = useState<Record<string, boolean>>({});
 
   const categories = Object.keys(templates.categories);
   const displayTemplates = selectedCategory 
@@ -43,7 +45,7 @@ export default function TemplateSelector({ templates, currentTemplate, onTemplat
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl shadow-2xl max-w-6xl w-full max-h-[90vh] overflow-hidden">
+      <div className="bg-white rounded-xl shadow-2xl max-w-7xl w-full max-h-[90vh] overflow-hidden">
         <div className="p-6 border-b border-gray-200">
           <div className="flex justify-between items-center">
             <div>
@@ -101,63 +103,70 @@ export default function TemplateSelector({ templates, currentTemplate, onTemplat
             </div>
           )}
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {displayTemplates.map((template) => (
               <div
                 key={template.name}
-                className={`relative border-2 rounded-lg overflow-hidden cursor-pointer transition-all hover:shadow-lg ${
+                className={`relative border-2 rounded-lg overflow-hidden cursor-pointer transition-all hover:shadow-md ${
                   currentTemplate === template.name
                     ? 'border-emerald-500 ring-2 ring-emerald-200'
                     : 'border-gray-200 hover:border-gray-300'
                 }`}
                 onClick={() => onTemplateChange(template.name)}
               >
-                {/* Template Preview Placeholder */}
-                <div className="aspect-[3/4] bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
-                  <div className="text-center">
-                    <div className="text-4xl mb-2">
-                      {categoryIcons[template.category as keyof typeof categoryIcons] || '📄'}
+                {/* Template Preview */}
+                <div className="aspect-[3/4] bg-gray-50 relative overflow-hidden">
+                  {loadingPreviews[template.name] && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
+                      <div className="w-4 h-4 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
                     </div>
-                    <div className="text-sm font-medium text-gray-600">Preview</div>
-                  </div>
+                  )}
+                  <iframe
+                    src={`${API_BASE_URL}/api/resumes/templates/preview?template=${template.name}`}
+                    className="w-full h-full border-0 pointer-events-none"
+                    style={{ transform: 'scale(0.6)', transformOrigin: 'top left', width: '167%', height: '167%' }}
+                    title={`${template.display_name} Preview`}
+                    onLoad={() => setLoadingPreviews(prev => ({ ...prev, [template.name]: false }))}
+                    onLoadStart={() => setLoadingPreviews(prev => ({ ...prev, [template.name]: true }))}
+                  />
                 </div>
                 
                 {/* Template Info */}
-                <div className="p-4">
-                  <div className="flex justify-between items-start mb-2">
-                    <h3 className="font-semibold text-gray-900">{template.display_name}</h3>
+                <div className="p-3">
+                  <div className="flex justify-between items-start mb-1">
+                    <h3 className="font-semibold text-sm text-gray-900 truncate">{template.display_name}</h3>
                     {currentTemplate === template.name && (
-                      <div className="text-emerald-500">
-                        <Check size={20} />
+                      <div className="text-emerald-500 ml-1 flex-shrink-0">
+                        <Check size={16} />
                       </div>
                     )}
                   </div>
                   
-                  <p className="text-sm text-gray-600 mb-3">{template.description}</p>
+                  <p className="text-xs text-gray-600 mb-2 line-clamp-2">{template.description}</p>
                   
-                  <div className="flex items-center justify-between text-xs">
+                  <div className="flex items-center justify-between text-xs mb-2">
                     <div className="flex items-center gap-1">
-                      <Star size={12} className="text-yellow-500" />
-                      <span className="font-medium">ATS Score: {template.ats_score}%</span>
+                      <Star size={10} className="text-yellow-500" />
+                      <span className="font-medium text-xs">ATS {template.ats_score}%</span>
                     </div>
                     <div className="flex items-center gap-1 text-gray-500">
-                      <Zap size={12} />
-                      <span>{template.category}</span>
+                      <Zap size={10} />
+                      <span className="text-xs">{template.category}</span>
                     </div>
                   </div>
                   
-                  <div className="mt-2 flex flex-wrap gap-1">
-                    {template.industry.slice(0, 3).map((industry) => (
+                  <div className="flex flex-wrap gap-1">
+                    {template.industry.slice(0, 2).map((industry) => (
                       <span
                         key={industry}
-                        className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded"
+                        className="px-1.5 py-0.5 bg-gray-100 text-gray-600 text-xs rounded"
                       >
                         {industry}
                       </span>
                     ))}
-                    {template.industry.length > 3 && (
-                      <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded">
-                        +{template.industry.length - 3}
+                    {template.industry.length > 2 && (
+                      <span className="px-1.5 py-0.5 bg-gray-100 text-gray-600 text-xs rounded">
+                        +{template.industry.length - 2}
                       </span>
                     )}
                   </div>
@@ -166,8 +175,8 @@ export default function TemplateSelector({ templates, currentTemplate, onTemplat
                 {/* Selection Overlay */}
                 {currentTemplate === template.name && (
                   <div className="absolute inset-0 bg-emerald-500 bg-opacity-10 flex items-center justify-center">
-                    <div className="bg-emerald-500 text-white rounded-full p-2">
-                      <Check size={24} />
+                    <div className="bg-emerald-500 text-white rounded-full p-1.5">
+                      <Check size={16} />
                     </div>
                   </div>
                 )}

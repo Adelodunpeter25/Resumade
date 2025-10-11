@@ -430,6 +430,33 @@ def get_resume_analytics(
         "updated_at": resume.updated_at
     }
 
+@router.post("/parse-pdf", response_model=APIResponse[dict])
+async def parse_pdf_resume(file: UploadFile = File(...)):
+    """Parse PDF resume and extract data"""
+    logger.info(f"Parsing PDF file: {file.filename}")
+    
+    if not file.filename.lower().endswith('.pdf'):
+        raise HTTPException(status_code=400, detail="File must be a PDF")
+    
+    try:
+        # Read file content
+        content = await file.read()
+        
+        # Parse PDF using PDFParserService
+        parser = PDFParserService()
+        extracted_data = parser.parse_resume_pdf(content)
+        
+        logger.info(f"Successfully parsed PDF: {file.filename}")
+        return APIResponse(
+            success=True,
+            message="PDF parsed successfully",
+            data=extracted_data
+        )
+        
+    except Exception as e:
+        logger.error(f"Failed to parse PDF {file.filename}: {str(e)}")
+        raise HTTPException(status_code=400, detail=f"Failed to parse PDF: {str(e)}")
+
 @router.get("/templates/list")
 def list_templates():
     """Get available resume templates organized by category"""
