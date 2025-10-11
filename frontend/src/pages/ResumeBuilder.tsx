@@ -1,9 +1,10 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Save, Eye, Palette, BarChart3, History, Check, LogIn, Download, ChevronDown, Upload } from 'lucide-react';
-import { resumeService } from '../services';
-import { API_BASE_URL } from '../services/api';
-import type { Resume, Template } from '../types';
+import type { Resume } from '../types';
+import { useErrorHandler, useResumeBuilder, usePreview, useResumeActions } from '../hooks';
+import ErrorNotification from '../components/common/ErrorNotification';
+import ErrorBoundary from '../components/common/ErrorBoundary';
 
 import PersonalInfoForm from '../components/resume/PersonalInfoForm';
 import ExperienceForm from '../components/resume/ExperienceForm';
@@ -32,217 +33,34 @@ const GUEST_RESUME_KEY = 'guest_resume';
 export default function ResumeBuilder() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { error, hideError } = useErrorHandler();
+  
+  // Custom hooks for organized logic
+  const {
+    resume, templates, saving, saveStatus, loading, isAuthenticated,
+    handleSave, updateResumeData
+  } = useResumeBuilder(id);
+  
+  const { previewIframeRef } = usePreview(resume);
+  const { downloading, handleDownload, handleFeatureClick } = useResumeActions(resume, isAuthenticated, id);
+  
+  // Local UI state
   const [currentStep, setCurrentStep] = useState(0);
-  const [resume, setResume] = useState<Partial<Resume>>({
-    title: 'Untitled Resume',
-    template_name: 'professional-blue',
-    personal_info: {
-      full_name: '',
-      email: '',
-      phone: '',
-      location: '',
-      linkedin: '',
-      website: '',
-      summary: ''
-    },
-    experience: [],
-    education: [],
-    skills: [],
-    certifications: [],
-    projects: []
-  });
-  const [templates, setTemplates] = useState<Template[]>([]);
-  const [saving, setSaving] = useState(false);
-  const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'unsaved'>('saved');
-  const [loading, setLoading] = useState(!!id);
   const [showTemplateDropdown, setShowTemplateDropdown] = useState(false);
   const [showExportDropdown, setShowExportDropdown] = useState(false);
   const [showPDFUploader, setShowPDFUploader] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [downloading, setDownloading] = useState(false);
-  const previewIframeRef = useRef<HTMLIFrameElement>(null);
 
-  // Update preview when resume data changes
-  useEffect(() => {
-    if (previewIframeRef.current) {
-      const iframe = previewIframeRef.current;
-      const previewUrl = `${API_BASE_URL}/api/resumes/preview`;
-      
-      // Create a form to POST data to iframe
-      const form = document.createElement('form');
-      form.method = 'POST';
-      form.action = previewUrl;
-      form.target = iframe.name || 'preview-frame';
-      form.style.display = 'none';
-      
-      const input = document.createElement('input');
-      input.type = 'hidden';
-      input.name = 'resume_data';
-      input.value = JSON.stringify(resume);
-      
-      form.appendChild(input);
-      document.body.appendChild(form);
-      form.submit();
-      document.body.removeChild(form);
-    }
-  }, [resume]);
-
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    setIsAuthenticated(!!token);
-    
-    loadTemplates();
-    
-    if (id && id !== 'new') {
-      if (token) {
-        loadResume();
-      } else {
-        navigate('/login');
-      }
-    } else if (id === 'new' && !token) {
-      const savedResume = localStorage.getItem(GUEST_RESUME_KEY);
-      if (savedResume) {
-        setResume(JSON.parse(savedResume));
-      }
-      setLoading(false);
-    } else {
-      setLoading(false);
-    }
-  }, [id]);
-
-  const loadTemplates = async () => {
-    try {
-      const response = await resumeService.getTemplates();
-      if (response.success && response.data) {
-        setTemplates(response.data);
-      }
-    } catch (err) {
-      setTemplates([
-        { name: 'professional-blue', display_name: 'Professional Blue', description: 'Clean and professional', preview_url: '' },
-        { name: 'minimalist-two-column', display_name: 'Minimalist', description: 'Simple and elegant', preview_url: '' }
-      ]);
-    }
-  };
-
-  const loadResume = async () => {
-    try {
-      const response = await resumeService.getResume(Number(id));
-      if (response.success && response.data) {
-        setResume(response.data);
-      }
-    } catch (err) {
-      alert('Failed to load resume');
-      navigate('/dashboard');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleSave = async (isAutosave = false) => {
-    if (!isAutosave) setSaving(true);
-    setSaveStatus('saving');
-    
-    try {
-      if (!isAuthenticated) {
-        localStorage.setItem(GUEST_RESUME_KEY, JSON.stringify(resume));
-        setSaveStatus('saved');
-      } else if (id && id !== 'new') {
-        await resumeService.updateResume(Number(id), resume);
-        setSaveStatus('saved');
-      } else {
-        const response = await resumeService.createResume(resume);
-        if (response.success && response.data) {
-          navigate(`/resume/${response.data.id}`, { replace: true });
-        }
-        setSaveStatus('saved');
-      }
-    } catch (err) {
-      alert('Failed to save resume');
-      setSaveStatus('unsaved');
-    } finally {
-      if (!isAutosave) setSaving(false);
-    }
-  };
-
+  // UI helper functions
   const handlePDFDataExtracted = (extractedData: Partial<Resume>) => {
-    setResume(prev => ({
-      ...prev,
-      ...extractedData,
-      title: prev.title, // Keep existing title
-      template_name: prev.template_name // Keep existing template
-    }));
-    setSaveStatus('unsaved');
+    updateResumeData('personal_info', { ...resume.personal_info, ...extractedData.personal_info });
+    updateResumeData('experience', extractedData.experience || []);
+    updateResumeData('education', extractedData.education || []);
+    updateResumeData('skills', extractedData.skills || []);
   };
-
-  const handleDownload = async (format: 'pdf' | 'docx' | 'txt' = 'pdf') => {
-    setDownloading(true);
-    try {
-      let blob: Blob;
-      let filename: string;
-      
-      if (isAuthenticated && id && id !== 'new') {
-        const response = await resumeService.exportResume(Number(id), format);
-        blob = new Blob([response], { 
-          type: format === 'pdf' ? 'application/pdf' : 
-                format === 'docx' ? 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' :
-                'text/plain'
-        });
-        filename = `${resume.title || 'resume'}.${format}`;
-      } else {
-        // Guest download (PDF only for now)
-        const response = await resumeService.generateGuestPDF(resume, resume.template_name || 'professional-blue');
-        blob = new Blob([response], { type: 'application/pdf' });
-        filename = `${resume.title || 'resume'}.pdf`;
-      }
-      
-      // Create a temporary link and trigger download
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = filename;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
-      
-      setShowExportDropdown(false);
-    } catch (err) {
-      console.error('Failed to download:', err);
-      alert('Failed to download. Please try again.');
-    } finally {
-      setDownloading(false);
-    }
-  };
-
-  const updateResumeData = useCallback((field: string, value: any) => {
-    setResume(prev => ({ ...prev, [field]: value }));
-    setSaveStatus('unsaved');
-  }, []);
 
   const changeTemplate = (templateName: string) => {
     updateResumeData('template_name', templateName);
     setShowTemplateDropdown(false);
-  };
-
-  const handleFeatureClick = (feature: string) => {
-    if (!isAuthenticated) {
-      if (confirm(`${feature} requires an account. Would you like to login or sign up?`)) {
-        handleLoginPrompt();
-      }
-      return;
-    }
-    
-    switch(feature) {
-      case 'versions':
-        navigate(`/resume/${id}/versions`);
-        break;
-      case 'ats':
-        navigate(`/resume/${id}/ats-score`);
-        break;
-      case 'preview':
-        navigate(`/resume/${id}/preview`);
-        break;
-    }
   };
 
   const handleLoginPrompt = () => {
@@ -260,8 +78,15 @@ export default function ResumeBuilder() {
   const CurrentStepComponent = steps[currentStep].component;
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
+    <ErrorBoundary>
+      <div className="min-h-screen bg-gray-50">
+        <ErrorNotification
+          message={error.message}
+          type={error.type}
+          visible={error.visible}
+          onClose={hideError}
+        />
+        {/* Header */}
       <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
         <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex justify-between items-center">
@@ -360,7 +185,10 @@ export default function ResumeBuilder() {
                 {showExportDropdown && (
                   <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-gray-200 z-20">
                     <button
-                      onClick={() => handleDownload('pdf')}
+                      onClick={() => {
+                        handleDownload('pdf');
+                        setShowExportDropdown(false);
+                      }}
                       className="w-full text-left px-4 py-3 hover:bg-gray-50 border-b border-gray-100"
                     >
                       <div className="font-medium text-gray-900">PDF</div>
@@ -369,14 +197,20 @@ export default function ResumeBuilder() {
                     {isAuthenticated && (
                       <>
                         <button
-                          onClick={() => handleDownload('docx')}
+                          onClick={() => {
+                            handleDownload('docx');
+                            setShowExportDropdown(false);
+                          }}
                           className="w-full text-left px-4 py-3 hover:bg-gray-50 border-b border-gray-100"
                         >
                           <div className="font-medium text-gray-900">DOCX</div>
                           <div className="text-xs text-gray-500">Microsoft Word Document</div>
                         </button>
                         <button
-                          onClick={() => handleDownload('txt')}
+                          onClick={() => {
+                            handleDownload('txt');
+                            setShowExportDropdown(false);
+                          }}
                           className="w-full text-left px-4 py-3 hover:bg-gray-50"
                         >
                           <div className="font-medium text-gray-900">TXT</div>
@@ -495,6 +329,7 @@ export default function ResumeBuilder() {
           onClose={() => setShowPDFUploader(false)}
         />
       )}
-    </div>
+      </div>
+    </ErrorBoundary>
   );
 }

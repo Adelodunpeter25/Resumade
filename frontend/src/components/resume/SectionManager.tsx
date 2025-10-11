@@ -29,6 +29,8 @@ const defaultSections: Section[] = [
 
 export default function SectionManager({ resume, onChange }: Props) {
   const [sections, setSections] = useState<Section[]>(() => {
+    if (!resume) return defaultSections
+    
     const customSections = resume.custom_sections || []
     const sectionNames = resume.section_names || {}
     

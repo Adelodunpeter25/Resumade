@@ -21,8 +21,10 @@ export default function ATSScore() {
     setCalculating(true)
     try {
       const response = await atsService.calculateScore(Number(id))
+      console.log('ATS Response:', response)
       setScore(response)
     } catch (err) {
+      console.error('ATS Error:', err)
       alert('Failed to calculate ATS score')
     } finally {
       setLoading(false)
