@@ -5,6 +5,7 @@ import type { Resume } from '../types';
 import { useErrorHandler, useResumeBuilder, usePreview, useResumeActions } from '../hooks';
 import ErrorNotification from '../components/common/ErrorNotification';
 import ErrorBoundary from '../components/common/ErrorBoundary';
+import TemplateSelector from '../components/resume/TemplateSelector';
 
 import PersonalInfoForm from '../components/resume/PersonalInfoForm';
 import ExperienceForm from '../components/resume/ExperienceForm';
@@ -132,22 +133,6 @@ export default function ResumeBuilder() {
                   <Palette size={20} />
                   <span>Template</span>
                 </button>
-                {showTemplateDropdown && (
-                  <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-xl border border-gray-200 z-20">
-                    {templates.map((template) => (
-                      <button
-                        key={template.name}
-                        onClick={() => changeTemplate(template.name)}
-                        className={`w-full text-left px-4 py-3 hover:bg-gray-50 border-b border-gray-100 last:border-0 ${
-                          resume.template_name === template.name ? 'bg-emerald-50' : ''
-                        }`}
-                      >
-                        <div className="font-medium text-gray-900">{template.display_name}</div>
-                        <div className="text-xs text-gray-500">{template.description}</div>
-                      </button>
-                    ))}
-                  </div>
-                )}
               </div>
               <button
                 onClick={() => setShowPDFUploader(true)}
@@ -327,6 +312,15 @@ export default function ResumeBuilder() {
         <PDFUploader
           onDataExtracted={handlePDFDataExtracted}
           onClose={() => setShowPDFUploader(false)}
+        />
+      )}
+      
+      {showTemplateDropdown && (
+        <TemplateSelector
+          templates={templates}
+          currentTemplate={resume.template_name || 'professional-blue'}
+          onTemplateChange={changeTemplate}
+          onClose={() => setShowTemplateDropdown(false)}
         />
       )}
       </div>

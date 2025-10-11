@@ -46,7 +46,7 @@ export const resumeService = {
     return api.get(`/api/resumes/shared/${token}`);
   },
 
-  getTemplates: async (): Promise<APIResponse<Template[]>> => {
+  getTemplates: async (): Promise<APIResponse<{ categories: Record<string, Template[]>, all_templates: Template[] }>> => {
     return api.get('/api/resumes/templates/list');
   },
 

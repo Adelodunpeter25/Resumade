@@ -19,11 +19,13 @@ export default function Templates() {
     try {
       const response = await resumeService.getTemplates()
       if (response.success && response.data) {
-        setTemplates(response.data)
+        // Extract all_templates from the categorized response
+        const allTemplates = response.data.all_templates || []
+        setTemplates(allTemplates)
         
         // Generate preview URLs for each template
         const urls: Record<string, string> = {}
-        response.data.forEach((template: Template) => {
+        allTemplates.forEach((template: Template) => {
           urls[template.name] = `${API_BASE_URL}/api/resumes/templates/preview?template=${template.name}`
         })
         setPreviewUrls(urls)

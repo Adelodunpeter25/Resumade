@@ -23,7 +23,10 @@ export const useResumeBuilder = (id?: string) => {
     certifications: [], projects: []
   });
   
-  const [templates, setTemplates] = useState<Template[]>([]);
+  const [templates, setTemplates] = useState<{ categories: Record<string, Template[]>, all_templates: Template[] }>({
+    categories: {},
+    all_templates: []
+  });
   const [loading, setLoading] = useState(!!id);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
@@ -58,10 +61,16 @@ export const useResumeBuilder = (id?: string) => {
       }
     } catch (err) {
       showWarning('Failed to load templates, using defaults');
-      setTemplates([
-        { name: 'professional-blue', display_name: 'Professional Blue', description: 'Clean and professional', preview_url: '' },
-        { name: 'minimalist-two-column', display_name: 'Minimalist', description: 'Simple and elegant', preview_url: '' }
-      ]);
+      setTemplates({
+        categories: {
+          professional: [
+            { name: 'professional-blue', display_name: 'Professional Blue', description: 'Clean and professional', category: 'professional', industry: ['business'], ats_score: 90 }
+          ]
+        },
+        all_templates: [
+          { name: 'professional-blue', display_name: 'Professional Blue', description: 'Clean and professional', category: 'professional', industry: ['business'], ats_score: 90 }
+        ]
+      });
     }
   };
 

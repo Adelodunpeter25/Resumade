@@ -432,11 +432,24 @@ def get_resume_analytics(
 
 @router.get("/templates/list")
 def list_templates():
-    """Get available resume templates"""
+    """Get available resume templates organized by category"""
+    templates = PDFService.get_available_templates()
+    
+    # Organize templates by category
+    categorized = {}
+    for template in templates:
+        category = template["category"]
+        if category not in categorized:
+            categorized[category] = []
+        categorized[category].append(template)
+    
     return APIResponse(
         success=True,
         message="Templates retrieved",
-        data=PDFService.get_available_templates()
+        data={
+            "categories": categorized,
+            "all_templates": templates
+        }
     )
 
 @router.get("/templates/preview", response_class=HTMLResponse)

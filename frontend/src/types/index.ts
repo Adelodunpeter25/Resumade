@@ -110,7 +110,10 @@ export interface Template {
   name: string;
   display_name: string;
   description: string;
-  preview_url: string;
+  category: string;
+  industry: string[];
+  ats_score: number;
+  preview_url?: string;
 }
 
 export interface APIResponse<T> {
