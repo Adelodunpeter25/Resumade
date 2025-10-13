@@ -1,6 +1,5 @@
 import { useState, useRef } from 'react'
 import { Upload, FileText, X, Loader } from 'lucide-react'
-import { resumeService } from '../../services'
 import { API_BASE_URL } from '../../services/api'
 import type { Resume } from '../../types'
 

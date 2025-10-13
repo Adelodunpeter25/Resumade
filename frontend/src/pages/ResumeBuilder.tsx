@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Save, Eye, Palette, BarChart3, History, Check, LogIn, Download, ChevronDown, Upload } from 'lucide-react';
+import { ArrowLeft, Save, Palette, BarChart3, History, Check, LogIn, Download, ChevronDown, Upload } from 'lucide-react';
 import type { Resume } from '../types';
 import { useErrorHandler, useResumeBuilder, usePreview, useResumeActions } from '../hooks';
 import ErrorNotification from '../components/common/ErrorNotification';
@@ -28,8 +28,6 @@ const steps = [
   { id: 'sections', label: 'Manage Sections', component: SectionManager },
   { id: 'customize', label: 'Customize', component: TemplateCustomizer }
 ];
-
-const GUEST_RESUME_KEY = 'guest_resume';
 
 export default function ResumeBuilder() {
   const { id } = useParams();
@@ -252,10 +250,11 @@ export default function ResumeBuilder() {
               <CurrentStepComponent
                 data={resume}
                 onChange={updateResumeData}
+                resume={resume}
               />
               
               {/* Render Custom Sections Forms */}
-              {currentStep !== 'sections' && resume.custom_sections && resume.custom_sections.map((section: any) => (
+              {currentStep !== 6 && resume.custom_sections && resume.custom_sections.map((section: any) => (
                 <div key={section.id} className="mt-8 pt-6 border-t border-gray-200">
                   <CustomSectionForm
                     sectionName={section.name}

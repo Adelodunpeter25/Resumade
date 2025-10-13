@@ -4,7 +4,7 @@ export const useSaveManager = () => {
   const [saving, setSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'unsaved'>('saved');
   const saveOperationRef = useRef<Promise<void> | null>(null);
-  const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const debounceTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const executeSave = useCallback(async (saveFunction: () => Promise<void>, isAutosave = false) => {
     // Prevent multiple simultaneous saves

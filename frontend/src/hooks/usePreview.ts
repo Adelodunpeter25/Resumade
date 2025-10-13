@@ -4,7 +4,7 @@ import type { Resume } from '../types';
 
 export const usePreview = (resume: Partial<Resume>) => {
   const previewIframeRef = useRef<HTMLIFrameElement>(null);
-  const timeoutRef = useRef<NodeJS.Timeout>();
+  const timeoutRef = useRef<ReturnType<typeof setTimeout>>();
 
   const updatePreview = useCallback(() => {
     if (previewIframeRef.current) {

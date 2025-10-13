@@ -118,20 +118,13 @@ export default function SectionManager({ resume, onChange }: Props) {
     updateSections(newSections)
   }
 
-  const moveSection = (fromIndex: number, toIndex: number) => {
-    const newSections = [...sections]
-    const [moved] = newSections.splice(fromIndex, 1)
-    newSections.splice(toIndex, 0, moved)
-    updateSections(newSections)
-  }
-
   return (
     <div className="bg-white rounded-lg shadow p-6">
       <h3 className="text-lg font-semibold text-gray-900 mb-4">Manage Sections</h3>
       
       {/* Section List */}
       <div className="space-y-2 mb-6">
-        {sections.map((section, index) => (
+        {sections.map((section) => (
           <div
             key={section.id}
             className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50"
@@ -139,7 +132,6 @@ export default function SectionManager({ resume, onChange }: Props) {
             <GripVertical 
               size={16} 
               className="text-gray-400 cursor-move"
-              title="Drag to reorder"
             />
             
             {editingSection === section.id ? (

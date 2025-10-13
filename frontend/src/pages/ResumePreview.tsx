@@ -39,7 +39,7 @@ export default function ResumePreview() {
       }
 
       if (templatesRes.success && templatesRes.data) {
-        setTemplates(templatesRes.data)
+        setTemplates(templatesRes.data.all_templates || [])
       }
     } catch (err) {
       alert('Failed to load data')

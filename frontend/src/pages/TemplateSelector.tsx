@@ -21,7 +21,7 @@ export default function TemplateSelector() {
     try {
       const response = await resumeService.getTemplates()
       if (response.success && response.data) {
-        setTemplates(response.data)
+        setTemplates(response.data.all_templates || [])
       }
     } catch (err) {
       alert('Failed to load templates')
