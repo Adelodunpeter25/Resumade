@@ -343,32 +343,6 @@ def export_resume(
         logger.error(f"Export failed: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Export failed: {str(e)}")
 
-@router.post("/parse-pdf")
-async def parse_pdf_resume(
-    file: UploadFile = File(...),
-    current_user: Optional[User] = Depends(get_current_user_optional)
-):
-    """Parse resume data from uploaded PDF"""
-    if not file.filename.lower().endswith('.pdf'):
-        raise HTTPException(status_code=400, detail="Only PDF files are supported")
-    
-    if file.size > 10 * 1024 * 1024:  # 10MB limit
-        raise HTTPException(status_code=400, detail="File size too large (max 10MB)")
-    
-    try:
-        # Read PDF content
-        pdf_content = await file.read()
-        
-        # Parse the PDF
-        parser_service = PDFParserService()
-        resume_data = parser_service.parse_resume_pdf(pdf_content)
-        
-        return {"success": True, "data": resume_data}
-        
-    except Exception as e:
-        logger.error(f"PDF parsing failed: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Failed to parse PDF: {str(e)}")
-
 @router.get("/{resume_id}/score")
 def get_resume_score(
     resume_id: int,

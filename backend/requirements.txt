@@ -20,3 +20,4 @@ python-docx
 bleach
 PyPDF2
 resend
+python-dateutil
