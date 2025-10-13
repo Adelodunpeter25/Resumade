@@ -5,7 +5,7 @@ from app.services.resume_progress import ResumeProgressService
 from app.models.resume import Resume
 from typing import Dict
 
-router = APIRouter()
+router = APIRouter(tags=["Resumes"])
 
 @router.get("/resumes/{resume_id}/progress")
 async def get_resume_progress(
