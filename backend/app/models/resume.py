@@ -11,6 +11,11 @@ class Resume(Base):
     title = Column(String, nullable=False)
     template = Column(String, default="modern")
     
+    # Extracted fields for efficient querying
+    full_name = Column(String, index=True)  # From personal_info
+    email = Column(String, index=True)  # From personal_info
+    template_name = Column(String, index=True, default="professional-blue")  # Template identifier
+    
     # JSON fields for flexible resume data
     personal_info = Column(JSON, nullable=False)
     experience = Column(JSON, default=[])
@@ -37,8 +42,8 @@ class Resume(Base):
     ats_score = Column(Float, nullable=True)
     feedback = Column(JSON, nullable=True)
     
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
-    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), index=True)
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now(), index=True)
     
     user = relationship("User")
     progress = relationship("ResumeProgress", back_populates="resume", uselist=False, cascade="all, delete-orphan")

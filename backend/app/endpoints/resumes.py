@@ -1,6 +1,6 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Query, Request, UploadFile, File
+from fastapi import APIRouter, Depends, HTTPException, status, Query, Request, UploadFile, File, BackgroundTasks
 from fastapi.responses import Response, HTMLResponse
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import joinedload, Session
 from typing import List, Optional
 from datetime import datetime, timedelta
 import logging
@@ -41,6 +41,9 @@ def create_resume(
         user_id=current_user.id if current_user else None,
         title=resume.title,
         template=resume.template,
+        full_name=resume.personal_info.full_name,
+        email=resume.personal_info.email,
+        template_name=resume.template,
         personal_info=resume.personal_info.dict(),
         experience=[e.dict() for e in resume.experience],
         education=[e.dict() for e in resume.education],
@@ -67,9 +70,13 @@ def get_resumes(
     """Get paginated resumes for authenticated user"""
     logger.info(f"Fetching resumes for user: {current_user.email}")
     
-    query = db.query(Resume).filter(Resume.user_id == current_user.id)
+    query = db.query(Resume).options(
+        joinedload(Resume.user),
+        joinedload(Resume.progress)
+    ).filter(Resume.user_id == current_user.id)
+    
     total = query.count()
-    resumes = query.offset((page - 1) * size).limit(size).all()
+    resumes = query.order_by(Resume.updated_at.desc()).offset((page - 1) * size).limit(size).all()
     pages = (total + size - 1) // size
     
     return PaginatedResponse(
@@ -83,8 +90,9 @@ def get_resumes(
     )
 
 @router.get("/{resume_id}", response_model=APIResponse[ResumeSchema])
-def get_resume(
+async def get_resume(
     resume_id: int,
+    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
     current_user: Optional[User] = Depends(get_current_user_optional)
 ):
@@ -93,8 +101,8 @@ def get_resume(
     if not resume:
         raise HTTPException(status_code=404, detail=ResponseMessages.RESUME_NOT_FOUND)
     
-    resume.views += 1
-    db.commit()
+    # Track view in background
+    background_tasks.add_task(lambda: setattr(resume, 'views', resume.views + 1) or db.commit())
     
     if current_user and resume.user_id != current_user.id:
         raise HTTPException(status_code=403, detail=ResponseMessages.UNAUTHORIZED)
@@ -122,7 +130,11 @@ def update_resume(
             if value is not None:
                 if field == "personal_info":
                     # Handle both dict and Pydantic model
-                    setattr(resume, field, value.dict() if hasattr(value, 'dict') else value)
+                    personal_data = value.dict() if hasattr(value, 'dict') else value
+                    setattr(resume, field, personal_data)
+                    # Update extracted fields
+                    resume.full_name = personal_data.get('full_name')
+                    resume.email = personal_data.get('email')
                 else:
                     # Handle both list of dicts and list of Pydantic models
                     if value and hasattr(value[0], 'dict'):
@@ -291,10 +303,11 @@ def _generate_txt_resume(resume) -> bytes:
     return '\n'.join(lines).encode('utf-8')
 
 @router.get("/{resume_id}/export")
-def export_resume(
+async def export_resume(
     resume_id: int,
     format: str = Query("pdf", regex="^(pdf|docx|txt)$"),
     template: Optional[str] = None,
+    background_tasks: BackgroundTasks = BackgroundTasks(),
     db: Session = Depends(get_db),
     current_user: Optional[User] = Depends(get_current_user_optional)
 ):
@@ -306,9 +319,8 @@ def export_resume(
     if current_user and resume.user_id != current_user.id:
         raise HTTPException(status_code=403, detail="Not authorized")
     
-    # Track download
-    resume.downloads += 1
-    db.commit()
+    # Track download in background
+    background_tasks.add_task(lambda: setattr(resume, 'downloads', resume.downloads + 1) or db.commit())
     
     try:
         if format == "pdf":

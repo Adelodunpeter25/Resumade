@@ -6,7 +6,7 @@ class ResumeProgress(Base):
     __tablename__ = "resume_progress"
 
     id = Column(Integer, primary_key=True, index=True)
-    resume_id = Column(Integer, ForeignKey("resumes.id", ondelete="CASCADE"))
+    resume_id = Column(Integer, ForeignKey("resumes.id", ondelete="CASCADE"), index=True)
     completion_percentage = Column(Float, default=0)
     section_scores = Column(JSON, default={})
     

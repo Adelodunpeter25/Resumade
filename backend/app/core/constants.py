@@ -88,6 +88,7 @@ class DatabaseConfig:
     POOL_PRE_PING = True
     POOL_RECYCLE = 3600
     ECHO_SQL = False
+    STATEMENT_TIMEOUT = 30000  # 30 seconds in milliseconds
 
 class ResponseMessages:
     """Standardized response messages"""

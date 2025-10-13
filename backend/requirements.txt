@@ -21,3 +21,5 @@ bleach
 PyPDF2
 resend
 python-dateutil
+asyncpg
+aiofiles

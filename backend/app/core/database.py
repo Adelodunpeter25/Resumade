@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, event
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from app.core.config import settings
@@ -13,7 +13,10 @@ engine = create_engine(
     max_overflow=DatabaseConfig.MAX_OVERFLOW,
     pool_pre_ping=DatabaseConfig.POOL_PRE_PING,
     pool_recycle=DatabaseConfig.POOL_RECYCLE,
-    echo=DatabaseConfig.ECHO_SQL
+    echo=DatabaseConfig.ECHO_SQL,
+    connect_args={
+        "options": f"-c statement_timeout={DatabaseConfig.STATEMENT_TIMEOUT}"
+    }
 )
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)

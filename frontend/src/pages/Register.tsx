@@ -1,6 +1,7 @@
 import { useState } from 'react'
-import { Eye, EyeOff } from 'lucide-react'
+import { Eye, EyeOff, ArrowLeft } from 'lucide-react'
 import { authService, API_BASE_URL } from '../services'
+import { Link } from 'react-router-dom'
 
 export default function Register() {
   const [fullName, setFullName] = useState('')
@@ -57,6 +58,13 @@ export default function Register() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50 flex items-center justify-center px-4">
       <div className="max-w-md w-full">
+        <Link 
+          to="/" 
+          className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6 transition-colors"
+        >
+          <ArrowLeft size={20} />
+          Back to Home
+        </Link>
         <div className="bg-white rounded-2xl shadow-xl p-8">
           <div className="text-center mb-8">
             <div className="inline-flex items-center space-x-2 mb-4">
