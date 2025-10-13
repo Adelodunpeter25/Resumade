@@ -1,6 +1,8 @@
-# Resumade 📄
+# Resumade 
 
-A modern resume builder with ATS optimization, multiple export formats, and real-time preview.
+A full-stack resume builder with ATS optimization, real-time editing, and multiple export formats.
+Build and customize professional resumes with beautiful, responsive templates, real-time preview, and support for PDF, DOCX, and TXT exports.
+
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Python](https://img.shields.io/badge/python-3.13-blue.svg)
