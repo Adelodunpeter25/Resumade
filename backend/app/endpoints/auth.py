@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
+from datetime import datetime, timedelta
 import logging
 import secrets
 
@@ -10,10 +11,11 @@ from app.core.auth import verify_password, get_password_hash, create_access_toke
 from app.core.validation import InputValidator
 from app.core.constants import ResponseMessages, ValidationConfig
 from app.models import User
-from app.schemas.auth import Token, LoginRequest
+from app.schemas.auth import Token, LoginRequest, ForgotPasswordRequest, ResetPasswordRequest
 from app.schemas.user import UserCreate, User as UserSchema
 from app.schemas.response import APIResponse, ErrorResponse, ErrorDetail
 from app.services.oauth_service import GoogleOAuthService
+from app.services.email_service import EmailService
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 logger = logging.getLogger(__name__)
@@ -281,3 +283,40 @@ def get_current_user_info(current_user: User = Depends(get_current_user)):
     """
     logger.info(f"User info requested for: {current_user.email}")
     return current_user
+
+@router.post("/forgot-password", response_model=APIResponse[None])
+def forgot_password(request: ForgotPasswordRequest, db: Session = Depends(get_db)):
+    """Request password reset token"""
+    email = request.email.strip().lower()
+    user = db.query(User).filter(User.email == email).first()
+    
+    if user and user.hashed_password:
+        token = secrets.token_urlsafe(32)
+        user.reset_token = token
+        user.reset_token_expires = datetime.utcnow() + timedelta(hours=1)
+        db.commit()
+        logger.info(f"Password reset token generated for: {email}")
+        EmailService.send_password_reset_email(email, token)
+    
+    return APIResponse(success=True, message="If email exists, reset link sent", data=None)
+    
+    return APIResponse(success=True, message="If email exists, reset link sent", data=None)
+
+@router.post("/reset-password", response_model=APIResponse[None])
+def reset_password(request: ResetPasswordRequest, db: Session = Depends(get_db)):
+    """Reset password with token"""
+    user = db.query(User).filter(User.reset_token == request.token).first()
+    
+    if not user or not user.reset_token_expires or user.reset_token_expires < datetime.utcnow():
+        raise HTTPException(status_code=400, detail="Invalid or expired token")
+    
+    if len(request.new_password) < ValidationConfig.MIN_PASSWORD_LENGTH:
+        raise HTTPException(status_code=400, detail=f"Password must be at least {ValidationConfig.MIN_PASSWORD_LENGTH} characters")
+    
+    user.hashed_password = get_password_hash(request.new_password)
+    user.reset_token = None
+    user.reset_token_expires = None
+    db.commit()
+    
+    logger.info(f"Password reset successful for: {user.email}")
+    return APIResponse(success=True, message="Password reset successful", data=None)

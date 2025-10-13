@@ -1,11 +1,12 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 import { API_BASE_URL } from '../services/api';
 import type { Resume } from '../types';
 
 export const usePreview = (resume: Partial<Resume>) => {
   const previewIframeRef = useRef<HTMLIFrameElement>(null);
+  const timeoutRef = useRef<NodeJS.Timeout>();
 
-  useEffect(() => {
+  const updatePreview = useCallback(() => {
     if (previewIframeRef.current) {
       const iframe = previewIframeRef.current;
       const previewUrl = `${API_BASE_URL}/api/resumes/preview`;
@@ -27,6 +28,22 @@ export const usePreview = (resume: Partial<Resume>) => {
       document.body.removeChild(form);
     }
   }, [resume]);
+
+  useEffect(() => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+    
+    timeoutRef.current = setTimeout(() => {
+      updatePreview();
+    }, 300);
+
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, [updatePreview]);
 
   return { previewIframeRef };
 };

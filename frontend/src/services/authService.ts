@@ -20,5 +20,9 @@ export const authService = {
 
   forgotPassword: async (email: string): Promise<APIResponse<null>> => {
     return api.post('/api/auth/forgot-password', { email });
+  },
+
+  resetPassword: async (token: string, new_password: string): Promise<APIResponse<null>> => {
+    return api.post('/api/auth/reset-password', { token, new_password });
   }
 };

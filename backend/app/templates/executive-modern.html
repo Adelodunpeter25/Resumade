@@ -5,6 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Resume - {{ resume.personal_info.full_name }}</title>
     <style>
+        :root {
+            --primary-color: {{ resume.customization.primary_color if resume.customization and resume.customization.primary_color else '#1e3a8a' }};
+            --secondary-color: {{ resume.customization.secondary_color if resume.customization and resume.customization.secondary_color else '#3b82f6' }};
+            --font-family: '{{ resume.customization.font_family if resume.customization and resume.customization.font_family else 'Calibri' }}', 'Segoe UI', sans-serif;
+            --font-size: {{ resume.customization.font_size if resume.customization and resume.customization.font_size else '10.5' }}pt;
+            --line-height: {{ resume.customization.line_height if resume.customization and resume.customization.line_height else '1.5' }};
+            --margin: {{ resume.customization.margin if resume.customization and resume.customization.margin else '0.6' }}in;
+        }
+        
         * {
             margin: 0;
             padding: 0;
@@ -13,14 +22,14 @@
 
         @page {
             size: Letter;
-            margin: 0.6in 0.7in;
+            margin: var(--margin) calc(var(--margin) + 0.1in);
         }
 
         body {
-            font-family: 'Calibri', 'Segoe UI', sans-serif;
-            line-height: 1.5;
+            font-family: var(--font-family);
+            line-height: var(--line-height);
             color: #333;
-            font-size: 10.5pt;
+            font-size: var(--font-size);
             background: white;
         }
 

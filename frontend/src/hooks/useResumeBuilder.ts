@@ -6,6 +6,16 @@ import { useErrorHandler } from './useErrorHandler';
 import { useSaveManager } from './useSaveManager';
 
 const GUEST_RESUME_KEY = 'guest_resume';
+const MAX_STORAGE_SIZE = 20 * 1024 * 1024; // 20MB
+
+const getStorageSize = (data: string): number => {
+  return new Blob([data]).size;
+};
+
+const canStoreData = (data: string): boolean => {
+  const size = getStorageSize(data);
+  return size <= MAX_STORAGE_SIZE;
+};
 
 export const useResumeBuilder = (id?: string) => {
   const navigate = useNavigate();
@@ -104,7 +114,16 @@ export const useResumeBuilder = (id?: string) => {
 
   const performSave = async () => {
     if (!isAuthenticated) {
-      localStorage.setItem(GUEST_RESUME_KEY, JSON.stringify(resume));
+      const data = JSON.stringify(resume);
+      if (!canStoreData(data)) {
+        const sizeMB = (getStorageSize(data) / (1024 * 1024)).toFixed(2);
+        showError(
+          new Error(`Resume data (${sizeMB}MB) exceeds 20MB limit. Please login to save larger resumes.`),
+          'Storage Limit Exceeded'
+        );
+        return;
+      }
+      localStorage.setItem(GUEST_RESUME_KEY, data);
     } else if (id && id !== 'new') {
       await resumeService.updateResume(Number(id), resume);
     } else {

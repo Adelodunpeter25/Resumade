@@ -22,6 +22,10 @@ class Settings(BaseSettings):
     # Frontend URL
     frontend_url: str = ""
     
+    # Resend Email settings
+    resend_api_key: str = ""
+    email_from: str = "Resumade <noreply@resumade.com>"
+    
     class Config:
         env_file = ".env"
 

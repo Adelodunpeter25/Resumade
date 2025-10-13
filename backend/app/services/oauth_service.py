@@ -1,6 +1,7 @@
 """OAuth authentication service"""
 import httpx
 from typing import Optional, Dict
+from urllib.parse import urlencode
 from app.core.config import settings
 
 class GoogleOAuthService:
@@ -23,8 +24,7 @@ class GoogleOAuthService:
             "prompt": "consent"
         }
         
-        query_string = "&".join([f"{k}={v}" for k, v in params.items()])
-        return f"{GoogleOAuthService.GOOGLE_AUTH_URL}?{query_string}"
+        return f"{GoogleOAuthService.GOOGLE_AUTH_URL}?{urlencode(params)}"
     
     @staticmethod
     async def exchange_code_for_token(code: str) -> Optional[Dict]:

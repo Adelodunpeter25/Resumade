@@ -12,4 +12,6 @@ class User(Base):
     is_active = Column(Boolean, default=True)
     oauth_provider = Column(String, nullable=True)  # 'google', 'github', etc.
     oauth_id = Column(String, nullable=True)  # Provider's user ID
+    reset_token = Column(String, nullable=True)
+    reset_token_expires = Column(DateTime(timezone=True), nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())

@@ -19,3 +19,4 @@ supabase
 python-docx
 bleach
 PyPDF2
+resend
