@@ -156,66 +156,6 @@ resumade/
 
 ---
 
-## 🔧 Configuration
-
-### Backend Environment Variables
-
-```env
-# Database
-DATABASE_URL=postgresql://user:password@localhost:5432/resumade
-
-# Security
-SECRET_KEY=your-secret-key-here
-DEBUG=False
-
-# JWT
-JWT_ALGORITHM=HS256
-ACCESS_TOKEN_EXPIRE_MINUTES=30
-
-# Supabase Storage
-SUPABASE_URL=https://your-project.supabase.co
-SERVICE_ROLE=your-service-role-key
-BUCKET_NAME=resumes
-
-# Google OAuth
-GOOGLE_CLIENT_ID=your-client-id.apps.googleusercontent.com
-GOOGLE_CLIENT_SECRET=your-client-secret
-GOOGLE_REDIRECT_URI=http://localhost:8000/api/auth/google/callback
-
-# Frontend URL
-FRONTEND_URL=http://localhost:3000
-
-# Email (Resend)
-RESEND_API_KEY=re_your_api_key
-EMAIL_FROM=Resumade <noreply@yourdomain.com>
-```
-
-### Frontend Environment Variables
-
-```env
-VITE_API_URL=http://localhost:8000
-```
-
----
-
----
-
-## 🧪 Testing
-
-### Backend Tests
-```bash
-cd backend
-pytest
-```
-
-### Frontend Tests
-```bash
-cd frontend
-npm test
-```
-
----
-
 ## 🚀 Deployment
 
 ### Backend (Production)
@@ -232,7 +172,7 @@ export DATABASE_URL=your-production-db-url
 alembic upgrade head
 
 # Start backend server
-uvicorn app.main:app --port 8000 --log-level info
+uvicorn app.main:app --port 8000
 
 ### Frontend (Production)
 
