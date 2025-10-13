@@ -1,10 +1,13 @@
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef, useCallback, useMemo } from 'react';
 import { API_BASE_URL } from '../services/api';
 import type { Resume } from '../types';
 
 export const usePreview = (resume: Partial<Resume>) => {
   const previewIframeRef = useRef<HTMLIFrameElement>(null);
   const timeoutRef = useRef<ReturnType<typeof setTimeout>>();
+
+  // Memoize serialized resume to prevent unnecessary updates
+  const resumeJson = useMemo(() => JSON.stringify(resume), [resume]);
 
   const updatePreview = useCallback(() => {
     if (previewIframeRef.current) {
@@ -20,14 +23,14 @@ export const usePreview = (resume: Partial<Resume>) => {
       const input = document.createElement('input');
       input.type = 'hidden';
       input.name = 'resume_data';
-      input.value = JSON.stringify(resume);
+      input.value = resumeJson;
       
       form.appendChild(input);
       document.body.appendChild(form);
       form.submit();
       document.body.removeChild(form);
     }
-  }, [resume]);
+  }, [resumeJson]);
 
   useEffect(() => {
     if (timeoutRef.current) {

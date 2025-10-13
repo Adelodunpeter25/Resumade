@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import { useState } from 'react';
 import type { Resume } from '../../types';
 import RichTextEditor from '../common/RichTextEditor';
@@ -8,7 +9,7 @@ interface Props {
   onChange: (field: string, value: any) => void;
 }
 
-export default function ExperienceForm({ data, onChange }: Props) {
+function ExperienceForm({ data, onChange }: Props) {
   const [experiences, setExperiences] = useState(data.experience || []);
 
   const addExperience = () => {
@@ -167,3 +168,5 @@ export default function ExperienceForm({ data, onChange }: Props) {
     </div>
   );
 }
+
+export default memo(ExperienceForm)

@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import { Plus, Trash2 } from 'lucide-react'
 import type { Resume, Education } from '../../types'
 
@@ -6,7 +7,7 @@ interface Props {
   onChange: (field: string, value: any) => void
 }
 
-export default function EducationForm({ data, onChange }: Props) {
+function EducationForm({ data, onChange }: Props) {
   const education = data.education || []
 
   const addEducation = () => {
@@ -146,3 +147,5 @@ export default function EducationForm({ data, onChange }: Props) {
     </div>
   )
 }
+
+export default memo(EducationForm)

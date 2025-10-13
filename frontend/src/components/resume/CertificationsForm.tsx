@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import { Plus, Trash2 } from 'lucide-react'
 import type { Resume, Certification } from '../../types'
 
@@ -6,7 +7,7 @@ interface Props {
   onChange: (field: string, value: any) => void
 }
 
-export default function CertificationsForm({ data, onChange }: Props) {
+function CertificationsForm({ data, onChange }: Props) {
   const certifications = data.certifications || []
 
   const addCertification = () => {
@@ -104,3 +105,5 @@ export default function CertificationsForm({ data, onChange }: Props) {
     </div>
   )
 }
+
+export default memo(CertificationsForm)

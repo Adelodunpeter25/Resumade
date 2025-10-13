@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import { Plus, Trash2 } from 'lucide-react'
 import type { Resume, Skill } from '../../types'
 
@@ -6,7 +7,7 @@ interface Props {
   onChange: (field: string, value: any) => void
 }
 
-export default function SkillsForm({ data, onChange }: Props) {
+function SkillsForm({ data, onChange }: Props) {
   const skills = data.skills || []
 
   const addSkill = () => {
@@ -79,3 +80,5 @@ export default function SkillsForm({ data, onChange }: Props) {
     </div>
   )
 }
+
+export default memo(SkillsForm)

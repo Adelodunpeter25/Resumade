@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import { Plus, Trash2, X } from 'lucide-react'
 import { useState } from 'react'
 import type { Resume, Project } from '../../types'
@@ -8,7 +9,7 @@ interface Props {
   onChange: (field: string, value: any) => void
 }
 
-export default function ProjectsForm({ data, onChange }: Props) {
+function ProjectsForm({ data, onChange }: Props) {
   const projects = data.projects || []
   const [techInput, setTechInput] = useState<{ [key: number]: string }>({})
 
@@ -154,3 +155,5 @@ export default function ProjectsForm({ data, onChange }: Props) {
     </div>
   )
 }
+
+export default memo(ProjectsForm)

@@ -1,3 +1,4 @@
+import { memo, useCallback } from 'react'
 import type { Resume } from '../../types'
 import RichTextEditor from '../common/RichTextEditor'
 
@@ -6,10 +7,10 @@ interface Props {
   onChange: (field: string, value: any) => void
 }
 
-export default function PersonalInfoForm({ data, onChange }: Props) {
-  const updateField = (field: string, value: string) => {
+function PersonalInfoForm({ data, onChange }: Props) {
+  const updateField = useCallback((field: string, value: string) => {
     onChange('personal_info', { ...data.personal_info, [field]: value })
-  }
+  }, [data.personal_info, onChange])
 
   return (
     <div className="space-y-6">
@@ -108,3 +109,5 @@ export default function PersonalInfoForm({ data, onChange }: Props) {
     </div>
   )
 }
+
+export default memo(PersonalInfoForm)
