@@ -71,7 +71,7 @@ Build and customize professional resumes with beautiful, responsive templates, r
 
 #### 1. Clone the repository
 ```bash
-git clone https://github.com/Adelodunpeter25/resumade.git
+git clone https://github.com/Adelodunpeter25/Resumade.git
 cd resumade
 ```
 
@@ -153,39 +153,6 @@ resumade/
 │
 └── README.md
 ```
-
----
-
-## 🚀 Deployment
-
-### Backend (Production)
-
-```bash
-# Install production dependencies
-pip install -r requirements.txt
-
-# Set production environment variables
-export DEBUG=False
-export DATABASE_URL=your-production-db-url
-
-# Run migrations
-alembic upgrade head
-
-# Start backend server
-uvicorn app.main:app --port 8000
-
-### Frontend (Production)
-
-```bash
-# Build for production
-npm run build
-
-# Start frontend server
-npm run dev
-```
-
----
-
 ---
 
 ## 📝 License
