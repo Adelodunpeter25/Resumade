@@ -5,6 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Resume - {{ resume.personal_info.full_name }}</title>
     <style>
+        :root {
+            --primary-color: {{ resume.customization.primary_color if resume.customization and resume.customization.primary_color else '#0a66c2' }};
+            --secondary-color: {{ resume.customization.secondary_color if resume.customization and resume.customization.secondary_color else '#004182' }};
+            --font-family: '{{ resume.customization.font_family if resume.customization and resume.customization.font_family else '-apple-system' }}', system-ui, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            --font-size: {{ resume.customization.font_size if resume.customization and resume.customization.font_size else '14' }}px;
+            --line-height: {{ resume.customization.line_height if resume.customization and resume.customization.line_height else '1.5' }};
+            --margin: {{ resume.customization.margin if resume.customization and resume.customization.margin else '0.5' }}in;
+        }
+        
         * {
             margin: 0;
             padding: 0;
@@ -13,14 +22,14 @@
 
         @page {
             size: Letter;
-            margin: 0.5in;
+            margin: var(--margin);
         }
 
         body {
-            font-family: -apple-system, system-ui, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
-            line-height: 1.5;
+            font-family: var(--font-family);
+            line-height: var(--line-height);
             color: rgba(0, 0, 0, 0.9);
-            font-size: 14px;
+            font-size: var(--font-size);
             background: white;
         }
 
@@ -31,7 +40,7 @@
         }
 
         .profile-header {
-            background: linear-gradient(to bottom, #0a66c2 120px, white 120px);
+            background: linear-gradient(to bottom, var(--primary-color) 120px, white 120px);
             padding-bottom: 20px;
             margin-bottom: 20px;
         }
