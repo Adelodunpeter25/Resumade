@@ -13,11 +13,12 @@ Build and customize professional resumes with beautiful, responsive templates, r
 ### Core Features
 - 🎨 **Multiple Professional Templates** - Choose from modern, professional designs
 - 📝 **Real-time Preview** - See changes instantly as you type
-- 🤖 **ATS Optimization** - Automated scoring and feedback for applicant tracking systems
+- 🤖 **AI-Powered ATS Optimization** - Google Gemini AI provides intelligent scoring and personalized recommendations
 - 📊 **Skill Validation** - 127+ validated technical and soft skills
 - 📄 **Multiple Export Formats** - PDF, DOCX, and TXT
 - 📤 **PDF Upload & Parse** - Extract data from existing resumes
 - 📜 **Version History** - Track and restore previous versions (Authenticated user)
+- 🔗 **Smart Resume Sharing** - Generate shareable links with custom expiration
 - 🎨 **Template Customization** - Customize colors, fonts, and layout
 - 📱 **Responsive Design** - Works on desktop, tablet, and mobile
 
@@ -26,6 +27,12 @@ Build and customize professional resumes with beautiful, responsive templates, r
 - 🔑 **Google OAuth Integration**
 - 🔒 **Password Reset via Email**
 - 👤 **Guest Mode** - Create resumes without signing up
+
+### AI & Sharing Features
+- 🧠 **Gemini AI Integration** - Get 4-6 intelligent recommendations covering all resume sections
+- 📈 **Dynamic ATS Scoring** - Role-level aware scoring (entry/mid/senior) with job description matching
+- ⏰ **Expiration Control** - Set custom expiration dates (1-365 days) for shared links
+- 🔒 **Share Link Management** - View, manage, and deactivate shared resumes from dashboard
 
 
 ---
@@ -48,6 +55,7 @@ Build and customize professional resumes with beautiful, responsive templates, r
 - **Alembic** - Database migrations
 - **WeasyPrint** - PDF generation
 - **python-docx** - DOCX generation
+- **Google Gemini AI** - AI-powered resume feedback
 - **Resend** - Email service
 - **Supabase** - File storage
 
