@@ -33,8 +33,8 @@ export default function Dashboard() {
       }
 
       if (resumesRes.success && resumesRes.data) {
-        setResumes(resumesRes.data.items)
-        setTotal(resumesRes.data.total)
+        setResumes(resumesRes.data.data || [])
+        setTotal(resumesRes.data.total || 0)
       }
     } catch (err) {
       console.error('Failed to load data:', err)
@@ -127,7 +127,7 @@ export default function Dashboard() {
               <div>
                 <p className="text-sm text-gray-600">Avg ATS Score</p>
                 <p className="text-3xl font-bold text-gray-900">
-                  {resumes.length > 0
+                  {resumes && resumes.length > 0
                     ? Math.round(resumes.reduce((acc, r) => acc + (r.ats_score || 0), 0) / resumes.length)
                     : 0}
                 </p>
@@ -140,7 +140,7 @@ export default function Dashboard() {
               <div>
                 <p className="text-sm text-gray-600">Templates Used</p>
                 <p className="text-3xl font-bold text-gray-900">
-                  {new Set(resumes.map(r => r.template_name)).size}
+                  {resumes && resumes.length > 0 ? new Set(resumes.map(r => r.template_name)).size : 0}
                 </p>
               </div>
               <div className="text-4xl">🎨</div>
@@ -163,7 +163,7 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {resumes.length === 0 ? (
+          {!resumes || resumes.length === 0 ? (
             <div className="p-12 text-center">
               <FileText className="mx-auto text-gray-400 mb-4" size={64} />
               <h3 className="text-xl font-semibold text-gray-900 mb-2">No resumes yet</h3>

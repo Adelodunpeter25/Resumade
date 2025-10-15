@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, Float, ForeignKey, JSON
 from sqlalchemy.orm import relationship
-from app.core.database import Base
+from app.core.base import Base
 
 class ResumeProgress(Base):
     __tablename__ = "resume_progress"
