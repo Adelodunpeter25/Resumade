@@ -94,88 +94,17 @@ export default function SharedResume() {
       </header>
 
       {/* Resume Content */}
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="bg-white rounded-lg shadow p-8">
-          {/* Personal Info */}
-          <div className="mb-8 text-center border-b border-gray-200 pb-6">
-            <h2 className="text-3xl font-bold text-gray-900 mb-2">
-              {resume.personal_info.full_name}
-            </h2>
-            <div className="flex flex-wrap justify-center gap-4 text-gray-600">
-              <span>{resume.personal_info.email}</span>
-              <span>•</span>
-              <span>{resume.personal_info.phone}</span>
-              <span>•</span>
-              <span>{resume.personal_info.location}</span>
-            </div>
-            {resume.personal_info.summary && (
-              <p className="mt-4 text-gray-700">{resume.personal_info.summary}</p>
-            )}
-          </div>
-
-          {/* Experience */}
-          {resume.experience.length > 0 && (
-            <div className="mb-8">
-              <h3 className="text-xl font-bold text-gray-900 mb-4">Experience</h3>
-              <div className="space-y-4">
-                {resume.experience.map((exp, index) => (
-                  <div key={index}>
-                    <div className="flex justify-between items-start mb-1">
-                      <div>
-                        <h4 className="font-semibold text-gray-900">{exp.position}</h4>
-                        <p className="text-gray-700">{exp.company}</p>
-                      </div>
-                      <span className="text-sm text-gray-600">
-                        {exp.start_date} - {exp.current ? 'Present' : exp.end_date}
-                      </span>
-                    </div>
-                    <p className="text-gray-600 text-sm">{exp.description}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Education */}
-          {resume.education.length > 0 && (
-            <div className="mb-8">
-              <h3 className="text-xl font-bold text-gray-900 mb-4">Education</h3>
-              <div className="space-y-4">
-                {resume.education.map((edu, index) => (
-                  <div key={index}>
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <h4 className="font-semibold text-gray-900">{edu.degree} in {edu.field_of_study}</h4>
-                        <p className="text-gray-700">{edu.institution}</p>
-                      </div>
-                      <span className="text-sm text-gray-600">
-                        {edu.start_date} - {edu.end_date || 'Present'}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Skills */}
-          {resume.skills.length > 0 && (
-            <div className="mb-8">
-              <h3 className="text-xl font-bold text-gray-900 mb-4">Skills</h3>
-              <div className="flex flex-wrap gap-2">
-                {resume.skills.map((skill, index) => (
-                  <span
-                    key={index}
-                    className="px-3 py-1 bg-emerald-100 text-emerald-700 rounded-full text-sm"
-                  >
-                    {skill.name} - {skill.level}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="bg-white rounded-lg shadow overflow-hidden">
+          <iframe
+            src={`http://localhost:8001/api/resumes/templates/preview?template=${resume.template}&resume_id=${resume.id}`}
+            className="w-full border-0"
+            style={{ height: '1100px' }}
+            title="Resume Preview"
+          />
         </div>
       </main>
     </div>
   )
 }
+

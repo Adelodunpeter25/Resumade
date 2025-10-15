@@ -722,7 +722,7 @@ def create_share_link(
         data={"token": share_link.token, "expires_at": share_link.expires_at}
     )
 
-@router.get("/shared/{token}")
+@router.get("/shared/{token}", response_model=APIResponse[ResumeSchema])
 def get_shared_resume(token: str, db: Session = Depends(get_db)):
     """Access resume via public share link"""
     share_link = db.query(ShareLink).filter(ShareLink.token == token, ShareLink.is_active == True).first()
@@ -744,7 +744,7 @@ def get_shared_resume(token: str, db: Session = Depends(get_db)):
     resume.views += 1
     db.commit()
     
-    return APIResponse(success=True, message="Resume retrieved", data=resume)
+    return APIResponse(success=True, message="Resume retrieved", data=ResumeSchema.from_orm(resume))
 
 @router.delete("/{resume_id}/share/{token}")
 def delete_share_link(
