@@ -2,6 +2,7 @@ import re
 from typing import Dict, List
 from difflib import SequenceMatcher
 from functools import lru_cache
+from app.core.constants import ATSConstants
 
 class ATSService:
     """Enhanced ATS compatibility checking and resume scoring"""
@@ -37,7 +38,7 @@ class ATSService:
     # ==================== UTILITY METHODS ====================
     
     @staticmethod
-    def fuzzy_match(text: str, keyword: str, threshold: float = 0.85) -> bool:
+    def fuzzy_match(text: str, keyword: str, threshold: float = ATSConstants.FUZZY_MATCH_THRESHOLD) -> bool:
         """Fuzzy string matching for keyword detection"""
         text = text.lower().strip()
         keyword = keyword.lower().strip()
@@ -49,7 +50,7 @@ class ATSService:
         return ratio >= threshold
     
     @staticmethod
-    @lru_cache(maxsize=256)
+    @lru_cache(maxsize=ATSConstants.LRU_CACHE_SIZE)
     def normalize_text(text: str) -> str:
         """Normalize text for better matching"""
         if not text:
@@ -60,7 +61,7 @@ class ATSService:
         return text.strip()
     
     @staticmethod
-    @lru_cache(maxsize=128)
+    @lru_cache(maxsize=ATSConstants.JD_KEYWORDS_CACHE_SIZE)
     def extract_keywords_from_job_description(job_description: str) -> List[str]:
         """Extract key terms from job description"""
         if not job_description:
@@ -72,7 +73,7 @@ class ATSService:
         common_words = {"the", "and", "for", "with", "this", "that", "from", "have", "will", "your"}
         keywords = [w for w in words if len(w) > 3 and w not in common_words]
         
-        return list(set(keywords))[:20]
+        return list(set(keywords))[:ATSConstants.MAX_JD_KEYWORDS]
     
     @staticmethod
     def detect_quantifiable_achievements(text: str) -> int:
@@ -284,14 +285,8 @@ class ATSService:
     def calculate_ats_score(resume_data: dict, job_description: str = None, role_level: str = "mid") -> Dict:
         """Calculate comprehensive ATS score with dynamic weighting"""
         
-        # Dynamic weights based on role level
-        weights = {
-            "entry": {"personal_info": 0.20, "experience": 0.25, "education": 0.25, "skills": 0.20, "certifications": 0.05, "projects": 0.05},
-            "mid": {"personal_info": 0.15, "experience": 0.35, "education": 0.15, "skills": 0.25, "certifications": 0.05, "projects": 0.05},
-            "senior": {"personal_info": 0.10, "experience": 0.45, "education": 0.10, "skills": 0.25, "certifications": 0.05, "projects": 0.05}
-        }
-        
-        weight_set = weights.get(role_level, weights["mid"])
+        # Get weights based on role level
+        weight_set = ATSConstants.ROLE_WEIGHTS.get(role_level, ATSConstants.ROLE_WEIGHTS["mid"])
         
         # Score each section
         section_scores = {
@@ -314,6 +309,9 @@ class ATSService:
             if section_result["feedback"]:
                 all_feedback.extend([f"{section_name.replace('_', ' ').title()}: {fb}" for fb in section_result["feedback"]])
         
+        # Limit feedback items
+        all_feedback = all_feedback[:ATSConstants.MAX_FEEDBACK_ITEMS]
+        
         # Check formatting
         formatting = ATSService.check_formatting_issues(resume_data)
         if formatting["has_issues"]:
@@ -328,7 +326,7 @@ class ATSService:
             match_bonus = min(matches * 0.5, 5)
             total_weighted_score += match_bonus
             
-            if matches < len(jd_keywords) * 0.3:
+            if matches < len(jd_keywords) * ATSConstants.JD_MATCH_THRESHOLD:
                 all_feedback.append(f"Tailor resume to job description - include keywords: {', '.join(jd_keywords[:5])}")
         
         final_score = max(0, min(100, total_weighted_score))
@@ -338,7 +336,7 @@ class ATSService:
             "max_score": 100,
             "percentage": round(final_score, 1),
             "grade": ATSService._get_grade(final_score),
-            "feedback": all_feedback[:10],
+            "feedback": all_feedback,
             "section_breakdown": {
                 name: {
                     "score": result["score"],

@@ -2,13 +2,17 @@ from cachetools import TTLCache
 from functools import wraps
 import hashlib
 import json
+from app.core.constants import CacheConstants
 
-# In-memory cache with 1 hour TTL, max 100 items
-template_cache = TTLCache(maxsize=100, ttl=3600)
+# In-memory cache for templates
+template_cache = TTLCache(maxsize=CacheConstants.TEMPLATE_CACHE_SIZE, ttl=CacheConstants.TEMPLATE_CACHE_TTL)
 
 def cache_key(*args, **kwargs):
     """Generate cache key from arguments"""
-    key_data = json.dumps({"args": args, "kwargs": kwargs}, sort_keys=True)
+    # Convert args to strings, skip first arg if it's self/cls
+    safe_args = [str(arg) for arg in args[1:]] if args and hasattr(args[0], '__dict__') else [str(arg) for arg in args]
+    safe_kwargs = {k: str(v) for k, v in kwargs.items()}
+    key_data = json.dumps({"args": safe_args, "kwargs": safe_kwargs}, sort_keys=True)
     return hashlib.md5(key_data.encode()).hexdigest()
 
 def cached(cache):

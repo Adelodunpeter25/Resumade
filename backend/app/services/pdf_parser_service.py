@@ -4,6 +4,7 @@ from io import BytesIO
 from typing import Dict, List, Tuple
 from dateutil import parser as date_parser
 import logging
+from app.core.constants import ATSConstants
 
 logger = logging.getLogger(__name__)
 
@@ -399,7 +400,7 @@ class PDFParserService:
                         "level": "Intermediate"
                     })
         
-        return skills[:25]  # Limit to 25 skills
+        return skills[:ATSConstants.MAX_SKILLS]
     
     @staticmethod
     def _extract_projects(lines: List[str]) -> List[Dict]:

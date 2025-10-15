@@ -59,6 +59,7 @@ class ValidationConfig:
     """Input validation limits"""
     MAX_RESUME_TITLE_LENGTH = 200
     MAX_NAME_LENGTH = 100
+    MIN_NAME_LENGTH = 2
     MAX_EMAIL_LENGTH = 255
     MAX_PHONE_LENGTH = 20
     MAX_LOCATION_LENGTH = 200
@@ -103,3 +104,53 @@ class ResponseMessages:
     USER_CREATED = "User account created successfully"
     LOGIN_SUCCESS = "Login successful"
     INVALID_CREDENTIALS = "Invalid email or password"
+
+class ATSConstants:
+    """ATS scoring and processing constants"""
+    MAX_SKILLS = 25
+    MIN_SKILLS_RECOMMENDED = 8
+    MAX_FEEDBACK_ITEMS = 10
+    FUZZY_MATCH_THRESHOLD = 0.85
+    JD_MATCH_THRESHOLD = 0.3
+    MAX_JD_KEYWORDS = 20
+    LRU_CACHE_SIZE = 256
+    JD_KEYWORDS_CACHE_SIZE = 128
+    
+    ROLE_WEIGHTS = {
+        "entry": {
+            "personal_info": 0.20,
+            "experience": 0.25,
+            "education": 0.25,
+            "skills": 0.20,
+            "certifications": 0.05,
+            "projects": 0.05
+        },
+        "mid": {
+            "personal_info": 0.15,
+            "experience": 0.35,
+            "education": 0.15,
+            "skills": 0.25,
+            "certifications": 0.05,
+            "projects": 0.05
+        },
+        "senior": {
+            "personal_info": 0.10,
+            "experience": 0.45,
+            "education": 0.10,
+            "skills": 0.25,
+            "certifications": 0.05,
+            "projects": 0.05
+        }
+    }
+
+class FileConstants:
+    """File upload and processing constants"""
+    MAX_PDF_SIZE_MB = 10
+    MAX_PDF_SIZE_BYTES = 10 * 1024 * 1024
+    ALLOWED_EXTENSIONS = ['.pdf']
+
+class CacheConstants:
+    """Caching configuration"""
+    TEMPLATE_CACHE_TTL = 3600  # 1 hour
+    TEMPLATE_CACHE_SIZE = 100
+    TEMPLATE_LIST_CACHE_TTL = 86400  # 24 hours

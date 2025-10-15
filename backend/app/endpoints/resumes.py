@@ -9,6 +9,7 @@ from app.core.database import get_db
 from app.core.auth import get_current_user_optional, get_current_user
 from app.core.constants import ResponseMessages
 from app.core.rate_limit import limiter, RATE_LIMITS
+from app.core.constants import FileConstants
 from app.models import Resume, User, ResumeVersion, ShareLink
 from app.schemas import Resume as ResumeSchema, ResumeCreate, ResumeUpdate
 from app.schemas.response import APIResponse, PaginatedResponse
@@ -434,10 +435,10 @@ async def parse_pdf_resume(request: Request, file: UploadFile = File(...)):
     if not file.filename.lower().endswith('.pdf'):
         raise HTTPException(status_code=400, detail="File must be a PDF")
     
-    # Check file size (max 10MB)
+    # Check file size
     content = await file.read()
-    if len(content) > 10 * 1024 * 1024:
-        raise HTTPException(status_code=400, detail="File size exceeds 10MB limit")
+    if len(content) > FileConstants.MAX_PDF_SIZE_BYTES:
+        raise HTTPException(status_code=400, detail=f"File size exceeds {FileConstants.MAX_PDF_SIZE_MB}MB limit")
     
     try:
         

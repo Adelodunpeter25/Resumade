@@ -7,9 +7,10 @@ from app.models import Resume
 from app.services.storage_service import StorageService
 from app.core.cache import cached, template_cache
 from cachetools import TTLCache
+from app.core.constants import CacheConstants
 
 logger = logging.getLogger(__name__)
-template_list_cache = TTLCache(maxsize=1, ttl=86400)  # 24 hours
+template_list_cache = TTLCache(maxsize=1, ttl=CacheConstants.TEMPLATE_LIST_CACHE_TTL)
 
 class PDFService:
     

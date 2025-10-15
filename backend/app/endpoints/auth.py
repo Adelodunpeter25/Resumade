@@ -9,8 +9,8 @@ from app.core.database import get_db
 from app.core.config import settings
 from app.core.auth import verify_password, get_password_hash, create_access_token, get_current_user
 from app.core.validation import InputValidator
-from app.core.constants import ResponseMessages, ValidationConfig
 from app.core.rate_limit import limiter, RATE_LIMITS
+from app.core.constants import ResponseMessages, ValidationConfig
 from app.models import User
 from app.schemas.auth import Token, LoginRequest, ForgotPasswordRequest, ResetPasswordRequest
 from app.schemas.user import UserCreate, User as UserSchema
@@ -58,12 +58,12 @@ def signup(
     email = user.email.strip().lower()
     full_name = InputValidator.sanitize_text(user.full_name, ValidationConfig.MAX_NAME_LENGTH)
     
-    if not full_name or len(full_name) < 2:
+    if not full_name or len(full_name) < ValidationConfig.MIN_NAME_LENGTH:
         raise HTTPException(
             status_code=400,
             detail=ErrorResponse(
                 message=ResponseMessages.INVALID_INPUT,
-                errors=[ErrorDetail(field="full_name", message="Name must be at least 2 characters")]
+                errors=[ErrorDetail(field="full_name", message=f"Name must be at least {ValidationConfig.MIN_NAME_LENGTH} characters")]
             ).dict()
         )
     
