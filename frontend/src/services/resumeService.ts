@@ -30,8 +30,8 @@ export const resumeService = {
     return api.post(`/api/resumes/${id}/versions`, {});
   },
 
-  createShareLink: async (id: number, expires_in_days: number): Promise<APIResponse<ShareLink>> => {
-    return api.post(`/api/resumes/${id}/share`, { expires_in_days });
+  createShareLink: async (id: number, expiresInDays: number): Promise<APIResponse<ShareLink>> => {
+    return api.post(`/api/resumes/${id}/share?expires_in_days=${expiresInDays}`, {});
   },
 
   getShareLinks: async (id: number): Promise<APIResponse<ShareLink[]>> => {

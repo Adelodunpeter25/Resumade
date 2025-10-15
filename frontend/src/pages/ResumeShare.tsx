@@ -5,8 +5,8 @@ import { resumeService } from '../services'
 import type { ShareLink } from '../types'
 
 export default function ResumeShare() {
-  const { id } = useParams()
   const navigate = useNavigate()
+  const [resumes, setResumes] = useState<any[]>([])
   const [shareLinks, setShareLinks] = useState<ShareLink[]>([])
   const [loading, setLoading] = useState(true)
   const [creating, setCreating] = useState(false)
@@ -14,58 +14,53 @@ export default function ResumeShare() {
   const [copiedToken, setCopiedToken] = useState<string | null>(null)
 
   useEffect(() => {
-    if (id) {
-      loadShareLinks()
-    }
-  }, [id])
+    loadData()
+  }, [])
 
-  const loadShareLinks = async () => {
+  const loadData = async () => {
     try {
-      const response = await resumeService.getShareLinks(Number(id))
-      if (response.success && response.data) {
-        setShareLinks(response.data)
+      const resumesRes = await resumeService.getResumes(1, 100)
+      if (resumesRes.success && resumesRes.data) {
+        setResumes(resumesRes.data.items || [])
+        
+        const allLinks: ShareLink[] = []
+        for (const resume of resumesRes.data.items || []) {
+          const linksRes = await resumeService.getShareLinks(resume.id)
+          if (linksRes.success && linksRes.data) {
+            allLinks.push(...linksRes.data)
+          }
+        }
+        setShareLinks(allLinks)
       }
     } catch (err) {
-      alert('Failed to load share links')
+      alert('Failed to load data')
     } finally {
       setLoading(false)
     }
   }
 
-  const createShareLink = async () => {
-    setCreating(true)
-    try {
-      const response = await resumeService.createShareLink(Number(id), expiresIn)
-      if (response.success && response.data) {
-        setShareLinks([...shareLinks, response.data])
-      }
-    } catch (err) {
-      alert('Failed to create share link')
-    } finally {
-      setCreating(false)
-    }
-  }
 
-  const deleteShareLink = async (token: string) => {
+
+  const deleteShareLink = async (resumeId: number, token: string) => {
     if (!confirm('Delete this share link?')) return
 
     try {
-      await resumeService.deleteShareLink(Number(id), token)
+      await resumeService.deleteShareLink(resumeId, token)
       setShareLinks(shareLinks.filter(link => link.token !== token))
     } catch (err) {
       alert('Failed to delete share link')
     }
   }
 
-  const copyToClipboard = (token: string) => {
-    const url = `${window.location.origin}/shared/${token}`
+  const copyToClipboard = (link: ShareLink) => {
+    const url = `${window.location.origin}/shared/${link.slug || link.token}`
     navigator.clipboard.writeText(url)
-    setCopiedToken(token)
+    setCopiedToken(link.token)
     setTimeout(() => setCopiedToken(null), 2000)
   }
 
-  const openLink = (token: string) => {
-    window.open(`${window.location.origin}/shared/${token}`, '_blank')
+  const openLink = (link: ShareLink) => {
+    window.open(`${window.location.origin}/shared/${link.slug || link.token}`, '_blank')
   }
 
   if (loading) {
@@ -83,48 +78,18 @@ export default function ResumeShare() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center gap-4">
             <button
-              onClick={() => navigate(`/resume/${id}`)}
+              onClick={() => navigate('/dashboard')}
               className="p-2 hover:bg-gray-100 rounded-lg"
             >
               <ArrowLeft size={20} />
             </button>
-            <h1 className="text-xl font-bold text-gray-900">Share Resume</h1>
+            <h1 className="text-xl font-bold text-gray-900">Manage Share Links</h1>
           </div>
         </div>
       </header>
 
       {/* Main Content */}
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Create New Link */}
-        <div className="bg-white rounded-lg shadow p-6 mb-6">
-          <h2 className="text-lg font-bold text-gray-900 mb-4">Create Share Link</h2>
-          <div className="flex gap-4">
-            <div className="flex-1">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Expires in (days)
-              </label>
-              <input
-                type="number"
-                min="1"
-                max="365"
-                value={expiresIn}
-                onChange={(e) => setExpiresIn(Number(e.target.value))}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
-              />
-            </div>
-            <div className="flex items-end">
-              <button
-                onClick={createShareLink}
-                disabled={creating}
-                className="flex items-center gap-2 bg-gradient-to-r from-emerald-600 to-teal-600 text-white px-6 py-2 rounded-lg hover:from-emerald-700 hover:to-teal-700 disabled:opacity-50"
-              >
-                <Plus size={20} />
-                <span>{creating ? 'Creating...' : 'Create Link'}</span>
-              </button>
-            </div>
-          </div>
-        </div>
-
         {/* Active Links */}
         <div className="bg-white rounded-lg shadow">
           <div className="p-6 border-b border-gray-200">
@@ -169,13 +134,13 @@ export default function ResumeShare() {
                         </div>
                         <div className="flex items-center gap-2 bg-gray-50 px-3 py-2 rounded-lg">
                           <code className="text-sm text-gray-700 flex-1 truncate">
-                            {window.location.origin}/shared/{link.token}
+                            {window.location.origin}/shared/{link.slug || link.token}
                           </code>
                         </div>
                       </div>
                       <div className="flex items-center gap-2 ml-4">
                         <button
-                          onClick={() => copyToClipboard(link.token)}
+                          onClick={() => copyToClipboard(link)}
                           className="p-2 text-gray-600 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg"
                           title="Copy link"
                         >
@@ -186,14 +151,14 @@ export default function ResumeShare() {
                           )}
                         </button>
                         <button
-                          onClick={() => openLink(link.token)}
+                          onClick={() => openLink(link)}
                           className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg"
                           title="Open link"
                         >
                           <ExternalLink size={20} />
                         </button>
                         <button
-                          onClick={() => deleteShareLink(link.token)}
+                          onClick={() => deleteShareLink(link.resume_id, link.token)}
                           className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg"
                           title="Delete"
                         >

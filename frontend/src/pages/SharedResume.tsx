@@ -5,20 +5,21 @@ import { resumeService } from '../services'
 import type { Resume } from '../types'
 
 export default function SharedResume() {
-  const { token } = useParams()
+  const params = useParams()
+  const slug = params['*']
   const [resume, setResume] = useState<Resume | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
   useEffect(() => {
-    if (token) {
+    if (slug) {
       loadResume()
     }
-  }, [token])
+  }, [slug])
 
   const loadResume = async () => {
     try {
-      const response = await resumeService.getSharedResume(token!)
+      const response = await resumeService.getSharedResume(slug!)
       if (response.success && response.data) {
         setResume(response.data)
       } else {
@@ -32,10 +33,14 @@ export default function SharedResume() {
   }
 
   const handleDownload = async () => {
-    if (!resume) return
+    if (!resume || !slug) return
 
     try {
-      const blob = await resumeService.downloadPDF(resume.id)
+      const template = resume.template_name || resume.template || 'professional-blue'
+      const response = await fetch(`http://localhost:8001/api/resumes/${resume.id}/export?format=pdf&template=${template}`)
+      if (!response.ok) throw new Error('Download failed')
+      
+      const blob = await response.blob()
       const url = window.URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
@@ -97,7 +102,7 @@ export default function SharedResume() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="bg-white rounded-lg shadow overflow-hidden">
           <iframe
-            src={`http://localhost:8001/api/resumes/templates/preview?template=${resume.template}&resume_id=${resume.id}`}
+            src={`http://localhost:8001/api/resumes/shared/${slug}/preview`}
             className="w-full border-0"
             style={{ height: '1100px' }}
             title="Resume Preview"

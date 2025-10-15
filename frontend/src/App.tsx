@@ -50,7 +50,7 @@ function App() {
           <Route path="/resume/:id/share" element={<ResumeShare />} />
           <Route path="/resume/:id/versions" element={<VersionHistory />} />
           <Route path="/resume/:id/preview" element={<ResumePreview />} />
-          <Route path="/shared/:token" element={<SharedResume />} />
+          <Route path="/shared/*" element={<SharedResume />} />
         </Routes>
       </Suspense>
     </BrowserRouter>

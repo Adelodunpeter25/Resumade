@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Plus, FileText, Download, Share2, Trash2, Edit, LogOut, Search } from 'lucide-react'
+import { Plus, FileText, Download, Trash2, Edit, LogOut, Search, Copy, Check } from 'lucide-react'
 import { resumeService, authService } from '../services'
 import { API_BASE_URL } from '../services/api'
 import type { Resume, User, Template } from '../types'
@@ -16,10 +16,16 @@ export default function Dashboard() {
   const [templateFilter, setTemplateFilter] = useState('all')
   const [atsFilter, setAtsFilter] = useState('all')
   const [templates, setTemplates] = useState<string[]>([])
-  const [activeTab, setActiveTab] = useState<'resumes' | 'templates'>('resumes')
+  const [activeTab, setActiveTab] = useState<'resumes' | 'templates' | 'share'>('resumes')
   const [allTemplates, setAllTemplates] = useState<Template[]>([])
   const [previewUrls, setPreviewUrls] = useState<Record<string, string>>({})
   const [templateSearchQuery, setTemplateSearchQuery] = useState('')
+  const [shareSubTab, setShareSubTab] = useState<'create' | 'view'>('create')
+  const [selectedResumeId, setSelectedResumeId] = useState<number | null>(null)
+  const [shareLinks, setShareLinks] = useState<any[]>([])
+  const [expiresIn, setExpiresIn] = useState(30)
+  const [creating, setCreating] = useState(false)
+  const [copiedToken, setCopiedToken] = useState<string | null>(null)
 
   useEffect(() => {
     const token = localStorage.getItem('token')
@@ -30,6 +36,27 @@ export default function Dashboard() {
     loadData()
     loadAllTemplates()
   }, [page])
+
+  useEffect(() => {
+    if (activeTab === 'share' && shareSubTab === 'view') {
+      loadShareLinks()
+    }
+  }, [activeTab, shareSubTab])
+
+  const loadShareLinks = async () => {
+    try {
+      const allLinks: any[] = []
+      for (const resume of resumes) {
+        const linksRes = await resumeService.getShareLinks(resume.id)
+        if (linksRes.success && linksRes.data) {
+          allLinks.push(...linksRes.data)
+        }
+      }
+      setShareLinks(allLinks)
+    } catch (err) {
+      console.error('Failed to load share links:', err)
+    }
+  }
 
   const loadData = async () => {
     try {
@@ -215,6 +242,16 @@ export default function Dashboard() {
               >
                 Templates
               </button>
+              <button
+                onClick={() => setActiveTab('share')}
+                className={`px-6 py-4 font-semibold border-b-2 transition-colors ${
+                  activeTab === 'share'
+                    ? 'border-emerald-600 text-emerald-600'
+                    : 'border-transparent text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                Share
+              </button>
             </div>
           </div>
 
@@ -332,13 +369,7 @@ export default function Dashboard() {
                       >
                         <Download size={20} />
                       </button>
-                      <button
-                        onClick={() => navigate(`/resume/${resume.id}/share`)}
-                        className="p-2 text-gray-600 hover:text-purple-600 hover:bg-purple-50 rounded-lg"
-                        title="Share"
-                      >
-                        <Share2 size={20} />
-                      </button>
+
                       <button
                         onClick={() => handleDelete(resume.id)}
                         className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg"
@@ -373,6 +404,184 @@ export default function Dashboard() {
                   >
                     Next
                   </button>
+                </div>
+              )}
+            </>
+          )}
+
+          {activeTab === 'share' && (
+            <>
+              <div className="border-b border-gray-200">
+                <div className="flex px-6">
+                  <button
+                    onClick={() => setShareSubTab('create')}
+                    className={`px-4 py-3 font-medium border-b-2 transition-colors ${
+                      shareSubTab === 'create'
+                        ? 'border-emerald-600 text-emerald-600'
+                        : 'border-transparent text-gray-600 hover:text-gray-900'
+                    }`}
+                  >
+                    Share a Resume
+                  </button>
+                  <button
+                    onClick={() => setShareSubTab('view')}
+                    className={`px-4 py-3 font-medium border-b-2 transition-colors ${
+                      shareSubTab === 'view'
+                        ? 'border-emerald-600 text-emerald-600'
+                        : 'border-transparent text-gray-600 hover:text-gray-900'
+                    }`}
+                  >
+                    Shared Resumes
+                  </button>
+                </div>
+              </div>
+
+              {shareSubTab === 'create' && (
+                <div className="p-8">
+                  <h3 className="text-xl font-bold text-gray-900 mb-6">Share a Resume</h3>
+                  
+                  <div className="max-w-2xl">
+                    <div className="mb-6">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Select Resume
+                      </label>
+                      <select
+                        value={selectedResumeId || ''}
+                        onChange={(e) => setSelectedResumeId(Number(e.target.value))}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
+                      >
+                        <option value="">Choose a resume...</option>
+                        {resumes.map((resume) => (
+                          <option key={resume.id} value={resume.id}>
+                            {resume.title}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="mb-6">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Expires in (days)
+                      </label>
+                      <input
+                        type="number"
+                        min="1"
+                        max="365"
+                        value={expiresIn}
+                        onChange={(e) => setExpiresIn(Number(e.target.value))}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
+                      />
+                    </div>
+
+                    <button
+                      onClick={async () => {
+                        if (!selectedResumeId) {
+                          alert('Please select a resume')
+                          return
+                        }
+                        setCreating(true)
+                        try {
+                          const response = await resumeService.createShareLink(selectedResumeId, expiresIn)
+                          if (response.success) {
+                            alert('Share link created successfully!')
+                            setShareSubTab('view')
+                          }
+                        } catch (err: any) {
+                          const errorMsg = err.response?.data?.detail || err.message || 'Failed to create share link'
+                          alert(errorMsg)
+                        } finally {
+                          setCreating(false)
+                        }
+                      }}
+                      disabled={creating || !selectedResumeId}
+                      className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white px-6 py-3 rounded-lg hover:from-emerald-700 hover:to-teal-700 disabled:opacity-50"
+                    >
+                      {creating ? 'Creating...' : 'Create Share Link'}
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {shareSubTab === 'view' && (
+                <div className="p-8">
+                  <h3 className="text-xl font-bold text-gray-900 mb-6">Shared Resumes</h3>
+                  {shareLinks.length === 0 ? (
+                    <div className="text-center py-12">
+                      <div className="text-gray-400 mb-4">🔗</div>
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2">No shared resumes yet</h3>
+                      <p className="text-gray-600">Create a share link from the "Share a Resume" tab</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {shareLinks.map((link) => {
+                        const resume = resumes.find(r => r.id === link.resume_id)
+                        const isExpired = new Date(link.expires_at) < new Date()
+                        const isActive = !isExpired
+
+                        return (
+                          <div key={link.token} className="bg-white border border-gray-200 rounded-lg p-6">
+                            <div className="flex items-start justify-between mb-4">
+                              <div>
+                                <h4 className="font-semibold text-gray-900 mb-1">{resume?.title || 'Resume'}</h4>
+                                <div className="flex items-center gap-2">
+                                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                    isActive ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'
+                                  }`}>
+                                    {isActive ? 'Active' : 'Inactive'}
+                                  </span>
+                                  {isExpired && (
+                                    <span className="px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-700">
+                                      Expired
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                              <button
+                                onClick={async () => {
+                                  if (!confirm('Delete this share link?')) return
+                                  try {
+                                    await resumeService.deleteShareLink(link.resume_id, link.token)
+                                    setShareLinks(shareLinks.filter(l => l.token !== link.token))
+                                  } catch (err) {
+                                    alert('Failed to delete share link')
+                                  }
+                                }}
+                                className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg"
+                                title="Delete"
+                              >
+                                <Trash2 size={20} />
+                              </button>
+                            </div>
+                            <div className="text-sm text-gray-600 mb-3">
+                              <div>Created: {new Date(link.created_at).toLocaleDateString()}</div>
+                              <div>Expires: {new Date(link.expires_at).toLocaleDateString()}</div>
+                            </div>
+                            <div className="flex items-center gap-2 bg-gray-50 px-3 py-2 rounded-lg">
+                              <code className="text-sm text-gray-700 flex-1 truncate">
+                                {window.location.origin}/shared/{link.slug || link.token}
+                              </code>
+                              <button
+                                onClick={() => {
+                                  const url = `${window.location.origin}/shared/${link.slug || link.token}`
+                                  navigator.clipboard.writeText(url)
+                                  setCopiedToken(link.token)
+                                  setTimeout(() => setCopiedToken(null), 2000)
+                                }}
+                                className="p-2 text-gray-600 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg"
+                                title="Copy link"
+                              >
+                                {copiedToken === link.token ? (
+                                  <Check size={20} className="text-emerald-600" />
+                                ) : (
+                                  <Copy size={20} />
+                                )}
+                              </button>
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  )}
                 </div>
               )}
             </>

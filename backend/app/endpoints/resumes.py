@@ -671,23 +671,20 @@ def get_share_links(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    """Get all share links for a resume"""
+    """Get active share links for a resume"""
     resume = db.query(Resume).filter(Resume.id == resume_id, Resume.user_id == current_user.id).first()
     if not resume:
         raise HTTPException(status_code=404, detail=ResponseMessages.RESUME_NOT_FOUND)
     
-    share_links = db.query(
-        ShareLink.id,
-        ShareLink.token,
-        ShareLink.resume_id,
-        ShareLink.expires_at,
-        ShareLink.is_active,
-        ShareLink.created_at
-    ).filter(ShareLink.resume_id == resume_id).all()
+    share_links = db.query(ShareLink).filter(
+        ShareLink.resume_id == resume_id,
+        ShareLink.is_active == True
+    ).all()
     
     links_data = [{
         "id": link.id,
         "token": link.token,
+        "slug": link.slug,
         "resume_id": link.resume_id,
         "expires_at": link.expires_at,
         "is_active": link.is_active,
@@ -707,25 +704,96 @@ def create_share_link(
     if not resume:
         raise HTTPException(status_code=404, detail=ResponseMessages.RESUME_NOT_FOUND)
     
+    # Check for existing active non-expired link
+    from datetime import timezone
+    now = datetime.now(timezone.utc)
+    existing_link = db.query(ShareLink).filter(
+        ShareLink.resume_id == resume_id,
+        ShareLink.is_active == True
+    ).first()
+    
+    if existing_link:
+        expires_at = existing_link.expires_at if existing_link.expires_at.tzinfo else existing_link.expires_at.replace(tzinfo=timezone.utc)
+        if expires_at > now:
+            raise HTTPException(status_code=400, detail="Active link found for this resume")
+        else:
+            existing_link.is_active = False
+            db.commit()
+    
+    username = current_user.full_name or current_user.email.split('@')[0]
+    slug = ShareLink.generate_slug(username, resume.title)
+    
     share_link = ShareLink(
         resume_id=resume_id,
         token=ShareLink.generate_token(),
+        slug=slug,
         expires_at=datetime.utcnow() + timedelta(days=expires_in_days)
     )
-    db.add(share_link)
-    db.commit()
-    db.refresh(share_link)
+    
+    try:
+        db.add(share_link)
+        db.commit()
+        db.refresh(share_link)
+    except Exception as e:
+        db.rollback()
+        logger.error(f"Failed to create share link: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to create share link")
     
     return APIResponse(
         success=True,
         message="Share link created",
-        data={"token": share_link.token, "expires_at": share_link.expires_at}
+        data={"id": share_link.id, "token": share_link.token, "slug": share_link.slug, "expires_at": share_link.expires_at, "resume_id": share_link.resume_id, "is_active": share_link.is_active, "created_at": share_link.created_at}
     )
 
-@router.get("/shared/{token}", response_model=APIResponse[ResumeSchema])
-def get_shared_resume(token: str, db: Session = Depends(get_db)):
+@router.get("/shared/{slug:path}/preview", response_class=HTMLResponse)
+def preview_shared_resume(slug: str, db: Session = Depends(get_db)):
+    """Render shared resume with its template"""
+    from types import SimpleNamespace
+    
+    share_link = db.query(ShareLink).filter(ShareLink.slug == slug, ShareLink.is_active == True).first()
+    if not share_link:
+        share_link = db.query(ShareLink).filter(ShareLink.token == slug, ShareLink.is_active == True).first()
+    
+    if not share_link:
+        return HTMLResponse(content="<h1>Share link not found</h1>", status_code=404)
+    
+    if share_link.expires_at:
+        from datetime import timezone
+        now = datetime.now(timezone.utc)
+        expires_at = share_link.expires_at if share_link.expires_at.tzinfo else share_link.expires_at.replace(tzinfo=timezone.utc)
+        if expires_at < now:
+            return HTMLResponse(content="<h1>Share link expired</h1>", status_code=410)
+    
+    resume = db.query(Resume).filter(Resume.id == share_link.resume_id).first()
+    if not resume:
+        return HTMLResponse(content="<h1>Resume not found</h1>", status_code=404)
+    
+    resume.views += 1
+    db.commit()
+    
+    resume_obj = SimpleNamespace(
+        id=resume.id,
+        title=resume.title,
+        template=resume.template,
+        personal_info=resume.personal_info,
+        experience=resume.experience,
+        education=resume.education,
+        skills=resume.skills,
+        certifications=resume.certifications,
+        projects=resume.projects
+    )
+    
+    pdf_service = PDFService()
+    html_content = pdf_service.render_resume_html(resume_obj, resume.template)
+    
+    return HTMLResponse(content=html_content)
+
+@router.get("/shared/{slug:path}", response_model=APIResponse[ResumeSchema])
+def get_shared_resume(slug: str, db: Session = Depends(get_db)):
     """Access resume via public share link"""
-    share_link = db.query(ShareLink).filter(ShareLink.token == token, ShareLink.is_active == True).first()
+    share_link = db.query(ShareLink).filter(ShareLink.slug == slug, ShareLink.is_active == True).first()
+    if not share_link:
+        share_link = db.query(ShareLink).filter(ShareLink.token == slug, ShareLink.is_active == True).first()
     
     if not share_link:
         raise HTTPException(status_code=404, detail="Share link not found")

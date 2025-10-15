@@ -93,6 +93,7 @@ export interface ShareLink {
   id: number;
   resume_id: number;
   token: string;
+  slug?: string;
   expires_at: string;
   is_active: boolean;
   created_at: string;
