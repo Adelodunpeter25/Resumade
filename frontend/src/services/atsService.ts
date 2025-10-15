@@ -5,6 +5,8 @@ export interface ATSScore {
   ats_score: number;
   grade: string;
   feedback: string[];
+  ai_feedback?: string;
+  ai_suggestions?: string[];
   section_breakdown: {
     [key: string]: {
       score: number;

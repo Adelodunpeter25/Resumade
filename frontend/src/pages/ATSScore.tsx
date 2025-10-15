@@ -93,24 +93,63 @@ export default function ATSScore() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {score && (
           <div className="space-y-6">
-            {/* Overall Score */}
-            <div className="bg-white rounded-lg shadow p-8">
-              <div className="flex items-center justify-between">
-                <div className="flex-1">
-                  <h2 className="text-2xl font-bold text-gray-900 mb-2">Overall ATS Score</h2>
-                  <p className="text-gray-600">
-                    Your resume's compatibility with Applicant Tracking Systems
-                  </p>
-                </div>
-                <div className="flex items-center gap-6">
-                  {getScoreIcon(score.ats_score)}
-                  <div className="text-center">
-                    <div className={`text-6xl font-bold ${getScoreColor(score.ats_score)}`}>
-                      {score.ats_score}
+            {/* Overall Score & Interpretation */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className="bg-white rounded-lg shadow p-6">
+                <h2 className="text-xl font-bold text-gray-900 mb-2 text-center">Overall ATS Score</h2>
+                <p className="text-gray-600 text-center text-sm mb-6">
+                  Your resume's compatibility with ATS
+                </p>
+                <div className="flex justify-center">
+                  <div className="relative w-40 h-40">
+                    <svg className="w-40 h-40 transform -rotate-90">
+                      <circle
+                        cx="80"
+                        cy="80"
+                        r="72"
+                        stroke="#e5e7eb"
+                        strokeWidth="14"
+                        fill="none"
+                      />
+                      <circle
+                        cx="80"
+                        cy="80"
+                        r="72"
+                        stroke={score.ats_score >= 80 ? '#10b981' : score.ats_score >= 60 ? '#f59e0b' : '#ef4444'}
+                        strokeWidth="14"
+                        fill="none"
+                        strokeDasharray={`${2 * Math.PI * 72}`}
+                        strokeDashoffset={`${2 * Math.PI * 72 * (1 - score.ats_score / 100)}`}
+                        strokeLinecap="round"
+                        className="transition-all duration-1000"
+                      />
+                    </svg>
+                    <div className="absolute inset-0 flex flex-col items-center justify-center">
+                      <div className={`text-4xl font-bold ${getScoreColor(score.ats_score)}`}>
+                        {score.ats_score}
+                      </div>
+                      <div className="text-gray-600 text-xs mt-1">out of 100</div>
                     </div>
-                    <div className="text-gray-600 text-sm">out of 100</div>
                   </div>
                 </div>
+              </div>
+              
+              {/* Score Interpretation */}
+              <div className={`${getScoreBgColor(score.ats_score)} border ${
+                score.ats_score >= 80 ? 'border-green-200' :
+                score.ats_score >= 60 ? 'border-yellow-200' :
+                'border-red-200'
+              } rounded-lg p-6 flex flex-col items-center justify-center text-center`}>
+                <h3 className={`text-8xl font-bold mb-4 ${getScoreColor(score.ats_score)}`}>
+                  {score.grade}
+                </h3>
+                <p className="text-gray-700 text-base">
+                  {score.ats_score >= 80
+                    ? 'Your resume is well-optimized for ATS systems and should pass most automated screenings.'
+                    : score.ats_score >= 60
+                    ? 'Your resume has a decent chance of passing ATS systems, but there\'s room for improvement.'
+                    : 'Your resume may struggle with ATS systems. Consider implementing the suggestions below.'}
+                </p>
               </div>
             </div>
 
@@ -146,56 +185,49 @@ export default function ATSScore() {
               </div>
             </div>
 
-            {/* Feedback */}
-            {score.feedback && score.feedback.length > 0 && (
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
-                <h3 className="text-lg font-bold text-blue-900 mb-4 flex items-center gap-2">
-                  <AlertCircle size={24} />
-                  Feedback
+            {/* AI Feedback */}
+            {score.ai_feedback && (
+              <div className="bg-gradient-to-br from-purple-50 to-indigo-50 border-2 border-purple-300 rounded-xl p-8 shadow-lg">
+                <h3 className="text-2xl font-bold text-purple-900 mb-6 flex items-center gap-3">
+                  <span className="text-3xl">✨</span>
+                  AI-Powered Insights
                 </h3>
-                <div className="text-blue-700 space-y-2">
-                  {score.feedback.map((item, index) => (
-                    <p key={index}>{item}</p>
-                  ))}
+                <div className="text-gray-800 leading-relaxed space-y-4">
+                  {score.ai_feedback.split('\n').map((line, index) => {
+                    const trimmed = line.trim()
+                    if (!trimmed) return null
+                    
+                    // Main numbered items
+                    if (/^\d+\./.test(trimmed)) {
+                      return (
+                        <div key={index} className="font-semibold text-lg text-purple-900 mt-6 first:mt-0">
+                          {trimmed.replace(/\*\*/g, '')}
+                        </div>
+                      )
+                    }
+                    
+                    // Bullet points
+                    if (trimmed.startsWith('•')) {
+                      return (
+                        <div key={index} className="ml-6 flex gap-3">
+                          <span className="text-purple-600 mt-1">•</span>
+                          <span className="flex-1">{trimmed.substring(1).trim().replace(/\*\*/g, '')}</span>
+                        </div>
+                      )
+                    }
+                    
+                    // Regular paragraphs
+                    return (
+                      <p key={index} className="text-gray-700">
+                        {trimmed.replace(/\*\*/g, '')}
+                      </p>
+                    )
+                  })}
                 </div>
               </div>
             )}
 
-            {/* Suggestions */}
-            {score.suggestions.length > 0 && (
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
-                <h3 className="text-lg font-bold text-blue-900 mb-4 flex items-center gap-2">
-                  <AlertCircle size={24} />
-                  Improvement Suggestions
-                </h3>
-                <ul className="space-y-3">
-                  {score.suggestions.map((suggestion, index) => (
-                    <li key={index} className="text-blue-700 flex items-start gap-3">
-                      <span className="text-blue-600 font-bold mt-1">{index + 1}.</span>
-                      <span>{suggestion}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
 
-            {/* Score Interpretation */}
-            <div className={`${getScoreBgColor(score.ats_score)} border ${
-              score.ats_score >= 80 ? 'border-green-200' :
-              score.ats_score >= 60 ? 'border-yellow-200' :
-              'border-red-200'
-            } rounded-lg p-6`}>
-              <h3 className={`text-lg font-bold mb-2 ${getScoreColor(score.ats_score)}`}>
-                {score.grade}
-              </h3>
-              <p className="text-gray-700">
-                {score.ats_score >= 80
-                  ? 'Your resume is well-optimized for ATS systems and should pass most automated screenings.'
-                  : score.ats_score >= 60
-                  ? 'Your resume has a decent chance of passing ATS systems, but there\'s room for improvement.'
-                  : 'Your resume may struggle with ATS systems. Consider implementing the suggestions above.'}
-              </p>
-            </div>
           </div>
         )}
       </main>

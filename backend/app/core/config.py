@@ -26,6 +26,8 @@ class Settings(BaseSettings):
     resend_api_key: str = ""
     email_from: str = "Resumade <noreply@resumade.com>"
     
+    #gemini ai settings
+    gemini_api_key: str = ""
     class Config:
         env_file = ".env"
 

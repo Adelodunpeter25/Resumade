@@ -25,3 +25,4 @@ asyncpg
 aiofiles
 slowapi
 cachetools
+google-generativeai==0.8.5
