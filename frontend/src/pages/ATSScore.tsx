@@ -18,10 +18,14 @@ export default function ATSScore() {
   }, [id])
 
   const calculateScore = async () => {
+    if (!id || isNaN(Number(id))) {
+      alert('Invalid resume ID')
+      navigate('/dashboard')
+      return
+    }
     setCalculating(true)
     try {
       const response = await atsService.calculateScore(Number(id))
-      console.log('ATS Response:', response)
       setScore(response)
     } catch (err) {
       console.error('ATS Error:', err)
@@ -114,39 +118,46 @@ export default function ATSScore() {
             <div className="bg-white rounded-lg shadow p-8">
               <h3 className="text-xl font-bold text-gray-900 mb-6">Section Breakdown</h3>
               <div className="space-y-4">
-                {Object.entries(score.section_breakdown).map(([section, sectionScore]) => (
-                  <div key={section}>
-                    <div className="flex justify-between items-center mb-2">
-                      <span className="text-gray-700 font-medium capitalize">
-                        {section.replace('_', ' ')}
-                      </span>
-                      <span className={`font-semibold ${getScoreColor(sectionScore)}`}>
-                        {sectionScore}%
-                      </span>
+                {Object.entries(score.section_breakdown).map(([section, sectionData]) => {
+                  const percentage = typeof sectionData === 'number' ? sectionData : sectionData.percentage
+                  return (
+                    <div key={section}>
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="text-gray-700 font-medium capitalize">
+                          {section.replace('_', ' ')}
+                        </span>
+                        <span className={`font-semibold ${getScoreColor(percentage)}`}>
+                          {percentage}%
+                        </span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-3">
+                        <div
+                          className={`h-3 rounded-full transition-all ${
+                            percentage >= 80 ? 'bg-green-600' :
+                            percentage >= 60 ? 'bg-yellow-600' :
+                            'bg-red-600'
+                          }`}
+                          style={{ width: `${percentage}%` }}
+                        />
+                      </div>
                     </div>
-                    <div className="w-full bg-gray-200 rounded-full h-3">
-                      <div
-                        className={`h-3 rounded-full transition-all ${
-                          sectionScore >= 80 ? 'bg-green-600' :
-                          sectionScore >= 60 ? 'bg-yellow-600' :
-                          'bg-red-600'
-                        }`}
-                        style={{ width: `${sectionScore}%` }}
-                      />
-                    </div>
-                  </div>
-                ))}
+                  )
+                })}
               </div>
             </div>
 
             {/* Feedback */}
-            {score.feedback && (
+            {score.feedback && score.feedback.length > 0 && (
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
                 <h3 className="text-lg font-bold text-blue-900 mb-4 flex items-center gap-2">
                   <AlertCircle size={24} />
                   Feedback
                 </h3>
-                <p className="text-blue-700">{score.feedback}</p>
+                <div className="text-blue-700 space-y-2">
+                  {score.feedback.map((item, index) => (
+                    <p key={index}>{item}</p>
+                  ))}
+                </div>
               </div>
             )}
 

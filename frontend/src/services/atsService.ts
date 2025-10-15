@@ -4,9 +4,13 @@ export interface ATSScore {
   resume_id: number;
   ats_score: number;
   grade: string;
-  feedback: string;
+  feedback: string[];
   section_breakdown: {
-    [key: string]: number;
+    [key: string]: {
+      score: number;
+      max_score: number;
+      percentage: number;
+    };
   };
   formatting_check: {
     [key: string]: boolean;

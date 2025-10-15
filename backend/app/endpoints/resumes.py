@@ -11,7 +11,7 @@ from app.core.constants import ResponseMessages
 from app.core.rate_limit import limiter, RATE_LIMITS
 from app.core.constants import FileConstants
 from app.models import Resume, User, ResumeVersion, ShareLink
-from app.schemas import Resume as ResumeSchema, ResumeCreate, ResumeUpdate
+from app.schemas import Resume as ResumeSchema, ResumeCreate, ResumeUpdate, ResumeVersion as ResumeVersionSchema
 from app.schemas.response import APIResponse, PaginatedResponse
 from app.services import PDFService, ATSService, DOCXService
 from app.services.pdf_parser_service import PDFParserService
@@ -616,7 +616,7 @@ async def preview_resume_live(request: Request):
     return HTMLResponse(content=html_content)
 
 # Version History
-@router.get("/{resume_id}/versions")
+@router.get("/{resume_id}/versions", response_model=APIResponse[list[ResumeVersionSchema]])
 def get_resume_versions(
     resume_id: int,
     db: Session = Depends(get_db),
@@ -628,9 +628,9 @@ def get_resume_versions(
         raise HTTPException(status_code=404, detail=ResponseMessages.RESUME_NOT_FOUND)
     
     versions = db.query(ResumeVersion).filter(ResumeVersion.resume_id == resume_id).order_by(ResumeVersion.version_number.desc()).all()
-    return APIResponse(success=True, message="Versions retrieved", data=versions)
+    return APIResponse(success=True, message="Versions retrieved", data=[ResumeVersionSchema.from_orm(v) for v in versions])
 
-@router.post("/{resume_id}/versions")
+@router.post("/{resume_id}/versions", response_model=APIResponse[ResumeVersionSchema])
 def create_resume_version(
     resume_id: int,
     db: Session = Depends(get_db),
@@ -660,7 +660,7 @@ def create_resume_version(
     db.commit()
     db.refresh(version)
     
-    return APIResponse(success=True, message="Version created", data=version)
+    return APIResponse(success=True, message="Version created", data=ResumeVersionSchema.from_orm(version))
 
 # Share Links
 @router.post("/{resume_id}/share")

@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Plus, FileText, Download, Share2, Trash2, Edit, LogOut } from 'lucide-react'
+import { Plus, FileText, Download, Share2, Trash2, Edit, LogOut, Search } from 'lucide-react'
 import { resumeService, authService } from '../services'
-import type { Resume, User } from '../types'
+import { API_BASE_URL } from '../services/api'
+import type { Resume, User, Template } from '../types'
 
 export default function Dashboard() {
   const navigate = useNavigate()
@@ -11,6 +12,14 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true)
   const [page, setPage] = useState(1)
   const [total, setTotal] = useState(0)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [templateFilter, setTemplateFilter] = useState('all')
+  const [atsFilter, setAtsFilter] = useState('all')
+  const [templates, setTemplates] = useState<string[]>([])
+  const [activeTab, setActiveTab] = useState<'resumes' | 'templates'>('resumes')
+  const [allTemplates, setAllTemplates] = useState<Template[]>([])
+  const [previewUrls, setPreviewUrls] = useState<Record<string, string>>({})
+  const [templateSearchQuery, setTemplateSearchQuery] = useState('')
 
   useEffect(() => {
     const token = localStorage.getItem('token')
@@ -19,6 +28,7 @@ export default function Dashboard() {
       return
     }
     loadData()
+    loadAllTemplates()
   }, [page])
 
   const loadData = async () => {
@@ -32,15 +42,36 @@ export default function Dashboard() {
         setUser(userRes.data)
       }
 
-      if (resumesRes.success && resumesRes.data) {
-        setResumes(resumesRes.data.data || [])
-        setTotal(resumesRes.data.total || 0)
+      if (resumesRes.success) {
+        const allResumes = resumesRes.data || []
+        setResumes(allResumes)
+        setTotal(resumesRes.total || allResumes.length || 0)
+        // Extract unique templates
+        const uniqueTemplates = [...new Set(allResumes.map((r: Resume) => r.template_name).filter(Boolean))]
+        setTemplates(uniqueTemplates)
       }
     } catch (err) {
       console.error('Failed to load data:', err)
       navigate('/login')
     } finally {
       setLoading(false)
+    }
+  }
+
+  const loadAllTemplates = async () => {
+    try {
+      const response = await resumeService.getTemplates()
+      if (response.success && response.data) {
+        const templates = response.data.all_templates || []
+        setAllTemplates(templates)
+        const urls: Record<string, string> = {}
+        templates.forEach((template: Template) => {
+          urls[template.name] = `${API_BASE_URL}/api/resumes/templates/preview?template=${template.name}`
+        })
+        setPreviewUrls(urls)
+      }
+    } catch (err) {
+      console.error('Failed to load templates:', err)
     }
   }
 
@@ -74,6 +105,17 @@ export default function Dashboard() {
       alert('Failed to download resume')
     }
   }
+
+  // Filter resumes based on search and filters
+  const filteredResumes = resumes.filter(resume => {
+    const matchesSearch = resume.title.toLowerCase().includes(searchQuery.toLowerCase())
+    const matchesTemplate = templateFilter === 'all' || resume.template_name === templateFilter
+    const matchesATS = atsFilter === 'all' || 
+      (atsFilter === 'excellent' && (resume.ats_score || 0) >= 80) ||
+      (atsFilter === 'good' && (resume.ats_score || 0) >= 60 && (resume.ats_score || 0) < 80) ||
+      (atsFilter === 'needs-work' && (resume.ats_score || 0) < 60)
+    return matchesSearch && matchesTemplate && matchesATS
+  })
 
   if (loading) {
     return (
@@ -148,36 +190,108 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Resumes Section */}
+        {/* Tabs & Content Section */}
         <div className="bg-white rounded-lg shadow">
-          <div className="p-6 border-b border-gray-200">
-            <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-bold text-gray-900">My Resumes</h2>
+          {/* Tabs */}
+          <div className="border-b border-gray-200">
+            <div className="flex">
               <button
-                onClick={() => navigate('/resume/new')}
-                className="flex items-center gap-2 bg-gradient-to-r from-emerald-600 to-teal-600 text-white px-4 py-2 rounded-lg hover:from-emerald-700 hover:to-teal-700"
+                onClick={() => setActiveTab('resumes')}
+                className={`px-6 py-4 font-semibold border-b-2 transition-colors ${
+                  activeTab === 'resumes'
+                    ? 'border-emerald-600 text-emerald-600'
+                    : 'border-transparent text-gray-600 hover:text-gray-900'
+                }`}
               >
-                <Plus size={20} />
-                <span>Create Resume</span>
+                My Resumes
+              </button>
+              <button
+                onClick={() => setActiveTab('templates')}
+                className={`px-6 py-4 font-semibold border-b-2 transition-colors ${
+                  activeTab === 'templates'
+                    ? 'border-emerald-600 text-emerald-600'
+                    : 'border-transparent text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                Templates
               </button>
             </div>
           </div>
 
-          {!resumes || resumes.length === 0 ? (
+          {activeTab === 'resumes' && (
+            <>
+              <div className="p-6 border-b border-gray-200">
+                <div className="flex justify-between items-center">
+                  <h2 className="text-2xl font-bold text-gray-900">My Resumes</h2>
+                  <button
+                    onClick={() => navigate('/resume/new')}
+                    className="flex items-center gap-2 bg-gradient-to-r from-emerald-600 to-teal-600 text-white px-4 py-2 rounded-lg hover:from-emerald-700 hover:to-teal-700"
+                  >
+                    <Plus size={20} />
+                    <span>Create Resume</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Search & Filters */}
+              <div className="p-6 border-b border-gray-200 space-y-4">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+              <input
+                type="text"
+                placeholder="Search resumes by title..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+              />
+            </div>
+            <div className="flex gap-4">
+              <select
+                value={templateFilter}
+                onChange={(e) => setTemplateFilter(e.target.value)}
+                className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
+              >
+                <option value="all">All Templates</option>
+                {templates.map(template => (
+                  <option key={template} value={template}>
+                    {template.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}
+                  </option>
+                ))}
+              </select>
+              <select
+                value={atsFilter}
+                onChange={(e) => setAtsFilter(e.target.value)}
+                className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
+              >
+                <option value="all">All ATS Scores</option>
+                <option value="excellent">Excellent (80-100)</option>
+                <option value="good">Good (60-79)</option>
+                <option value="needs-work">Needs Work (&lt;60)</option>
+              </select>
+              </div>
+              </div>
+
+              {!filteredResumes || filteredResumes.length === 0 ? (
             <div className="p-12 text-center">
               <FileText className="mx-auto text-gray-400 mb-4" size={64} />
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">No resumes yet</h3>
-              <p className="text-gray-600 mb-6">Create your first resume to get started</p>
-              <button
-                onClick={() => navigate('/resume/new')}
-                className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white px-6 py-3 rounded-lg hover:from-emerald-700 hover:to-teal-700"
-              >
-                Create Your First Resume
-              </button>
-            </div>
-          ) : (
-            <div className="divide-y divide-gray-200">
-              {resumes.map((resume) => (
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                {resumes.length === 0 ? 'No resumes yet' : 'No resumes found'}
+              </h3>
+              <p className="text-gray-600 mb-6">
+                {resumes.length === 0 ? 'Create your first resume to get started' : 'Try adjusting your search or filters'}
+              </p>
+              {resumes.length === 0 && (
+                <button
+                  onClick={() => navigate('/resume/new')}
+                  className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white px-6 py-3 rounded-lg hover:from-emerald-700 hover:to-teal-700"
+                >
+                  Create Your First Resume
+                </button>
+              )}
+              </div>
+            ) : (
+              <div className="divide-y divide-gray-200">
+              {filteredResumes.map((resume) => (
                 <div key={resume.id} className="p-6 hover:bg-gray-50 transition-colors">
                   <div className="flex justify-between items-start">
                     <div className="flex-1">
@@ -236,30 +350,90 @@ export default function Dashboard() {
                   </div>
                 </div>
               ))}
-            </div>
+              </div>
+            )}
+
+              {/* Pagination */}
+              {total > 10 && (
+                <div className="p-6 border-t border-gray-200 flex justify-between items-center">
+                  <button
+                    onClick={() => setPage(p => Math.max(1, p - 1))}
+                    disabled={page === 1}
+                    className="px-4 py-2 border border-gray-300 rounded-lg disabled:opacity-50"
+                  >
+                    Previous
+                  </button>
+                  <span className="text-gray-600">
+                    Page {page} of {Math.ceil(total / 10)}
+                  </span>
+                  <button
+                    onClick={() => setPage(p => p + 1)}
+                    disabled={page >= Math.ceil(total / 10)}
+                    className="px-4 py-2 border border-gray-300 rounded-lg disabled:opacity-50"
+                  >
+                    Next
+                  </button>
+                </div>
+              )}
+            </>
           )}
 
-          {/* Pagination */}
-          {total > 10 && (
-            <div className="p-6 border-t border-gray-200 flex justify-between items-center">
-              <button
-                onClick={() => setPage(p => Math.max(1, p - 1))}
-                disabled={page === 1}
-                className="px-4 py-2 border border-gray-300 rounded-lg disabled:opacity-50"
-              >
-                Previous
-              </button>
-              <span className="text-gray-600">
-                Page {page} of {Math.ceil(total / 10)}
-              </span>
-              <button
-                onClick={() => setPage(p => p + 1)}
-                disabled={page >= Math.ceil(total / 10)}
-                className="px-4 py-2 border border-gray-300 rounded-lg disabled:opacity-50"
-              >
-                Next
-              </button>
-            </div>
+          {activeTab === 'templates' && (
+            <>
+              <div className="p-6 border-b border-gray-200">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+                  <input
+                    type="text"
+                    placeholder="Search templates by name, description, or category..."
+                    value={templateSearchQuery}
+                    onChange={(e) => setTemplateSearchQuery(e.target.value)}
+                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                  />
+                </div>
+              </div>
+              <div className="p-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                  {allTemplates.filter(template => {
+                    const query = templateSearchQuery.toLowerCase()
+                    return template.display_name.toLowerCase().includes(query) ||
+                           template.description.toLowerCase().includes(query) ||
+                           template.name.toLowerCase().includes(query) ||
+                           (template.category && template.category.toLowerCase().includes(query))
+                  }).map((template) => (
+                  <div
+                    key={template.name}
+                    className="group cursor-pointer"
+                    onClick={() => navigate(`/resume/new?template=${template.name}`)}
+                  >
+                    <div className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 border border-gray-200">
+                      <div className="aspect-[8.5/11] bg-gray-50 relative overflow-hidden border-b border-gray-100">
+                        <iframe
+                          src={previewUrls[template.name]}
+                          className="w-full h-full border-0 pointer-events-none scale-[0.4] origin-top-left"
+                          style={{ width: '250%', height: '250%' }}
+                          title={`${template.display_name} Preview`}
+                        />
+                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all duration-300 flex items-center justify-center">
+                          <button className="opacity-0 group-hover:opacity-100 transform scale-90 group-hover:scale-100 transition-all duration-300 bg-white text-gray-900 px-8 py-3 rounded-lg font-semibold shadow-xl hover:bg-gray-50">
+                            Use Template
+                          </button>
+                        </div>
+                      </div>
+                      <div className="p-4">
+                        <h3 className="font-semibold text-gray-900 text-base mb-1">
+                          {template.display_name}
+                        </h3>
+                        <p className="text-sm text-gray-600">
+                          {template.description}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  ))}
+                </div>
+              </div>
+            </>
           )}
         </div>
       </main>

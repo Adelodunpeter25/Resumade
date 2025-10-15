@@ -110,8 +110,8 @@ class ATSService:
         
         # Check phone
         phone = personal_info.get("phone", "")
-        if phone and not re.search(r'\d{3}[-.\s]?\d{3}[-.\s]?\d{4}', phone):
-            issues.append("Use standard phone format (e.g., 123-456-7890)")
+        if phone and not re.search(r'(\+234|0)[789]\d{9}', phone):
+            issues.append("Use standard phone format (e.g., +234-XXX-XXX-XXXX or 0XXX-XXX-XXXX)")
         
         return {"has_issues": len(issues) > 0, "issues": issues}
     
@@ -317,6 +317,9 @@ class ATSService:
         if formatting["has_issues"]:
             all_feedback.extend(formatting["issues"])
             total_weighted_score -= 5
+        
+        # Format feedback as bullet points
+        all_feedback = [f"• {fb}" if not fb.startswith("•") else fb for fb in all_feedback]
         
         # Job description matching bonus
         if job_description:

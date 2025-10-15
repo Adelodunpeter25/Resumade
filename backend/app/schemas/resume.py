@@ -86,3 +86,20 @@ class Resume(BaseModel):
     
     class Config:
         from_attributes = True
+
+class ResumeVersion(BaseModel):
+    id: int
+    resume_id: int
+    version_number: int
+    title: str
+    template: str
+    personal_info: dict
+    experience: List[dict]
+    education: List[dict]
+    skills: List[dict]
+    certifications: List[dict]
+    projects: List[dict]
+    created_at: datetime
+    
+    class Config:
+        from_attributes = True

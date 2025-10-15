@@ -13,12 +13,15 @@ export default function VersionHistory() {
   const [selectedVersion, setSelectedVersion] = useState<ResumeVersion | null>(null)
 
   useEffect(() => {
-    if (id) {
+    if (id && !isNaN(Number(id))) {
       loadVersions()
+    } else {
+      navigate('/dashboard')
     }
   }, [id])
 
   const loadVersions = async () => {
+    if (!id || isNaN(Number(id))) return
     try {
       const response = await resumeService.getVersions(Number(id))
       if (response.success && response.data) {
@@ -32,6 +35,7 @@ export default function VersionHistory() {
   }
 
   const createVersion = async () => {
+    if (!id || isNaN(Number(id))) return
     setCreating(true)
     try {
       const response = await resumeService.createVersion(Number(id))
@@ -46,10 +50,19 @@ export default function VersionHistory() {
   }
 
   const restoreVersion = async (version: ResumeVersion) => {
+    if (!id || isNaN(Number(id))) return
     if (!confirm(`Restore to version ${version.version_number}? This will overwrite your current resume.`)) return
 
     try {
-      await resumeService.updateResume(Number(id), version.content)
+      const content = {
+        personal_info: version.personal_info,
+        experience: version.experience,
+        education: version.education,
+        skills: version.skills,
+        certifications: version.certifications,
+        projects: version.projects
+      }
+      await resumeService.updateResume(Number(id), content)
       navigate(`/resume/${id}`)
     } catch (err) {
       alert('Failed to restore version')
@@ -140,7 +153,7 @@ export default function VersionHistory() {
                         </button>
                       </div>
                       <div className="text-xs text-gray-500">
-                        {version.content.title}
+                        {version.title}
                       </div>
                     </div>
                   ))}
@@ -164,19 +177,19 @@ export default function VersionHistory() {
                   <div className="mb-6">
                     <h3 className="text-lg font-bold text-gray-900 mb-3">Personal Information</h3>
                     <div className="space-y-2 text-sm">
-                      <p><span className="font-medium">Name:</span> {selectedVersion.content.personal_info.full_name}</p>
-                      <p><span className="font-medium">Email:</span> {selectedVersion.content.personal_info.email}</p>
-                      <p><span className="font-medium">Phone:</span> {selectedVersion.content.personal_info.phone}</p>
-                      <p><span className="font-medium">Location:</span> {selectedVersion.content.personal_info.location}</p>
+                      <p><span className="font-medium">Name:</span> {selectedVersion.personal_info.full_name}</p>
+                      <p><span className="font-medium">Email:</span> {selectedVersion.personal_info.email}</p>
+                      <p><span className="font-medium">Phone:</span> {selectedVersion.personal_info.phone}</p>
+                      <p><span className="font-medium">Location:</span> {selectedVersion.personal_info.location}</p>
                     </div>
                   </div>
 
                   {/* Experience */}
-                  {selectedVersion.content.experience.length > 0 && (
+                  {selectedVersion.experience.length > 0 && (
                     <div className="mb-6">
                       <h3 className="text-lg font-bold text-gray-900 mb-3">Experience</h3>
                       <div className="space-y-3">
-                        {selectedVersion.content.experience.map((exp, index) => (
+                        {selectedVersion.experience.map((exp, index) => (
                           <div key={index} className="border-l-2 border-emerald-600 pl-3">
                             <p className="font-medium text-gray-900">{exp.position}</p>
                             <p className="text-sm text-gray-600">{exp.company}</p>
@@ -190,11 +203,11 @@ export default function VersionHistory() {
                   )}
 
                   {/* Education */}
-                  {selectedVersion.content.education.length > 0 && (
+                  {selectedVersion.education.length > 0 && (
                     <div className="mb-6">
                       <h3 className="text-lg font-bold text-gray-900 mb-3">Education</h3>
                       <div className="space-y-3">
-                        {selectedVersion.content.education.map((edu, index) => (
+                        {selectedVersion.education.map((edu, index) => (
                           <div key={index} className="border-l-2 border-emerald-600 pl-3">
                             <p className="font-medium text-gray-900">{edu.degree}</p>
                             <p className="text-sm text-gray-600">{edu.institution}</p>
@@ -208,11 +221,11 @@ export default function VersionHistory() {
                   )}
 
                   {/* Skills */}
-                  {selectedVersion.content.skills.length > 0 && (
+                  {selectedVersion.skills.length > 0 && (
                     <div className="mb-6">
                       <h3 className="text-lg font-bold text-gray-900 mb-3">Skills</h3>
                       <div className="flex flex-wrap gap-2">
-                        {selectedVersion.content.skills.map((skill, index) => (
+                        {selectedVersion.skills.map((skill, index) => (
                           <span
                             key={index}
                             className="px-3 py-1 bg-emerald-100 text-emerald-700 rounded-full text-sm"
@@ -229,14 +242,8 @@ export default function VersionHistory() {
                     <div className="grid grid-cols-2 gap-4 text-sm">
                       <div>
                         <span className="font-medium text-gray-700">Template:</span>
-                        <span className="ml-2 text-gray-600">{selectedVersion.content.template_name}</span>
+                        <span className="ml-2 text-gray-600">{selectedVersion.template}</span>
                       </div>
-                      {selectedVersion.content.ats_score && (
-                        <div>
-                          <span className="font-medium text-gray-700">ATS Score:</span>
-                          <span className="ml-2 text-gray-600">{selectedVersion.content.ats_score}%</span>
-                        </div>
-                      )}
                     </div>
                   </div>
                 </div>
