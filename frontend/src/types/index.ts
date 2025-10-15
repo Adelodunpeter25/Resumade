@@ -11,6 +11,7 @@ export interface Resume {
   user_id: number;
   title: string;
   template_name: string;
+  template?: string;
   personal_info: PersonalInfo;
   experience: Experience[];
   education: Education[];
@@ -103,7 +104,15 @@ export interface ResumeVersion {
   id: number;
   resume_id: number;
   version_number: number;
-  content: Resume;
+  title?: string;
+  template?: string;
+  personal_info?: PersonalInfo;
+  experience?: Experience[];
+  education?: Education[];
+  skills?: Skill[];
+  certifications?: Certification[];
+  projects?: Project[];
+  content?: Resume;
   created_at: string;
 }
 

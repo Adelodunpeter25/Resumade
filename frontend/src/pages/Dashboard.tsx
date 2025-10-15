@@ -70,11 +70,11 @@ export default function Dashboard() {
       }
 
       if (resumesRes.success) {
-        const allResumes = resumesRes.data || []
+        const allResumes = Array.isArray(resumesRes.data) ? resumesRes.data : (resumesRes.data?.data || [])
         setResumes(allResumes)
-        setTotal(resumesRes.total || allResumes.length || 0)
+        setTotal((resumesRes as any).total || allResumes.length || 0)
         // Extract unique templates
-        const uniqueTemplates = [...new Set(allResumes.map((r: Resume) => r.template_name).filter(Boolean))]
+        const uniqueTemplates = [...new Set(allResumes.map((r: Resume) => r.template_name).filter(Boolean))] as string[]
         setTemplates(uniqueTemplates)
       }
     } catch (err) {
