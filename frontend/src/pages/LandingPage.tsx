@@ -159,8 +159,8 @@ export default function LandingPage() {
                 <a href="/login" className="text-gray-600 hover:text-gray-900 font-medium transition-colors">
                   Login
                 </a>
-                <a href="/resume/new" className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white px-6 py-2 rounded-full font-medium transition-all transform hover:scale-105 shadow-lg">
-                  Build Resume
+                <a href="/register" className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white px-6 py-2 rounded-full font-medium transition-all transform hover:scale-105 shadow-lg">
+                  Sign Up
                 </a>
               </div>
 
@@ -218,10 +218,10 @@ export default function LandingPage() {
                 Login
               </a>
               <a 
-                href="/resume/new" 
+                href="/register" 
                 className="block w-full text-center py-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white rounded-lg font-medium shadow-lg transition-all"
               >
-                Build Resume
+                Sign Up
               </a>
             </div>
           </div>
