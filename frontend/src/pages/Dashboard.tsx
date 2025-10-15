@@ -70,7 +70,7 @@ export default function Dashboard() {
       }
 
       if (resumesRes.success) {
-        const allResumes = Array.isArray(resumesRes.data) ? resumesRes.data : (resumesRes.data?.data || [])
+        const allResumes = Array.isArray(resumesRes.data) ? resumesRes.data : ((resumesRes.data as any)?.data || [])
         setResumes(allResumes)
         setTotal((resumesRes as any).total || allResumes.length || 0)
         // Extract unique templates
