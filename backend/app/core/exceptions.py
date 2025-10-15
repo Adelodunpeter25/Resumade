@@ -1,29 +1,29 @@
-from fastapi import HTTPException, Request
+from fastapi import Request
 from fastapi.responses import JSONResponse
 from sqlalchemy.exc import IntegrityError
 import logging
 
 logger = logging.getLogger(__name__)
 
-class QuickInvoiceException(Exception):
+class ResumadeException(Exception):
     def __init__(self, message: str, status_code: int = 400):
         self.message = message
         self.status_code = status_code
 
-class NotFoundError(QuickInvoiceException):
+class NotFoundError(ResumadeException):
     def __init__(self, resource: str):
         super().__init__(f"{resource} not found", 404)
 
-class ValidationError(QuickInvoiceException):
+class ValidationError(ResumadeException):
     def __init__(self, message: str):
         super().__init__(message, 422)
 
-class AuthenticationError(QuickInvoiceException):
+class AuthenticationError(ResumadeException):
     def __init__(self, message: str = "Authentication failed"):
         super().__init__(message, 401)
 
-async def quickinvoice_exception_handler(request: Request, exc: QuickInvoiceException):
-    logger.error(f"QuickInvoice error: {exc.message}")
+async def resumade_exception_handler(request: Request, exc: ResumadeException):
+    logger.error(f"Resumade error: {exc.message}")
     return JSONResponse(
         status_code=exc.status_code,
         content={"error": exc.message, "status_code": exc.status_code}

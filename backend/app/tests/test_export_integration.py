@@ -1,5 +1,4 @@
 """Integration tests for PDF/DOCX export with Supabase"""
-import pytest
 from unittest.mock import patch
 
 SAMPLE_RESUME = {

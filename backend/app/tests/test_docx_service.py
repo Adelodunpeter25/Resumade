@@ -1,6 +1,4 @@
-import pytest
 from app.services.docx_service import DOCXService
-from io import BytesIO
 
 def test_generate_resume_docx():
     """Test DOCX generation"""

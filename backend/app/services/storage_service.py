@@ -1,5 +1,3 @@
-import os
-from io import BytesIO
 from typing import Optional
 import logging
 from supabase import create_client, Client
@@ -36,7 +34,7 @@ class StorageService:
         """
         try:
             # Upload PDF to Supabase storage bucket
-            response = self.supabase.storage.from_(self.bucket_name).upload(
+            self.supabase.storage.from_(self.bucket_name).upload(
                 path=filename,
                 file=pdf_bytes,
                 file_options={
@@ -109,7 +107,7 @@ class StorageService:
         """
         try:
             # Delete PDF from Supabase storage
-            response = self.supabase.storage.from_(self.bucket_name).remove([filename])
+            self.supabase.storage.from_(self.bucket_name).remove([filename])
             
             logger.info(f"PDF deleted successfully: {filename}")
             return True

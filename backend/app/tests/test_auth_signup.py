@@ -1,5 +1,4 @@
 """Signup endpoint tests"""
-import pytest
 from app.models import User
 
 def test_signup_success(client, valid_user):

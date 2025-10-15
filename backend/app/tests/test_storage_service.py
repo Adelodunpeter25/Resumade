@@ -1,6 +1,6 @@
 """Supabase storage service tests"""
 import pytest
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import patch, MagicMock
 from app.services.storage_service import StorageService
 
 @pytest.fixture

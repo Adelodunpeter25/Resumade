@@ -1,4 +1,3 @@
-import pytest
 from app.services.ats_service import ATSService
 
 def test_calculate_ats_score_complete_resume():
@@ -84,9 +83,9 @@ def test_dynamic_weighting_by_role():
 
 def test_fuzzy_matching():
     """Test fuzzy keyword matching"""
-    assert ATSService.fuzzy_match("React.js", "react") == True
-    assert ATSService.fuzzy_match("NodeJS", "node") == True
-    assert ATSService.fuzzy_match("Python3", "python") == True
+    assert ATSService.fuzzy_match("React.js", "react")
+    assert ATSService.fuzzy_match("NodeJS", "node")
+    assert ATSService.fuzzy_match("Python3", "python")
 
 def test_normalize_text():
     """Test text normalization"""
@@ -122,8 +121,8 @@ def test_formatting_issues_detection():
     result_good = ATSService.check_formatting_issues(resume_good)
     result_bad = ATSService.check_formatting_issues(resume_bad)
     
-    assert result_good["has_issues"] == False
-    assert result_bad["has_issues"] == True
+    assert not result_good["has_issues"]
+    assert result_bad["has_issues"]
     assert len(result_bad["issues"]) > 0
 
 def test_section_breakdown():

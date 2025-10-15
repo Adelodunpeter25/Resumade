@@ -1,18 +1,20 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.exc import IntegrityError
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
 import logging
 
-from app.models import User, Resume
 from app.endpoints import users_router, resumes_router, auth_router, admin_router
 from app.endpoints.progress import router as progress_router
 from app.core.exceptions import (
-    QuickInvoiceException, 
-    quickinvoice_exception_handler,
+    ResumadeException, 
+    resumade_exception_handler,
     integrity_error_handler,
     general_exception_handler
 )
 from app.core.logging import setup_logging
+from app.core.rate_limit import limiter
 
 setup_logging()
 logger = logging.getLogger(__name__)
@@ -24,6 +26,8 @@ app = FastAPI(
     docs_url="/docs",
     redoc_url="/redoc"
 )
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 # CORS Configuration
 app.add_middleware(
@@ -34,7 +38,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.add_exception_handler(QuickInvoiceException, quickinvoice_exception_handler)
+app.add_exception_handler(ResumadeException, resumade_exception_handler)
 app.add_exception_handler(IntegrityError, integrity_error_handler)
 app.add_exception_handler(Exception, general_exception_handler)
 

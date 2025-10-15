@@ -1,6 +1,6 @@
 """Standardized API response models"""
 from pydantic import BaseModel, Field
-from typing import Optional, Any, Generic, TypeVar
+from typing import Optional, Generic, TypeVar
 from datetime import datetime
 
 T = TypeVar('T')

@@ -1,6 +1,4 @@
-import pytest
 from app.services.pdf_service import PDFService
-from app.models import Resume
 
 def test_pdf_generation_with_resume_object():
     """Test PDF generation with Resume model object"""

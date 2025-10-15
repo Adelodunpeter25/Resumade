@@ -1,5 +1,5 @@
 from fastapi import BackgroundTasks
-from typing import Callable, Any
+from typing import Callable
 import logging
 
 logger = logging.getLogger(__name__)

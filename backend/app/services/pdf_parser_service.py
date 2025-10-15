@@ -1,7 +1,7 @@
 import PyPDF2
 import re
 from io import BytesIO
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Tuple
 from dateutil import parser as date_parser
 import logging
 
@@ -199,7 +199,7 @@ class PDFParserService:
         
         # Name - usually first non-empty line that's not too long
         for line in lines[:5]:
-            if 2 <= len(line.split()) <= 4 and not '@' in line and not re.search(r'\d{3}', line):
+            if 2 <= len(line.split()) <= 4 and '@' not in line and not re.search(r'\d{3}', line):
                 personal_info["full_name"] = line
                 break
         

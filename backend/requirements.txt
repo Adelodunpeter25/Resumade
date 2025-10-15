@@ -23,3 +23,5 @@ resend
 python-dateutil
 asyncpg
 aiofiles
+slowapi
+cachetools

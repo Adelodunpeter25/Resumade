@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Query
+from fastapi import APIRouter, Depends, HTTPException, status, Query, Request
 from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
 from datetime import datetime, timedelta
@@ -10,6 +10,7 @@ from app.core.config import settings
 from app.core.auth import verify_password, get_password_hash, create_access_token, get_current_user
 from app.core.validation import InputValidator
 from app.core.constants import ResponseMessages, ValidationConfig
+from app.core.rate_limit import limiter, RATE_LIMITS
 from app.models import User
 from app.schemas.auth import Token, LoginRequest, ForgotPasswordRequest, ResetPasswordRequest
 from app.schemas.user import UserCreate, User as UserSchema
@@ -24,7 +25,9 @@ logger = logging.getLogger(__name__)
 oauth_states = {}
 
 @router.post("/signup", response_model=APIResponse[Token], status_code=status.HTTP_201_CREATED)
+@limiter.limit(RATE_LIMITS["signup"])
 def signup(
+    request: Request,
     user: UserCreate, 
     db: Session = Depends(get_db)
 ):
@@ -51,9 +54,18 @@ def signup(
             ).dict()
         )
     
-    # Sanitize inputs
+    # Sanitize and validate inputs
     email = user.email.strip().lower()
     full_name = InputValidator.sanitize_text(user.full_name, ValidationConfig.MAX_NAME_LENGTH)
+    
+    if not full_name or len(full_name) < 2:
+        raise HTTPException(
+            status_code=400,
+            detail=ErrorResponse(
+                message=ResponseMessages.INVALID_INPUT,
+                errors=[ErrorDetail(field="full_name", message="Name must be at least 2 characters")]
+            ).dict()
+        )
     
     # Check if user exists
     if db.query(User).filter(User.email == email).first():
@@ -89,7 +101,9 @@ def signup(
     )
 
 @router.post("/login", response_model=APIResponse[Token])
+@limiter.limit(RATE_LIMITS["login"])
 def login(
+    request: Request,
     credentials: LoginRequest,
     db: Session = Depends(get_db)
 ):
@@ -101,12 +115,21 @@ def login(
     # Find user
     user = db.query(User).filter(User.email == email).first()
     
-    if not user or not user.hashed_password:
+    if not user:
         logger.warning(f"Login failed - user not found: {email}")
         raise HTTPException(
             status_code=401,
             detail=ErrorResponse(
-                message=ResponseMessages.INVALID_CREDENTIALS
+                message="Invalid email or password"
+            ).dict()
+        )
+    
+    if not user.hashed_password:
+        logger.warning(f"Login failed - OAuth user attempting password login: {email}")
+        raise HTTPException(
+            status_code=401,
+            detail=ErrorResponse(
+                message="Please login with Google OAuth"
             ).dict()
         )
     
@@ -116,7 +139,7 @@ def login(
         raise HTTPException(
             status_code=401,
             detail=ErrorResponse(
-                message=ResponseMessages.INVALID_CREDENTIALS
+                message="Invalid email or password"
             ).dict()
         )
     
@@ -205,89 +228,11 @@ def get_current_user_info(current_user: User = Depends(get_current_user)):
         data=current_user
     )
 
-@router.post("/login", response_model=APIResponse[Token])
-def login(
-    credentials: LoginRequest,
-    db: Session = Depends(get_db)
-):
-    """Login with email and password"""
-    logger.info(f"Login attempt for email: {credentials.email}")
-    
-    email = credentials.email.strip().lower()
-    
-    # Find user
-    user = db.query(User).filter(User.email == email).first()
-    
-    if not user or not user.hashed_password:
-        logger.warning(f"Login failed - user not found: {email}")
-        raise HTTPException(
-            status_code=401,
-            detail=ErrorResponse(
-                message=ResponseMessages.INVALID_CREDENTIALS
-            ).dict()
-        )
-    
-    # Verify password
-    if not verify_password(credentials.password, user.hashed_password):
-        logger.warning(f"Login failed - invalid password: {email}")
-        raise HTTPException(
-            status_code=401,
-            detail=ErrorResponse(
-                message=ResponseMessages.INVALID_CREDENTIALS
-            ).dict()
-        )
-    
-    # Create token
-    access_token = create_access_token(data={"sub": email})
-    
-    logger.info(f"Login successful: {email}")
-    
-    return APIResponse(
-        success=True,
-        message=ResponseMessages.LOGIN_SUCCESS,
-        data=Token(access_token=access_token, token_type="bearer")
-    )
-def login(
-    login_data: LoginRequest, 
-    db: Session = Depends(get_db)
-):
-    """
-    Authenticate user and get access token
-    
-    - **email**: Registered email address
-    - **password**: User's password
-    
-    Returns JWT access token for API authentication.
-    """
-    logger.info(f"Login attempt for email: {login_data.email}")
-    
-    user = db.query(User).filter(User.email == login_data.email).first()
-    
-    if not user or not verify_password(login_data.password, user.hashed_password):
-        logger.warning(f"Login failed for email: {login_data.email}")
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect email or password"
-        )
-    
-    logger.info(f"Login successful for email: {login_data.email}")
-    access_token = create_access_token(data={"sub": user.email})
-    return {"access_token": access_token, "token_type": "bearer"}
-
-@router.get("/me", response_model=UserSchema)
-def get_current_user_info(current_user: User = Depends(get_current_user)):
-    """
-    Get current authenticated user information
-    
-    Requires valid JWT token in Authorization header.
-    """
-    logger.info(f"User info requested for: {current_user.email}")
-    return current_user
-
 @router.post("/forgot-password", response_model=APIResponse[None])
-def forgot_password(request: ForgotPasswordRequest, db: Session = Depends(get_db)):
+@limiter.limit(RATE_LIMITS["forgot_password"])
+def forgot_password(request: Request, forgot_request: ForgotPasswordRequest, db: Session = Depends(get_db)):
     """Request password reset token"""
-    email = request.email.strip().lower()
+    email = forgot_request.email.strip().lower()
     user = db.query(User).filter(User.email == email).first()
     
     if user and user.hashed_password:
@@ -299,16 +244,17 @@ def forgot_password(request: ForgotPasswordRequest, db: Session = Depends(get_db
         EmailService.send_password_reset_email(email, token)
     
     return APIResponse(success=True, message="If email exists, reset link sent", data=None)
-    
-    return APIResponse(success=True, message="If email exists, reset link sent", data=None)
 
 @router.post("/reset-password", response_model=APIResponse[None])
 def reset_password(request: ResetPasswordRequest, db: Session = Depends(get_db)):
     """Reset password with token"""
     user = db.query(User).filter(User.reset_token == request.token).first()
     
-    if not user or not user.reset_token_expires or user.reset_token_expires < datetime.utcnow():
-        raise HTTPException(status_code=400, detail="Invalid or expired token")
+    if not user:
+        raise HTTPException(status_code=400, detail="Invalid reset token")
+    
+    if not user.reset_token_expires or user.reset_token_expires < datetime.utcnow():
+        raise HTTPException(status_code=400, detail="Reset token has expired. Please request a new one")
     
     if len(request.new_password) < ValidationConfig.MIN_PASSWORD_LENGTH:
         raise HTTPException(status_code=400, detail=f"Password must be at least {ValidationConfig.MIN_PASSWORD_LENGTH} characters")

@@ -29,3 +29,7 @@ Thumbs.db
 # Frontend
 frontend/node_modules
 frontend/dist
+
+# tests and lints
+backend/.pytest_cache
+backend/.ruff_cache

@@ -1,6 +1,7 @@
 import re
-from typing import Dict, List, Optional
+from typing import Dict, List
 from difflib import SequenceMatcher
+from functools import lru_cache
 
 class ATSService:
     """Enhanced ATS compatibility checking and resume scoring"""
@@ -48,6 +49,7 @@ class ATSService:
         return ratio >= threshold
     
     @staticmethod
+    @lru_cache(maxsize=256)
     def normalize_text(text: str) -> str:
         """Normalize text for better matching"""
         if not text:
@@ -58,6 +60,7 @@ class ATSService:
         return text.strip()
     
     @staticmethod
+    @lru_cache(maxsize=128)
     def extract_keywords_from_job_description(job_description: str) -> List[str]:
         """Extract key terms from job description"""
         if not job_description:

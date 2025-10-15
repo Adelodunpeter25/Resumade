@@ -1,13 +1,14 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Query, Request, UploadFile, File, BackgroundTasks
 from fastapi.responses import Response, HTMLResponse
 from sqlalchemy.orm import joinedload, Session
-from typing import List, Optional
+from typing import Optional
 from datetime import datetime, timedelta
 import logging
 
 from app.core.database import get_db
 from app.core.auth import get_current_user_optional, get_current_user
 from app.core.constants import ResponseMessages
+from app.core.rate_limit import limiter, RATE_LIMITS
 from app.models import Resume, User, ResumeVersion, ShareLink
 from app.schemas import Resume as ResumeSchema, ResumeCreate, ResumeUpdate
 from app.schemas.response import APIResponse, PaginatedResponse
@@ -18,7 +19,9 @@ router = APIRouter(prefix="/resumes", tags=["Resumes"])
 logger = logging.getLogger(__name__)
 
 @router.post("/", response_model=APIResponse[ResumeSchema], status_code=status.HTTP_201_CREATED)
+@limiter.limit(RATE_LIMITS["create_resume"])
 def create_resume(
+    request: Request,
     resume: ResumeCreate,
     db: Session = Depends(get_db),
     current_user: Optional[User] = Depends(get_current_user_optional)
@@ -177,7 +180,9 @@ def delete_resume(
     return {"message": "Resume deleted"}
 
 @router.post("/generate-pdf")
+@limiter.limit(RATE_LIMITS["pdf_generate"])
 def generate_guest_pdf(
+    request: Request,
     resume_data: dict,
     template: str = Query("professional-blue"),
 ):
@@ -203,7 +208,7 @@ def generate_guest_pdf(
         return Response(
             content=content,
             media_type="application/pdf",
-            headers={"Content-Disposition": f"attachment; filename=resume.pdf"}
+            headers={"Content-Disposition": "attachment; filename=resume.pdf"}
         )
     except Exception as e:
         logger.error(f"Guest PDF generation failed: {str(e)}")
@@ -303,7 +308,9 @@ def _generate_txt_resume(resume) -> bytes:
     return '\n'.join(lines).encode('utf-8')
 
 @router.get("/{resume_id}/export")
+@limiter.limit(RATE_LIMITS["export"])
 async def export_resume(
+    request: Request,
     resume_id: int,
     format: str = Query("pdf", regex="^(pdf|docx|txt)$"),
     template: Optional[str] = None,
@@ -356,7 +363,9 @@ async def export_resume(
         raise HTTPException(status_code=500, detail=f"Export failed: {str(e)}")
 
 @router.get("/{resume_id}/score")
+@limiter.limit(RATE_LIMITS["ats_score"])
 def get_resume_score(
+    request: Request,
     resume_id: int,
     job_description: Optional[str] = Query(None, description="Job description for context-aware scoring"),
     role_level: str = Query("mid", regex="^(entry|mid|senior)$", description="Job level for dynamic weighting"),
@@ -417,16 +426,20 @@ def get_resume_analytics(
     }
 
 @router.post("/parse-pdf", response_model=APIResponse[dict])
-async def parse_pdf_resume(file: UploadFile = File(...)):
+@limiter.limit(RATE_LIMITS["pdf_upload"])
+async def parse_pdf_resume(request: Request, file: UploadFile = File(...)):
     """Parse PDF resume and extract data"""
     logger.info(f"Parsing PDF file: {file.filename}")
     
     if not file.filename.lower().endswith('.pdf'):
         raise HTTPException(status_code=400, detail="File must be a PDF")
     
+    # Check file size (max 10MB)
+    content = await file.read()
+    if len(content) > 10 * 1024 * 1024:
+        raise HTTPException(status_code=400, detail="File size exceeds 10MB limit")
+    
     try:
-        # Read file content
-        content = await file.read()
         
         # Parse PDF using PDFParserService
         parser = PDFParserService()

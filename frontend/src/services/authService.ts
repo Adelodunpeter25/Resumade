@@ -2,8 +2,8 @@ import { api } from './api';
 import type { User, APIResponse } from '../types';
 
 export const authService = {
-  register: async (email: string, password: string, full_name: string): Promise<APIResponse<User>> => {
-    return api.post('/api/auth/register', { email, password, full_name });
+  register: async (email: string, password: string, full_name: string): Promise<APIResponse<{ access_token: string; token_type: string }>> => {
+    return api.post('/api/auth/signup', { email, password, full_name });
   },
 
   login: async (email: string, password: string): Promise<APIResponse<{ access_token: string; user: User }>> => {

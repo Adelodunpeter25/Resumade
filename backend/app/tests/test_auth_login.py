@@ -1,5 +1,4 @@
 """Login endpoint tests"""
-import pytest
 from app.models import User
 
 def test_login_success(client, valid_user):

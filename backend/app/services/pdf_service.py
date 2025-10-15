@@ -1,13 +1,15 @@
 import os
-from io import BytesIO
 from jinja2 import Environment, FileSystemLoader
 from weasyprint import HTML
 import logging
 
 from app.models import Resume
 from app.services.storage_service import StorageService
+from app.core.cache import cached, template_cache
+from cachetools import TTLCache
 
 logger = logging.getLogger(__name__)
+template_list_cache = TTLCache(maxsize=1, ttl=86400)  # 24 hours
 
 class PDFService:
     
@@ -39,6 +41,7 @@ class PDFService:
         return os.path.join(current_dir, "templates")
     
     @staticmethod
+    @cached(template_list_cache)
     def get_available_templates() -> list:
         """Get list of available templates with categories"""
         templates = [
@@ -154,14 +157,17 @@ class PDFService:
         ]
         return templates
 
-    def render_resume_html(self, resume: Resume, template: str = "professional-blue") -> str:
-        """Render resume HTML from template"""
+    @cached(template_cache)
+    def _get_template(self, template: str):
+        """Get cached template object"""
         template_file = self.TEMPLATES.get(template, self.TEMPLATES["professional-blue"])
         template_path = self.get_template_path()
-        
         env = Environment(loader=FileSystemLoader(template_path))
-        template_obj = env.get_template(template_file)
-        
+        return env.get_template(template_file)
+    
+    def render_resume_html(self, resume: Resume, template: str = "professional-blue") -> str:
+        """Render resume HTML from template"""
+        template_obj = self._get_template(template)
         return template_obj.render(resume=resume)
     
     def generate_resume_pdf(self, resume: Resume, template: str = "professional-blue") -> bytes:

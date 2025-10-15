@@ -1,5 +1,5 @@
 from docx import Document
-from docx.shared import Pt, RGBColor, Inches
+from docx.shared import Pt
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from io import BytesIO
 import logging
