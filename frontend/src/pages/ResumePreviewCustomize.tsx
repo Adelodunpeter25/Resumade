@@ -36,7 +36,7 @@ export default function ResumePreviewCustomize() {
 
   const loadResume = async () => {
     try {
-      const response = await resumeService.getResume(id!)
+      const response = await resumeService.getResume(parseInt(id!))
       if (response.success && response.data) {
         setResume(response.data)
       }
@@ -58,7 +58,7 @@ export default function ResumePreviewCustomize() {
     setSaving(true)
     setSaveStatus('saving')
     try {
-      const response = await resumeService.updateResume(id!, resume)
+      const response = await resumeService.updateResume(parseInt(id!), resume)
       if (response.success) {
         setSaveStatus('saved')
         setPreviewKey(prev => prev + 1)
@@ -78,24 +78,22 @@ export default function ResumePreviewCustomize() {
   const handleExport = async (format: string) => {
     setDownloading(true)
     try {
-      const response = await resumeService.exportResume(id!, format)
-      if (response.success && response.data) {
-        const blob = new Blob([response.data], {
-          type: format === 'pdf' ? 'application/pdf' : format === 'docx' ? 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' : 'text/plain'
-        })
-        const url = window.URL.createObjectURL(blob)
-        const a = document.createElement('a')
-        a.href = url
-        a.download = `resume.${format}`
-        a.click()
-        window.URL.revokeObjectURL(url)
-      }
+      const blob = await resumeService.exportResume(parseInt(id!), format)
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `${resume?.title || 'resume'}.${format}`
+      document.body.appendChild(a)
+      a.click()
+      window.URL.revokeObjectURL(url)
+      document.body.removeChild(a)
     } catch (err) {
       console.error('Export failed:', err)
     } finally {
       setDownloading(false)
       setShowExportDropdown(false)
     }
+  }
   }
 
   if (loading) {

@@ -74,7 +74,7 @@ export const useResumeBuilder = (id?: string) => {
         } else {
           navigate('/login');
         }
-      } else if (id === 'new' && !localStorage.getItem('token')) {
+      } else if (id === 'new') {
         const savedResume = localStorage.getItem(GUEST_RESUME_KEY);
         if (savedResume) {
           const parsed = JSON.parse(savedResume);

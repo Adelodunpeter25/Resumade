@@ -168,9 +168,16 @@ def delete_resume(
     current_user: User = Depends(get_current_user)
 ):
     """Delete resume (requires login)"""
+    from app.models.resume_version import ResumeVersion
+    from app.models.share_link import ShareLink
+    
     resume = db.query(Resume).filter(Resume.id == resume_id, Resume.user_id == current_user.id).first()
     if not resume:
         raise HTTPException(status_code=404, detail="Resume not found")
+    
+    # Delete related records first
+    db.query(ResumeVersion).filter(ResumeVersion.resume_id == resume_id).delete()
+    db.query(ShareLink).filter(ShareLink.resume_id == resume_id).delete()
     
     db.delete(resume)
     db.commit()

@@ -49,6 +49,7 @@ export interface PersonalInfo {
   linkedin?: string;
   website?: string;
   summary?: string;
+  tagline?: string;
 }
 
 export interface Experience {
