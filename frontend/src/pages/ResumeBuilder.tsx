@@ -5,7 +5,7 @@ import type { Resume } from '../types';
 import { useErrorHandler, useResumeBuilder, usePreview, useResumeActions } from '../hooks';
 import ErrorNotification from '../components/common/ErrorNotification';
 import ErrorBoundary from '../components/common/ErrorBoundary';
-import TemplateSelector from '../components/resume/TemplateSelector';
+import { API_BASE_URL } from '../services/api';
 
 import PersonalInfoForm from '../components/resume/PersonalInfoForm';
 import ExperienceForm from '../components/resume/ExperienceForm';
@@ -59,7 +59,6 @@ export default function ResumeBuilder() {
 
   const changeTemplate = (templateName: string) => {
     updateResumeData('template_name', templateName);
-    setShowTemplateDropdown(false);
   };
 
   const handleLoginPrompt = () => {
@@ -219,30 +218,68 @@ export default function ResumeBuilder() {
 
       <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-12 gap-6">
-          {/* Steps Sidebar */}
-          <div className="col-span-2">
-            <div className="bg-white rounded-lg shadow p-4 sticky top-24">
-              <h3 className="font-semibold text-gray-900 mb-4">Sections</h3>
-              <nav className="space-y-2">
-                {steps.map((step, index) => (
+          {/* Steps Sidebar / Template Selector */}
+          <div className={showTemplateDropdown ? "col-span-3" : "col-span-2"}>
+            {showTemplateDropdown ? (
+              <div className="bg-white rounded-lg shadow p-4 sticky top-24">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-semibold text-gray-900">Templates</h3>
                   <button
-                    key={step.id}
-                    onClick={() => setCurrentStep(index)}
-                    className={`w-full text-left px-4 py-2 rounded-lg transition-colors text-sm ${
-                      currentStep === index
-                        ? 'bg-emerald-50 text-emerald-600 font-medium'
-                        : 'text-gray-600 hover:bg-gray-50'
-                    }`}
+                    onClick={() => setShowTemplateDropdown(false)}
+                    className="text-gray-500 hover:text-gray-700"
                   >
-                    {step.label}
+                    ✕
                   </button>
-                ))}
-              </nav>
-            </div>
+                </div>
+                <div className="space-y-3 max-h-[calc(100vh-200px)] overflow-y-auto">
+                  {templates.all_templates?.map((template) => (
+                    <button
+                      key={template.name}
+                      onClick={() => changeTemplate(template.name)}
+                      className={`w-full text-left p-3 rounded-lg border-2 transition-all ${
+                        resume.template_name === template.name
+                          ? 'border-emerald-500 bg-emerald-50'
+                          : 'border-gray-200 hover:border-emerald-300'
+                      }`}
+                    >
+                      <div className="aspect-[8.5/11] bg-gray-50 rounded mb-2 overflow-hidden border relative">
+                        <iframe
+                          src={`${API_BASE_URL}/api/resumes/templates/preview?template=${template.name}`}
+                          className="w-full h-full border-0 pointer-events-none scale-[0.25] origin-top-left"
+                          style={{ width: '400%', height: '400%' }}
+                          title={`${template.display_name} Preview`}
+                        />
+                      </div>
+                      <div className="font-medium text-sm">{template.display_name}</div>
+                      <div className="text-xs text-gray-500 mt-1">{template.description}</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div className="bg-white rounded-lg shadow p-4 sticky top-24">
+                <h3 className="font-semibold text-gray-900 mb-4">Sections</h3>
+                <nav className="space-y-2">
+                  {steps.map((step, index) => (
+                    <button
+                      key={step.id}
+                      onClick={() => setCurrentStep(index)}
+                      className={`w-full text-left px-4 py-2 rounded-lg transition-colors text-sm ${
+                        currentStep === index
+                          ? 'bg-emerald-50 text-emerald-600 font-medium'
+                          : 'text-gray-600 hover:bg-gray-50'
+                      }`}
+                    >
+                      {step.label}
+                    </button>
+                  ))}
+                </nav>
+              </div>
+            )}
           </div>
 
           {/* Form Content */}
-          <div className="col-span-5">
+          <div className={showTemplateDropdown ? "col-span-4" : "col-span-5"}>
             <div className="bg-white rounded-lg shadow p-6">
               <h2 className="text-2xl font-bold text-gray-900 mb-6">
                 {steps[currentStep].label}
@@ -311,15 +348,6 @@ export default function ResumeBuilder() {
         <PDFUploader
           onDataExtracted={handlePDFDataExtracted}
           onClose={() => setShowPDFUploader(false)}
-        />
-      )}
-      
-      {showTemplateDropdown && (
-        <TemplateSelector
-          templates={templates}
-          currentTemplate={resume.template_name || 'professional-blue'}
-          onTemplateChange={changeTemplate}
-          onClose={() => setShowTemplateDropdown(false)}
         />
       )}
       </div>
