@@ -124,19 +124,20 @@ export default function LandingPage() {
     },
     {
       question: "How long does it take to build a resume?",
-      answer: "Most users complete their resume in 10-15 minutes. Our intuitive interface and pre-written content suggestions make the process quick and easy."
+      answer: "Most users complete their resume in 10-15 minutes. Our intuitive interface makes the process quick, simple, and stress-free."
     },
     {
       question: "Can I edit my resume after downloading?",
-      answer: "Yes! Your resume is saved to your account and you can edit it anytime. Download updated versions whenever you need them."
+      answer: "Yes! If you’re logged in, your resume is saved to your account, and you can edit it anytime. You can always download updated versions whenever you need them."
     },
     {
       question: "What file formats are available?",
-      answer: "You can download your resume as PDF (recommended), Word document, or plain text format to meet different application requirements."
+      answer: "You can download your resume as a PDF (recommended), Word document (DOCX), or plain text (TXT) formats to meet different application requirements."
     },
     {
-      question: "Do you offer customer support?",
-      answer: "Yes! Our support team is available 24/7 via chat and email to help you create the perfect resume and answer any questions."
+      question: "Can I share my resume online?",
+      answer:
+        "Yes! Resumade lets you generate a unique, shareable link for your resume so you can easily send it to recruiters or include it in your job applications. You can update or disable the link at any time."
     }
   ]
   return (
