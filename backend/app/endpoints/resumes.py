@@ -7,9 +7,10 @@ import logging
 
 from app.core.database import get_db
 from app.core.auth import get_current_user_optional, get_current_user
-from app.core.constants import ResponseMessages
+from app.core.constants import ResponseMessages, CacheConstants
 from app.core.rate_limit import limiter, RATE_LIMITS
 from app.core.constants import FileConstants
+from app.core.cache import cached
 from app.models import Resume, User, ResumeVersion, ShareLink
 from app.schemas import Resume as ResumeSchema, ResumeCreate, ResumeUpdate, ResumeVersion as ResumeVersionSchema
 from app.schemas.response import APIResponse, PaginatedResponse
@@ -18,6 +19,14 @@ from app.services.pdf_parser_service import PDFParserService
 
 router = APIRouter(prefix="/resumes", tags=["Resumes"])
 logger = logging.getLogger(__name__)
+
+@cached(CacheConstants.RESUME_CACHE_TTL)
+def _get_resume_by_id(resume_id: int, db: Session) -> Resume:
+    """Cached resume retrieval by ID"""
+    return db.query(Resume).options(
+        joinedload(Resume.user),
+        joinedload(Resume.progress)
+    ).filter(Resume.id == resume_id).first()
 
 @router.post("/", response_model=APIResponse[ResumeSchema], status_code=status.HTTP_201_CREATED)
 @limiter.limit(RATE_LIMITS["create_resume"])

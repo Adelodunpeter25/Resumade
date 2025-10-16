@@ -5,11 +5,18 @@ import logging
 
 from app.core.database import get_db
 from app.core.auth import get_password_hash, get_current_user
+from app.core.cache import cached
+from app.core.constants import CacheConstants
 from app.models import User
 from app.schemas import User as UserSchema, UserCreate, UserUpdate
 
 router = APIRouter(prefix="/users", tags=["Users"])
 logger = logging.getLogger(__name__)
+
+@cached(CacheConstants.USER_CACHE_TTL)
+def _get_user_by_id(user_id: int, db: Session) -> User:
+    """Cached user retrieval by ID"""
+    return db.query(User).filter(User.id == user_id).first()
 
 @router.post("/", response_model=UserSchema, status_code=status.HTTP_201_CREATED)
 def create_user(
@@ -81,7 +88,7 @@ def get_user(
     """
     logger.info(f"Fetching user {user_id} requested by: {current_user.email}")
     
-    user = db.query(User).filter(User.id == user_id).first()
+    user = _get_user_by_id(user_id, db)
     if not user:
         logger.warning(f"User {user_id} not found")
         raise HTTPException(status_code=404, detail="User not found")

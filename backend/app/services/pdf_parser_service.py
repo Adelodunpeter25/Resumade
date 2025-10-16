@@ -4,7 +4,8 @@ from io import BytesIO
 from typing import Dict, List, Tuple
 from dateutil import parser as date_parser
 import logging
-from app.core.constants import ATSConstants
+from app.core.constants import ATSConstants, CacheConstants
+from app.core.cache import cached
 
 logger = logging.getLogger(__name__)
 

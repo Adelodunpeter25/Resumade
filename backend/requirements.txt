@@ -24,5 +24,5 @@ python-dateutil
 asyncpg
 aiofiles
 slowapi
-cachetools
+redis
 google-generativeai==0.8.5

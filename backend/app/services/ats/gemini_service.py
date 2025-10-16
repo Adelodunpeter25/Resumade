@@ -3,6 +3,8 @@ import logging
 from typing import Dict
 import google.generativeai as genai
 from app.core.config import settings
+from app.core.cache import cached
+from app.core.constants import CacheConstants
 
 logger = logging.getLogger(__name__)
 
@@ -18,6 +20,7 @@ class GeminiService:
             self.enabled = False
             logger.warning("Gemini API key not found. AI-enhanced feedback disabled.")
     
+    @cached(CacheConstants.ATS_SCORE_CACHE_TTL)
     def enhance_feedback(self, resume_data: dict, base_score: float, base_feedback: list) -> Dict:
         """Enhance ATS feedback with AI-generated insights"""
         if not self.enabled:

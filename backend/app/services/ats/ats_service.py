@@ -1,6 +1,7 @@
 """Main ATS service orchestrating scoring and analysis"""
 from typing import Dict
-from app.core.constants import ATSConstants
+from app.core.constants import ATSConstants, CacheConstants
+from app.core.cache import cached
 from .keywords import normalize_text, extract_keywords_from_job_description, get_keyword_suggestions
 from .validators import check_formatting_issues
 from .gemini_service import GeminiService
@@ -20,6 +21,7 @@ class ATSService:
     """Enhanced ATS compatibility checking and resume scoring"""
     
     @staticmethod
+    @cached(CacheConstants.ATS_SCORE_CACHE_TTL)
     def calculate_ats_score(resume_data: dict, job_description: str = None, role_level: str = "mid") -> Dict:
         """Calculate comprehensive ATS score with dynamic weighting"""
         

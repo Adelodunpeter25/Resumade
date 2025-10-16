@@ -1,9 +1,9 @@
 """Keyword extraction and matching utilities"""
 import re
 from typing import List
-from functools import lru_cache
 from difflib import SequenceMatcher
-from app.core.constants import ATSConstants
+from app.core.constants import ATSConstants, CacheConstants
+from app.core.cache import cached
 
 # Expanded keyword database with synonyms
 ATS_KEYWORDS = {
@@ -31,7 +31,7 @@ ATS_KEYWORDS = {
     ]
 }
 
-@lru_cache(maxsize=ATSConstants.LRU_CACHE_SIZE)
+@cached(CacheConstants.KEYWORD_CACHE_TTL)
 def normalize_text(text: str) -> str:
     """Normalize text for better matching"""
     if not text:
@@ -41,7 +41,7 @@ def normalize_text(text: str) -> str:
     text = re.sub(r'\s+', ' ', text)
     return text.strip()
 
-@lru_cache(maxsize=ATSConstants.JD_KEYWORDS_CACHE_SIZE)
+@cached(CacheConstants.KEYWORD_CACHE_TTL)
 def extract_keywords_from_job_description(job_description: str) -> List[str]:
     """Extract key terms from job description"""
     if not job_description:

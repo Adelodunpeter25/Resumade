@@ -5,12 +5,10 @@ import logging
 
 from app.models import Resume
 from app.services.storage_service import StorageService
-from app.core.cache import cached, template_cache
-from cachetools import TTLCache
+from app.core.cache import cached
 from app.core.constants import CacheConstants
 
 logger = logging.getLogger(__name__)
-template_list_cache = TTLCache(maxsize=1, ttl=CacheConstants.TEMPLATE_LIST_CACHE_TTL)
 
 class PDFService:
     
@@ -42,7 +40,7 @@ class PDFService:
         return os.path.join(current_dir, "templates")
     
     @staticmethod
-    @cached(template_list_cache)
+    @cached(CacheConstants.TEMPLATE_LIST_CACHE_TTL)
     def get_available_templates() -> list:
         """Get list of available templates with categories"""
         templates = [
@@ -158,7 +156,7 @@ class PDFService:
         ]
         return templates
 
-    @cached(template_cache)
+    @cached(CacheConstants.TEMPLATE_CACHE_TTL)
     def _get_template(self, template: str):
         """Get cached template object"""
         template_file = self.TEMPLATES.get(template, self.TEMPLATES["professional-blue"])

@@ -28,6 +28,10 @@ class Settings(BaseSettings):
     
     #gemini ai settings
     gemini_api_key: str = ""
+    
+    # Redis settings
+    upstash_redis_url: str = ""
+    upstash_redis_token: str = ""
     class Config:
         env_file = ".env"
 

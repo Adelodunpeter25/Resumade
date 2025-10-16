@@ -3,6 +3,8 @@ from docx.shared import Pt
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from io import BytesIO
 import logging
+from app.core.cache import cached
+from app.core.constants import CacheConstants
 
 logger = logging.getLogger(__name__)
 
@@ -10,6 +12,7 @@ class DOCXService:
     """Service for generating DOCX resumes"""
     
     @staticmethod
+    @cached(CacheConstants.TEMPLATE_CACHE_TTL)
     def generate_resume_docx(resume_data: dict) -> bytes:
         """Generate a DOCX file from resume data"""
         doc = Document()
