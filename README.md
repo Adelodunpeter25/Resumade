@@ -20,7 +20,6 @@ Build and customize professional resumes with beautiful, responsive templates, r
 - 📜 **Version History** - Track and restore previous versions (Authenticated user)
 - 🔗 **Smart Resume Sharing** - Generate shareable links with custom expiration
 - 🎨 **Template Customization** - Customize colors, fonts, and layout
-- 📱 **Responsive Design** - Works on desktop, tablet, and mobile
 
 ### Authentication & Security
 - 🔐 **Email/Password Authentication**
@@ -66,14 +65,14 @@ Build and customize professional resumes with beautiful, responsive templates, r
 - Python 3.13+
 - Node.js 18+
 - PostgreSQL 14+
-- npm or yarn
+- npm
 
 ### Installation
 
 #### 1. Clone the repository
 ```bash
 git clone https://github.com/Adelodunpeter25/Resumade.git
-cd resumade
+cd Resumade
 ```
 
 #### 2. Backend Setup
@@ -81,11 +80,11 @@ cd resumade
 cd backend
 
 # Create virtual environment
-python -m venv venv
+python3 -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
 
 # Install dependencies
-pip install -r requirements.txt
+pip3 install -r requirements.txt
 
 # Copy environment file
 cp .env.example .env
