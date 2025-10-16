@@ -34,20 +34,21 @@ export default function ResumeBuilder() {
   const navigate = useNavigate();
   const { error, hideError } = useErrorHandler();
   
+  // Local UI state
+  const [currentStep, setCurrentStep] = useState(0);
+  const [showTemplateDropdown, setShowTemplateDropdown] = useState(false);
+  const [showExportDropdown, setShowExportDropdown] = useState(false);
+  const [showPDFUploader, setShowPDFUploader] = useState(false);
+  const [hoveredTemplate, setHoveredTemplate] = useState<string | null>(null);
+  
   // Custom hooks for organized logic
   const {
     resume, templates, saving, saveStatus, loading, isAuthenticated,
     handleSave, updateResumeData
   } = useResumeBuilder(id);
   
-  const { previewIframeRef } = usePreview(resume);
+  const { previewIframeRef } = usePreview(resume, hoveredTemplate);
   const { downloading, handleDownload, handleFeatureClick } = useResumeActions(resume, isAuthenticated, id);
-  
-  // Local UI state
-  const [currentStep, setCurrentStep] = useState(0);
-  const [showTemplateDropdown, setShowTemplateDropdown] = useState(false);
-  const [showExportDropdown, setShowExportDropdown] = useState(false);
-  const [showPDFUploader, setShowPDFUploader] = useState(false);
 
   // UI helper functions
   const handlePDFDataExtracted = (extractedData: Partial<Resume>) => {
@@ -128,7 +129,7 @@ export default function ResumeBuilder() {
                   className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
                 >
                   <Palette size={20} />
-                  <span>Template</span>
+                  <span>Templates</span>
                 </button>
               </div>
               <button
@@ -236,6 +237,8 @@ export default function ResumeBuilder() {
                     <button
                       key={template.name}
                       onClick={() => changeTemplate(template.name)}
+                      onMouseEnter={() => setHoveredTemplate(template.name)}
+                      onMouseLeave={() => setHoveredTemplate(null)}
                       className={`w-full text-left p-3 rounded-lg border-2 transition-all ${
                         resume.template_name === template.name
                           ? 'border-emerald-500 bg-emerald-50'

@@ -2,12 +2,18 @@ import { useEffect, useRef, useCallback, useMemo } from 'react';
 import { API_BASE_URL } from '../services/api';
 import type { Resume } from '../types';
 
-export const usePreview = (resume: Partial<Resume>) => {
+export const usePreview = (resume: Partial<Resume>, hoveredTemplate?: string | null) => {
   const previewIframeRef = useRef<HTMLIFrameElement>(null);
   const timeoutRef = useRef<ReturnType<typeof setTimeout>>();
 
+  // Use hovered template if available, otherwise use resume's template
+  const activeTemplate = hoveredTemplate || resume.template_name;
+
   // Memoize serialized resume to prevent unnecessary updates
-  const resumeJson = useMemo(() => JSON.stringify(resume), [resume]);
+  const resumeJson = useMemo(() => JSON.stringify({
+    ...resume,
+    template_name: activeTemplate
+  }), [resume, activeTemplate]);
 
   const updatePreview = useCallback(() => {
     if (previewIframeRef.current) {
