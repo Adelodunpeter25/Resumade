@@ -156,9 +156,8 @@ class PDFService:
         ]
         return templates
 
-    @cached(CacheConstants.TEMPLATE_CACHE_TTL)
     def _get_template(self, template: str):
-        """Get cached template object"""
+        """Get template object (not cached due to serialization issues)"""
         template_file = self.TEMPLATES.get(template, self.TEMPLATES["professional-blue"])
         template_path = self.get_template_path()
         env = Environment(loader=FileSystemLoader(template_path))

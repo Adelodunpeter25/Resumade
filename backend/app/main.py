@@ -1,3 +1,4 @@
+import asyncio
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.exc import IntegrityError
@@ -48,9 +49,49 @@ app.include_router(resumes_router, prefix="/api")
 app.include_router(admin_router, prefix="/api")
 app.include_router(progress_router, prefix="/api")
 
+async def preload_heavy_imports():
+    """Pre-load heavy imports in background after startup"""
+    logger.info("Pre-loading heavy dependencies in background...")
+    
+    # Pre-load WeasyPrint
+    try:
+        from weasyprint import HTML
+        logger.info("WeasyPrint loaded")
+    except Exception as e:
+        logger.warning(f"WeasyPrint load failed: {e}")
+    
+    # Pre-load Gemini AI
+    try:
+        import google.generativeai as genai
+        from app.core.config import settings
+        if settings.gemini_api_key:
+            genai.configure(api_key=settings.gemini_api_key)
+            genai.GenerativeModel('gemini-2.0-flash')
+            logger.info("Gemini AI loaded")
+    except Exception as e:
+        logger.warning(f"Gemini AI load failed: {e}")
+    
+    # Pre-load PDF parsing
+    try:
+        import PyPDF2
+        logger.info("PyPDF2 loaded")
+    except Exception as e:
+        logger.warning(f"PyPDF2 load failed: {e}")
+    
+    # Pre-load DOCX
+    try:
+        from docx import Document
+        logger.info("python-docx loaded")
+    except Exception as e:
+        logger.warning(f"python-docx load failed: {e}")
+    
+    logger.info("Heavy dependencies pre-loaded")
+
 @app.on_event("startup")
 async def startup_event():
     logger.info("Resumade API starting up...")
+    # Start background task to load heavy imports
+    asyncio.create_task(preload_heavy_imports())
 
 @app.on_event("shutdown")
 async def shutdown_event():
