@@ -14,7 +14,7 @@ Build and customize professional resumes with beautiful, responsive templates, r
 - 🎨 **Multiple Professional Templates** - Choose from modern, professional designs
 - 📝 **Real-time Preview** - See changes instantly as you type
 - 🤖 **AI-Powered ATS Optimization** - Google Gemini AI provides intelligent scoring and personalized recommendations
-- 📊 **Skill Validation** - 127+ validated technical and soft skills
+- 📊 **Skill Validation** - 120+ validated technical and soft skills
 - 📄 **Multiple Export Formats** - PDF, DOCX, and TXT
 - 📤 **PDF Upload & Parse** - Extract data from existing resumes
 - 📜 **Version History** - Track and restore previous versions (Authenticated user)
