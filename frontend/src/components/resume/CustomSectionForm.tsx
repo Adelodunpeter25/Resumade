@@ -1,13 +1,6 @@
 import { useState } from 'react'
 import { Plus, Trash2, Edit2, Check, X } from 'lucide-react'
-
-interface CustomSectionItem {
-  id: string
-  title: string
-  description?: string
-  date?: string
-  location?: string
-}
+import type { CustomSectionItem } from '../../types'
 
 interface Props {
   sectionName: string

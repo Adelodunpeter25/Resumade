@@ -28,8 +28,10 @@ export interface Resume {
 
 export interface CustomSection {
   id: string;
-  name: string;
-  data: any[];
+  name?: string;
+  title?: string;
+  data?: any[];
+  items?: CustomSectionItem[];
 }
 
 export interface TemplateCustomization {
@@ -92,9 +94,11 @@ export interface Project {
 }
 
 export interface CustomSectionItem {
+  id?: string;
   title?: string;
   subtitle?: string;
   date?: string;
+  location?: string;
   description?: string;
   details?: string[];
 }

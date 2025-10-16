@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, createElement } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Save, Palette, BarChart3, History, Check, LogIn, Download, ChevronDown, Upload } from 'lucide-react';
 import type { Resume } from '../types';
@@ -87,7 +87,7 @@ export default function ResumeBuilder() {
   const CurrentStepComponent = currentStepData.component;
   
   // For custom sections, pass specific props
-  const customSectionProps = currentStepData.isCustom ? {
+  const customSectionProps = 'isCustom' in currentStepData && currentStepData.isCustom ? {
     sectionName: currentStepData.label,
     items: resume.custom_sections?.find((s: any) => s.id === currentStepData.id)?.items || [],
     onChange: (items: any) => {
@@ -316,12 +316,24 @@ export default function ResumeBuilder() {
               <h2 className="text-2xl font-bold text-gray-900 mb-6">
                 {allSteps[currentStep].label}
               </h2>
-              <CurrentStepComponent
-                data={resume}
-                onChange={updateResumeData}
-                resume={resume}
-                {...customSectionProps}
-              />
+              {'isCustom' in currentStepData && currentStepData.isCustom ? (
+                <CustomSectionForm
+                  sectionName={customSectionProps.sectionName}
+                  items={customSectionProps.items}
+                  onChange={customSectionProps.onChange}
+                />
+              ) : currentStepData.component === SectionManager ? (
+                <SectionManager
+                  resume={resume}
+                  onChange={updateResumeData}
+                />
+              ) : (
+                createElement(CurrentStepComponent as any, {
+                  data: resume,
+                  onChange: updateResumeData,
+                  resume: resume
+                })
+              )}
               
               {/* Navigation Buttons */}
               <div className="flex justify-between mt-8 pt-6 border-t border-gray-200">

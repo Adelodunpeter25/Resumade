@@ -75,7 +75,7 @@ export default function ResumePreviewCustomize() {
     updateResumeData(field, value)
   }
 
-  const handleExport = async (format: string) => {
+  const handleExport = async (format: 'pdf' | 'docx' | 'txt') => {
     setDownloading(true)
     try {
       const blob = await resumeService.exportResume(parseInt(id!), format)
@@ -93,7 +93,6 @@ export default function ResumePreviewCustomize() {
       setDownloading(false)
       setShowExportDropdown(false)
     }
-  }
   }
 
   if (loading) {
