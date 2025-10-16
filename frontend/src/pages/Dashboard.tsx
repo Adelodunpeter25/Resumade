@@ -4,6 +4,8 @@ import { Plus, FileText, Download, Trash2, Edit, LogOut, Search, Copy, Check } f
 import { resumeService, authService } from '../services'
 import { API_BASE_URL } from '../services/api'
 import type { Resume, User, Template } from '../types'
+import ConfirmDialog from '../components/ui/ConfirmDialog'
+import ErrorMessage from '../components/ui/ErrorMessage'
 
 export default function Dashboard() {
   const navigate = useNavigate()
@@ -18,6 +20,8 @@ export default function Dashboard() {
   const [templates, setTemplates] = useState<string[]>([])
   const [activeTab, setActiveTab] = useState<'resumes' | 'templates' | 'share'>('resumes')
   const [allTemplates, setAllTemplates] = useState<Template[]>([])
+  const [confirmDialog, setConfirmDialog] = useState<{isOpen: boolean, title: string, message: string, onConfirm: () => void} | null>(null)
+  const [error, setError] = useState('')
   const [previewUrls, setPreviewUrls] = useState<Record<string, string>>({})
   const [templateSearchQuery, setTemplateSearchQuery] = useState('')
   const [shareSubTab, setShareSubTab] = useState<'create' | 'view'>('create')
@@ -113,14 +117,21 @@ export default function Dashboard() {
   }
 
   const handleDelete = async (id: number) => {
-    if (!confirm('Delete this resume?')) return
-    
-    try {
-      await resumeService.deleteResume(id)
-      loadData()
-    } catch (err) {
-      alert('Failed to delete resume')
-    }
+    setConfirmDialog({
+      isOpen: true,
+      title: 'Delete Resume',
+      message: 'Are you sure you want to delete this resume? This action cannot be undone.',
+      onConfirm: async () => {
+        try {
+          await resumeService.deleteResume(id)
+          setConfirmDialog(null)
+          loadData()
+        } catch (err) {
+          setError('Failed to delete resume')
+          setConfirmDialog(null)
+        }
+      }
+    })
   }
 
   const handleDownload = async (id: number, title: string) => {
@@ -133,7 +144,7 @@ export default function Dashboard() {
       a.click()
       window.URL.revokeObjectURL(url)
     } catch (err) {
-      alert('Failed to download resume')
+      setError('Failed to download resume')
     }
   }
 
@@ -158,9 +169,21 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {confirmDialog && (
+        <ConfirmDialog
+          isOpen={confirmDialog.isOpen}
+          title={confirmDialog.title}
+          message={confirmDialog.message}
+          onConfirm={confirmDialog.onConfirm}
+          onCancel={() => setConfirmDialog(null)}
+          variant="danger"
+        />
+      )}
+      
       {/* Header */}
       <header className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <ErrorMessage message={error} onClose={() => setError('')} />
           <div className="flex justify-between items-center">
             <div className="flex items-center space-x-3">
               <div className="w-10 h-10 bg-gradient-to-br from-emerald-600 to-teal-600 rounded-lg flex items-center justify-center">
@@ -499,19 +522,19 @@ export default function Dashboard() {
                     <button
                       onClick={async () => {
                         if (!selectedResumeId) {
-                          alert('Please select a resume')
+                          setError('Please select a resume')
                           return
                         }
                         setCreating(true)
                         try {
                           const response = await resumeService.createShareLink(selectedResumeId, expiresIn)
                           if (response.success) {
-                            alert('Share link created successfully!')
+                            setError('')
                             setShareSubTab('view')
                           }
                         } catch (err: any) {
                           const errorMsg = err.response?.data?.detail || err.message || 'Failed to create share link'
-                          alert(errorMsg)
+                          setError(errorMsg)
                         } finally {
                           setCreating(false)
                         }
@@ -572,14 +595,22 @@ export default function Dashboard() {
                                 )}
                               </div>
                               <button
-                                onClick={async () => {
-                                  if (!confirm('Delete this share link?')) return
-                                  try {
-                                    await resumeService.deleteShareLink(link.resume_id, link.token)
-                                    setShareLinks(shareLinks.filter(l => l.token !== link.token))
-                                  } catch (err) {
-                                    alert('Failed to delete share link')
-                                  }
+                                onClick={() => {
+                                  setConfirmDialog({
+                                    isOpen: true,
+                                    title: 'Delete Share Link',
+                                    message: 'Are you sure you want to delete this share link? Anyone with this link will no longer be able to access the resume.',
+                                    onConfirm: async () => {
+                                      try {
+                                        await resumeService.deleteShareLink(link.resume_id, link.token)
+                                        setShareLinks(shareLinks.filter(l => l.token !== link.token))
+                                        setConfirmDialog(null)
+                                      } catch (err) {
+                                        setError('Failed to delete share link')
+                                        setConfirmDialog(null)
+                                      }
+                                    }
+                                  })
                                 }}
                                 className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg"
                                 title="Delete"

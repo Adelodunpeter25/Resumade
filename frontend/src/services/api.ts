@@ -8,13 +8,22 @@ const getHeaders = () => {
   };
 };
 
+const handleResponse = async (response: Response) => {
+  const data = await response.json();
+  if (!response.ok) {
+    const error: any = new Error(data.message || data.error || `HTTP error! status: ${response.status}`);
+    error.response = { status: response.status, data };
+    throw error;
+  }
+  return data;
+};
+
 export const api = {
   get: async (endpoint: string) => {
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
       headers: getHeaders()
     });
-    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-    return response.json();
+    return handleResponse(response);
   },
 
   post: async (endpoint: string, data: any) => {
@@ -23,8 +32,7 @@ export const api = {
       headers: getHeaders(),
       body: JSON.stringify(data)
     });
-    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-    return response.json();
+    return handleResponse(response);
   },
 
   put: async (endpoint: string, data: any) => {
@@ -33,8 +41,7 @@ export const api = {
       headers: getHeaders(),
       body: JSON.stringify(data)
     });
-    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-    return response.json();
+    return handleResponse(response);
   },
 
   delete: async (endpoint: string) => {
@@ -42,7 +49,6 @@ export const api = {
       method: 'DELETE',
       headers: getHeaders()
     });
-    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-    return response.json();
+    return handleResponse(response);
   }
 };

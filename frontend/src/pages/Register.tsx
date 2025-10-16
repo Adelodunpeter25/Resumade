@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Eye, EyeOff, ArrowLeft } from 'lucide-react'
 import { authService, API_BASE_URL } from '../services'
 import { Link } from 'react-router-dom'
+import ErrorMessage from '../components/ui/ErrorMessage'
 
 export default function Register() {
   const [fullName, setFullName] = useState('')
@@ -36,8 +37,16 @@ export default function Register() {
       } else {
         setError(response.error || 'Registration failed')
       }
-    } catch (err) {
-      setError('An error occurred. Please try again.')
+    } catch (err: any) {
+      if (err.response?.status === 429) {
+        setError('Too many registration attempts. Please try again later.')
+      } else if (err.response?.status === 400) {
+        setError(err.message || 'Email already exists or invalid input.')
+      } else if (err.message) {
+        setError(err.message)
+      } else {
+        setError('An error occurred. Please try again.')
+      }
     } finally {
       setLoading(false)
     }
@@ -80,11 +89,7 @@ export default function Register() {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
-            {error && (
-              <div className="bg-red-50 text-red-600 px-4 py-3 rounded-lg text-sm">
-                {error}
-              </div>
-            )}
+            <ErrorMessage message={error} onClose={() => setError('')} />
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
