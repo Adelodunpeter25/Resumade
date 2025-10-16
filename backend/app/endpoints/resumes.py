@@ -709,15 +709,33 @@ def get_share_links(
         ShareLink.is_active == True
     ).all()
     
-    links_data = [{
-        "id": link.id,
-        "token": link.token,
-        "slug": link.slug,
-        "resume_id": link.resume_id,
-        "expires_at": link.expires_at,
-        "is_active": link.is_active,
-        "created_at": link.created_at
-    } for link in share_links]
+    from app.models.resume_analytics import ResumeAnalytics
+    
+    links_data = []
+    for link in share_links:
+        # Get analytics counts
+        views = db.query(func.count(ResumeAnalytics.id)).filter(
+            ResumeAnalytics.share_token == link.token,
+            ResumeAnalytics.event_type == 'view'
+        ).scalar() or 0
+        
+        downloads = db.query(func.count(ResumeAnalytics.id)).filter(
+            ResumeAnalytics.share_token == link.token,
+            ResumeAnalytics.event_type == 'download'
+        ).scalar() or 0
+        
+        links_data.append({
+            "id": link.id,
+            "token": link.token,
+            "slug": link.slug,
+            "resume_id": link.resume_id,
+            "expires_at": link.expires_at,
+            "is_active": link.is_active,
+            "created_at": link.created_at,
+            "views": views,
+            "downloads": downloads
+        })
+    
     return APIResponse(success=True, message="Share links retrieved", data=links_data)
 
 @router.post("/{resume_id}/share")
@@ -817,8 +835,10 @@ def preview_shared_resume(slug: str, db: Session = Depends(get_db)):
     return HTMLResponse(content=html_content)
 
 @router.get("/shared/{slug:path}", response_model=APIResponse[ResumeSchema])
-def get_shared_resume(slug: str, db: Session = Depends(get_db)):
+def get_shared_resume(slug: str, request: Request, db: Session = Depends(get_db)):
     """Access resume via public share link"""
+    from app.models.resume_analytics import ResumeAnalytics
+    
     share_link = db.query(ShareLink).filter(ShareLink.slug == slug, ShareLink.is_active == True).first()
     if not share_link:
         share_link = db.query(ShareLink).filter(ShareLink.token == slug, ShareLink.is_active == True).first()
@@ -836,6 +856,16 @@ def get_shared_resume(slug: str, db: Session = Depends(get_db)):
     resume = db.query(Resume).filter(Resume.id == share_link.resume_id).first()
     if not resume:
         raise HTTPException(status_code=404, detail=ResponseMessages.RESUME_NOT_FOUND)
+    
+    # Track view analytics
+    analytics = ResumeAnalytics(
+        resume_id=resume.id,
+        share_token=share_link.token,
+        event_type='view',
+        ip_address=request.client.host if request.client else None,
+        user_agent=request.headers.get('user-agent')
+    )
+    db.add(analytics)
     
     resume.views += 1
     db.commit()

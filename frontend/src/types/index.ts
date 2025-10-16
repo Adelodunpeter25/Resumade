@@ -91,6 +91,14 @@ export interface Project {
   url?: string;
 }
 
+export interface CustomSectionItem {
+  title?: string;
+  subtitle?: string;
+  date?: string;
+  description?: string;
+  details?: string[];
+}
+
 export interface ShareLink {
   id: number;
   resume_id: number;
@@ -99,6 +107,8 @@ export interface ShareLink {
   expires_at: string;
   is_active: boolean;
   created_at: string;
+  views?: number;
+  downloads?: number;
 }
 
 export interface ResumeVersion {

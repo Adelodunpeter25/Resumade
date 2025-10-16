@@ -330,7 +330,18 @@ export default function Dashboard() {
               <div className="divide-y divide-gray-200">
               {filteredResumes.map((resume) => (
                 <div key={resume.id} className="p-6 hover:bg-gray-50 transition-colors">
-                  <div className="flex justify-between items-start">
+                  <div className="flex gap-6 items-start">
+                    {/* Thumbnail Preview */}
+                    <div className="flex-shrink-0">
+                      <iframe
+                        src={`${API_BASE_URL}/api/resumes/${resume.id}/preview`}
+                        className="w-32 h-40 border border-gray-200 rounded-lg pointer-events-none"
+                        style={{ transform: 'scale(0.25)', transformOrigin: 'top left', width: '128px', height: '160px' }}
+                        title={`Preview of ${resume.title}`}
+                      />
+                    </div>
+                    
+                    {/* Resume Details */}
                     <div className="flex-1">
                       <h3 className="text-lg font-semibold text-gray-900 mb-1">{resume.title}</h3>
                       <div className="flex items-center gap-4 text-sm text-gray-600">
@@ -353,20 +364,21 @@ export default function Dashboard() {
                           </>
                         )}
                       </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => navigate(`/resume/${resume.id}`)}
-                        className="p-2 text-gray-600 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg"
-                        title="Edit"
-                      >
-                        <Edit size={20} />
-                      </button>
-                      <button
-                        onClick={() => handleDownload(resume.id, resume.title)}
-                        className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg"
-                        title="Download"
-                      >
+                      
+                      {/* Action Buttons */}
+                      <div className="flex items-center gap-2 mt-4">
+                        <button
+                          onClick={() => navigate(`/resume/${resume.id}`)}
+                          className="p-2 text-gray-600 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg"
+                          title="Edit"
+                        >
+                          <Edit size={20} />
+                        </button>
+                        <button
+                          onClick={() => handleDownload(resume.id, resume.title)}
+                          className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg"
+                          title="Download"
+                        >
                         <Download size={20} />
                       </button>
 
@@ -377,6 +389,7 @@ export default function Dashboard() {
                       >
                         <Trash2 size={20} />
                       </button>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -535,6 +548,14 @@ export default function Dashboard() {
                                     </span>
                                   )}
                                 </div>
+                                
+                                {/* Analytics */}
+                                {(link.views || link.downloads) && (
+                                  <div className="flex items-center gap-4 mt-2 text-sm text-gray-600">
+                                    <span>👁️ {link.views || 0} views</span>
+                                    <span>⬇️ {link.downloads || 0} downloads</span>
+                                  </div>
+                                )}
                               </div>
                               <button
                                 onClick={async () => {
