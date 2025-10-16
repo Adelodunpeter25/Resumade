@@ -23,6 +23,5 @@ resend
 python-dateutil
 asyncpg
 aiofiles
-slowapi
-redis
+upstash-redis
 google-generativeai==0.8.5
