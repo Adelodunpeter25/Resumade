@@ -332,11 +332,17 @@ export default function Dashboard() {
                 <div key={resume.id} className="p-6 hover:bg-gray-50 transition-colors">
                   <div className="flex gap-6 items-start">
                     {/* Thumbnail Preview */}
-                    <div className="flex-shrink-0">
+                    <div className="flex-shrink-0 w-32 h-40 overflow-hidden border border-gray-200 rounded-lg bg-white">
                       <iframe
                         src={`${API_BASE_URL}/api/resumes/${resume.id}/preview`}
-                        className="w-32 h-40 border border-gray-200 rounded-lg pointer-events-none"
-                        style={{ transform: 'scale(0.25)', transformOrigin: 'top left', width: '128px', height: '160px' }}
+                        className="pointer-events-none"
+                        style={{ 
+                          width: '800px', 
+                          height: '1000px', 
+                          transform: 'scale(0.16)', 
+                          transformOrigin: 'top left',
+                          border: 'none'
+                        }}
                         title={`Preview of ${resume.title}`}
                       />
                     </div>

@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Query, Request, UploadFile, File, BackgroundTasks
 from fastapi.responses import Response, HTMLResponse
 from sqlalchemy.orm import joinedload, Session
+from sqlalchemy import func
 from typing import Optional
 from datetime import datetime, timedelta
 import logging

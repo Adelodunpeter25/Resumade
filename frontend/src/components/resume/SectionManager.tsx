@@ -1,5 +1,22 @@
 import { useState } from 'react'
 import { Plus, Edit2, Trash2, GripVertical, Check, X } from 'lucide-react'
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core'
+import type { DragEndEvent } from '@dnd-kit/core'
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 import type { Resume } from '../../types'
 
 interface Section {
@@ -27,6 +44,88 @@ const defaultSections: Section[] = [
   { id: 'interests', name: 'Interests', type: 'default', data: [] }
 ]
 
+function SortableSection({ section, editingSection, editName, setEditName, saveEdit, cancelEdit, startEditing, deleteSection }: any) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+  } = useSortable({ id: section.id })
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  }
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 bg-white"
+    >
+      <div {...attributes} {...listeners} className="cursor-move">
+        <GripVertical size={16} className="text-gray-400" />
+      </div>
+      
+      {editingSection === section.id ? (
+        <div className="flex-1 flex items-center gap-2">
+          <input
+            type="text"
+            value={editName}
+            onChange={(e) => setEditName(e.target.value)}
+            className="flex-1 px-2 py-1 border border-gray-300 rounded text-sm"
+            autoFocus
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') saveEdit()
+              if (e.key === 'Escape') cancelEdit()
+            }}
+          />
+          <button
+            onClick={saveEdit}
+            className="p-1 text-emerald-600 hover:bg-emerald-50 rounded"
+          >
+            <Check size={16} />
+          </button>
+          <button
+            onClick={cancelEdit}
+            className="p-1 text-red-600 hover:bg-red-50 rounded"
+          >
+            <X size={16} />
+          </button>
+        </div>
+      ) : (
+        <>
+          <div className="flex-1">
+            <span className="font-medium text-gray-900">{section.name}</span>
+            <span className="ml-2 text-xs text-gray-500">
+              ({section.type === 'default' ? 'Default' : 'Custom'})
+            </span>
+          </div>
+          
+          <button
+            onClick={() => startEditing(section.id, section.name)}
+            className="p-1 text-gray-600 hover:bg-gray-100 rounded"
+            title="Rename section"
+          >
+            <Edit2 size={16} />
+          </button>
+          
+          {section.type === 'custom' && (
+            <button
+              onClick={() => deleteSection(section.id)}
+              className="p-1 text-red-600 hover:bg-red-50 rounded"
+              title="Delete section"
+            >
+              <Trash2 size={16} />
+            </button>
+          )}
+        </>
+      )}
+    </div>
+  )
+}
+
 export default function SectionManager({ resume, onChange }: Props) {
   const [sections, setSections] = useState<Section[]>(() => {
     if (!resume) return defaultSections
@@ -39,9 +138,9 @@ export default function SectionManager({ resume, onChange }: Props) {
       name: sectionNames[section.id] || section.name
     })).concat(customSections.map((custom: any) => ({
       id: custom.id,
-      name: custom.name,
+      name: custom.title || custom.name,
       type: 'custom' as const,
-      data: custom.data || []
+      data: custom.items || custom.data || []
     })))
   })
   
@@ -49,10 +148,28 @@ export default function SectionManager({ resume, onChange }: Props) {
   const [editName, setEditName] = useState('')
   const [newSectionName, setNewSectionName] = useState('')
 
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  )
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event
+
+    if (over && active.id !== over.id) {
+      setSections((items) => {
+        const oldIndex = items.findIndex((i) => i.id === active.id)
+        const newIndex = items.findIndex((i) => i.id === over.id)
+        const newSections = arrayMove(items, oldIndex, newIndex)
+        updateSections(newSections)
+        return newSections
+      })
+    }
+  }
+
   const updateSections = (newSections: Section[]) => {
-    setSections(newSections)
-    
-    // Update resume data
     const sectionNames: Record<string, string> = {}
     const customSections: any[] = []
     
@@ -65,8 +182,8 @@ export default function SectionManager({ resume, onChange }: Props) {
       } else {
         customSections.push({
           id: section.id,
-          name: section.name,
-          data: section.data || []
+          title: section.name,
+          items: section.data || []
         })
       }
     })
@@ -89,6 +206,7 @@ export default function SectionManager({ resume, onChange }: Props) {
         : section
     )
     
+    setSections(newSections)
     updateSections(newSections)
     setEditingSection(null)
     setEditName('')
@@ -109,88 +227,50 @@ export default function SectionManager({ resume, onChange }: Props) {
       data: []
     }
     
-    updateSections([...sections, newSection])
+    const newSections = [...sections, newSection]
+    setSections(newSections)
+    updateSections(newSections)
     setNewSectionName('')
   }
 
   const deleteSection = (sectionId: string) => {
     const newSections = sections.filter(section => section.id !== sectionId)
+    setSections(newSections)
     updateSections(newSections)
   }
 
   return (
     <div className="bg-white rounded-lg shadow p-6">
       <h3 className="text-lg font-semibold text-gray-900 mb-4">Manage Sections</h3>
+      <p className="text-sm text-gray-600 mb-4">Drag to reorder, click to rename, or add custom sections</p>
       
       {/* Section List */}
-      <div className="space-y-2 mb-6">
-        {sections.map((section) => (
-          <div
-            key={section.id}
-            className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50"
-          >
-            <GripVertical 
-              size={16} 
-              className="text-gray-400 cursor-move"
-            />
-            
-            {editingSection === section.id ? (
-              <div className="flex-1 flex items-center gap-2">
-                <input
-                  type="text"
-                  value={editName}
-                  onChange={(e) => setEditName(e.target.value)}
-                  className="flex-1 px-2 py-1 border border-gray-300 rounded text-sm"
-                  autoFocus
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') saveEdit()
-                    if (e.key === 'Escape') cancelEdit()
-                  }}
-                />
-                <button
-                  onClick={saveEdit}
-                  className="p-1 text-emerald-600 hover:bg-emerald-50 rounded"
-                >
-                  <Check size={16} />
-                </button>
-                <button
-                  onClick={cancelEdit}
-                  className="p-1 text-red-600 hover:bg-red-50 rounded"
-                >
-                  <X size={16} />
-                </button>
-              </div>
-            ) : (
-              <>
-                <div className="flex-1">
-                  <span className="font-medium text-gray-900">{section.name}</span>
-                  <span className="ml-2 text-xs text-gray-500">
-                    ({section.type === 'default' ? 'Default' : 'Custom'})
-                  </span>
-                </div>
-                
-                <button
-                  onClick={() => startEditing(section.id, section.name)}
-                  className="p-1 text-gray-600 hover:bg-gray-100 rounded"
-                  title="Rename section"
-                >
-                  <Edit2 size={16} />
-                </button>
-                
-                {section.type === 'custom' && (
-                  <button
-                    onClick={() => deleteSection(section.id)}
-                    className="p-1 text-red-600 hover:bg-red-50 rounded"
-                    title="Delete section"
-                  >
-                    <Trash2 size={16} />
-                  </button>
-                )}
-              </>
-            )}
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragEnd={handleDragEnd}
+      >
+        <SortableContext
+          items={sections.map(s => s.id)}
+          strategy={verticalListSortingStrategy}
+        >
+          <div className="space-y-2 mb-6">
+            {sections.map((section) => (
+              <SortableSection
+                key={section.id}
+                section={section}
+                editingSection={editingSection}
+                editName={editName}
+                setEditName={setEditName}
+                saveEdit={saveEdit}
+                cancelEdit={cancelEdit}
+                startEditing={startEditing}
+                deleteSection={deleteSection}
+              />
+            ))}
           </div>
-        ))}
-      </div>
+        </SortableContext>
+      </DndContext>
       
       {/* Add Custom Section */}
       <div className="border-t border-gray-200 pt-4">

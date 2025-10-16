@@ -18,16 +18,6 @@ import PDFUploader from '../components/resume/PDFUploader';
 import SectionManager from '../components/resume/SectionManager';
 import CustomSectionForm from '../components/resume/CustomSectionForm';
 
-const steps = [
-  { id: 'personal', label: 'Personal Info', component: PersonalInfoForm },
-  { id: 'experience', label: 'Experience', component: ExperienceForm },
-  { id: 'education', label: 'Education', component: EducationForm },
-  { id: 'skills', label: 'Skills', component: SkillsForm },
-  { id: 'certifications', label: 'Certifications', component: CertificationsForm },
-  { id: 'projects', label: 'Projects', component: ProjectsForm },
-  { id: 'sections', label: 'Manage Sections', component: SectionManager }
-];
-
 export default function ResumeBuilder() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -48,6 +38,23 @@ export default function ResumeBuilder() {
   
   const { previewIframeRef } = usePreview(resume, hoveredTemplate);
   const { downloading, handleDownload, handleFeatureClick } = useResumeActions(resume, isAuthenticated, id);
+
+  // Generate dynamic steps including custom sections
+  const allSteps = [
+    { id: 'personal', label: 'Personal Info', component: PersonalInfoForm },
+    { id: 'experience', label: 'Experience', component: ExperienceForm },
+    { id: 'education', label: 'Education', component: EducationForm },
+    { id: 'skills', label: 'Skills', component: SkillsForm },
+    { id: 'certifications', label: 'Certifications', component: CertificationsForm },
+    { id: 'projects', label: 'Projects', component: ProjectsForm },
+    ...(resume.custom_sections || []).map((section: any) => ({
+      id: section.id,
+      label: section.title || section.name,
+      component: CustomSectionForm,
+      isCustom: true
+    })),
+    { id: 'sections', label: 'Manage Sections', component: SectionManager }
+  ];
 
   // UI helper functions
   const handlePDFDataExtracted = (extractedData: Partial<Resume>) => {
@@ -76,7 +83,20 @@ export default function ResumeBuilder() {
     );
   }
 
-  const CurrentStepComponent = steps[currentStep].component;
+  const currentStepData = allSteps[currentStep];
+  const CurrentStepComponent = currentStepData.component;
+  
+  // For custom sections, pass specific props
+  const customSectionProps = currentStepData.isCustom ? {
+    sectionName: currentStepData.label,
+    items: resume.custom_sections?.find((s: any) => s.id === currentStepData.id)?.items || [],
+    onChange: (items: any) => {
+      const updatedSections = (resume.custom_sections || []).map((s: any) =>
+        s.id === currentStepData.id ? { ...s, items } : s
+      );
+      updateResumeData('custom_sections', updatedSections);
+    }
+  } : {};
 
   return (
     <ErrorBoundary>
@@ -272,7 +292,7 @@ export default function ResumeBuilder() {
               <div className="bg-white rounded-lg shadow p-4 sticky top-24">
                 <h3 className="font-semibold text-gray-900 mb-4">Sections</h3>
                 <nav className="space-y-2">
-                  {steps.map((step, index) => (
+                  {allSteps.map((step, index) => (
                     <button
                       key={step.id}
                       onClick={() => setCurrentStep(index)}
@@ -294,29 +314,14 @@ export default function ResumeBuilder() {
           <div className={showTemplateDropdown ? "col-span-4" : "col-span-5"}>
             <div className="bg-white rounded-lg shadow p-6">
               <h2 className="text-2xl font-bold text-gray-900 mb-6">
-                {steps[currentStep].label}
+                {allSteps[currentStep].label}
               </h2>
               <CurrentStepComponent
                 data={resume}
                 onChange={updateResumeData}
                 resume={resume}
+                {...customSectionProps}
               />
-              
-              {/* Render Custom Sections Forms */}
-              {currentStep !== 6 && resume.custom_sections && resume.custom_sections.map((section: any) => (
-                <div key={section.id} className="mt-8 pt-6 border-t border-gray-200">
-                  <CustomSectionForm
-                    sectionName={section.name}
-                    items={section.data || []}
-                    onChange={(items) => {
-                      const updatedSections = resume.custom_sections?.map((s: any) =>
-                        s.id === section.id ? { ...s, data: items } : s
-                      ) || []
-                      updateResumeData('custom_sections', updatedSections)
-                    }}
-                  />
-                </div>
-              ))}
               
               {/* Navigation Buttons */}
               <div className="flex justify-between mt-8 pt-6 border-t border-gray-200">
@@ -327,7 +332,7 @@ export default function ResumeBuilder() {
                 >
                   Previous
                 </button>
-                {currentStep === steps.length - 1 ? (
+                {currentStep === allSteps.length - 1 ? (
                   isAuthenticated && (
                     <button
                       onClick={() => navigate(`/resume/${id}/preview`)}
@@ -338,7 +343,7 @@ export default function ResumeBuilder() {
                   )
                 ) : (
                   <button
-                    onClick={() => setCurrentStep(prev => Math.min(steps.length - 1, prev + 1))}
+                    onClick={() => setCurrentStep(prev => Math.min(allSteps.length - 1, prev + 1))}
                     className="px-6 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700"
                   >
                     Next
