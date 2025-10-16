@@ -1,5 +1,4 @@
 """Tests for endpoint caching functionality"""
-import pytest
 from unittest.mock import patch, MagicMock
 from app.endpoints.users import _get_user_by_id
 from app.endpoints.resumes import _get_resume_by_id

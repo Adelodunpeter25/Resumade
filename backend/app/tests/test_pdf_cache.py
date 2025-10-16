@@ -1,5 +1,4 @@
 """Tests for PDF service caching"""
-import pytest
 from unittest.mock import patch, MagicMock
 from app.services.pdf_service import PDFService
 from app.core.cache import redis_cache

@@ -1,7 +1,5 @@
 """Tests for Redis cache functionality"""
-import pytest
-import json
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 from app.core.cache import RedisCache, cached, redis_cache, clear_user_cache, clear_resume_cache
 
 

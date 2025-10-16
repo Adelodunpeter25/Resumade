@@ -1,6 +1,5 @@
 """Tests for ATS service caching"""
-import pytest
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 from app.services.ats.ats_service import ATSService
 from app.services.ats.keywords import normalize_text, extract_keywords_from_job_description
 from app.core.cache import redis_cache
