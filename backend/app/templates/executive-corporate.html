@@ -344,8 +344,8 @@
         {% if custom_sections %}
             {% for section in custom_sections %}
             <section class="section">
-                <h2 class="section-title">{{ section.title }}</h2>
-                {% for item in section.items %}
+                <h2 class="section-title">{{ section.get("title", section.get("name", "")) }}</h2>
+                {% for item in section["items"] %}
                 <div class="job">
                     {% if item.title %}
                     <div class="job-header">
