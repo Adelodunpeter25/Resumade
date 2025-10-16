@@ -153,6 +153,7 @@ export default function ResumeBuilder() {
                 title={!isAuthenticated ? 'Login required' : 'ATS Score'}
               >
                 <BarChart3 size={20} />
+                <span className="hidden sm:inline">ATS Score</span>
               </button>
               <div className="relative">
                 <button

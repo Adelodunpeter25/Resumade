@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { API_BASE_URL } from '../services/api'
+import Header from '../components/common/Header'
 
 export default function LandingPage() {
   const navigate = useNavigate()
   const [openFaq, setOpenFaq] = useState<number | null>(null)
   const [currentFeatureIndex, setCurrentFeatureIndex] = useState(5) // Start from middle set
   const [isTransitioning, setIsTransitioning] = useState(true)
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [typedText, setTypedText] = useState('Professional') // Show first word immediately
   const [isDeleting, setIsDeleting] = useState(false)
   const [loopNum, setLoopNum] = useState(0)
@@ -142,92 +142,7 @@ export default function LandingPage() {
   ]
   return (
     <div className="min-h-screen bg-white">
-      {/* Header */}
-      <header className="absolute top-0 w-full z-50 bg-white/80 backdrop-blur-md border-b border-gray-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
-            <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-gradient-to-br from-emerald-600 to-teal-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">R</span>
-              </div>
-              <h1 className="text-xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
-                Resumade
-              </h1>
-            </div>
-            <div className="flex items-center space-x-4">
-              {/* Desktop Menu */}
-              <div className="hidden md:flex items-center space-x-4">
-                <a href="/login" className="text-gray-600 hover:text-gray-900 font-medium transition-colors">
-                  Login
-                </a>
-                <a href="/register" className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white px-6 py-2 rounded-full font-medium transition-all transform hover:scale-105 shadow-lg">
-                  Sign Up
-                </a>
-              </div>
-
-              {/* Mobile Hamburger */}
-              <button
-                onClick={() => setMobileMenuOpen(true)}
-                className="md:hidden p-2 text-gray-600 hover:text-gray-900"
-                aria-label="Open menu"
-              >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                </svg>
-              </button>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      {/* Mobile Sidebar - Outside header */}
-      <>
-        {/* Overlay */}
-        <div 
-          className={`fixed inset-0 bg-black/50 z-[100] md:hidden transition-opacity duration-300 ${mobileMenuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
-          onClick={() => setMobileMenuOpen(false)}
-        />
-        
-        {/* Sidebar */}
-        <div className={`fixed top-0 right-0 h-full w-64 bg-white shadow-2xl z-[101] md:hidden transform transition-transform duration-300 ease-in-out ${mobileMenuOpen ? 'translate-x-0' : 'translate-x-full'}`}>
-          <div className="p-6">
-            <button
-              onClick={() => setMobileMenuOpen(false)}
-              className="absolute top-4 right-4 p-2 text-gray-600 hover:text-gray-900"
-              aria-label="Close menu"
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-
-            {/* Logo */}
-            <div className="flex items-center space-x-2 mb-8">
-              <div className="w-8 h-8 bg-gradient-to-br from-emerald-600 to-teal-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">R</span>
-              </div>
-              <h1 className="text-xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
-                Resumade
-              </h1>
-            </div>
-
-            <div className="space-y-4">
-              <a 
-                href="/login" 
-                className="block w-full text-center py-3 text-gray-700 hover:bg-gray-100 rounded-lg font-medium transition-colors"
-              >
-                Login
-              </a>
-              <a 
-                href="/register" 
-                className="block w-full text-center py-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white rounded-lg font-medium shadow-lg transition-all"
-              >
-                Sign Up
-              </a>
-            </div>
-          </div>
-        </div>
-      </>
+      <Header />
 
       {/* Hero Section */}
       <section className="relative pt-20 pb-32 overflow-hidden">

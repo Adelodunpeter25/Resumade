@@ -9,6 +9,7 @@ class PersonalInfo(BaseModel):
     location: Optional[str] = None
     linkedin: Optional[str] = None
     website: Optional[str] = None
+    tagline: Optional[str] = None
     summary: Optional[str] = None
 
 class Experience(BaseModel):

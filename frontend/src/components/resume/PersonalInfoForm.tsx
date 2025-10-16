@@ -41,6 +41,20 @@ function PersonalInfoForm({ data, onChange }: Props) {
         </div>
       </div>
 
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Professional Tagline
+        </label>
+        <input
+          type="text"
+          value={data.personal_info?.tagline || ''}
+          onChange={(e) => updateField('tagline', e.target.value)}
+          placeholder="e.g., Senior Software Engineer | Full-Stack Developer"
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+        />
+        <p className="mt-1 text-xs text-gray-500">A short headline that appears below your name</p>
+      </div>
+
       <div className="grid grid-cols-2 gap-6">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">

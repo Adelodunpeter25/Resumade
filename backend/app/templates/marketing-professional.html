@@ -260,7 +260,9 @@
         <div class="header">
             <div class="name-section">
                 <h1>{{ resume.personal_info.full_name }}</h1>
-                <div class="title">Marketing Professional</div>
+                {% if resume.personal_info.tagline %}
+                <div class="title">{{ resume.personal_info.tagline }}</div>
+                {% endif %}
             </div>
             <div class="contact-info">
                 <div class="contact-item">

@@ -159,7 +159,9 @@
         <div class="sidebar">
             <div class="header">
                 <h1 class="name">{{ resume.personal_info.full_name }}</h1>
-                <div class="title">Software Engineer</div>
+                {% if resume.personal_info.tagline %}
+                <div class="title">{{ resume.personal_info.tagline }}</div>
+                {% endif %}
             </div>
             
             <div class="contact-info">
@@ -186,7 +188,7 @@
             
             {% if resume.skills %}
             <div class="section">
-                <h2 class="section-title">Technical Skills</h2>
+                <h2 class="section-title">Skills</h2>
                 <div class="skills-grid">
                     {% for skill in resume.skills %}
                     <div class="skill-category">

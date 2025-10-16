@@ -19,6 +19,7 @@ const SharedResume = lazy(() => import('./pages/SharedResume'))
 const VersionHistory = lazy(() => import('./pages/VersionHistory'))
 const ResumePreview = lazy(() => import('./pages/ResumePreview'))
 const Templates = lazy(() => import('./pages/Templates'))
+const Contact = lazy(() => import('./pages/Contact'))
 const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'))
 const TermsOfService = lazy(() => import('./pages/TermsOfService'))
 
@@ -38,6 +39,7 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/templates" element={<Templates />} />
+          <Route path="/contact" element={<Contact />} />
           <Route path="/privacy" element={<PrivacyPolicy />} />
           <Route path="/terms" element={<TermsOfService />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />

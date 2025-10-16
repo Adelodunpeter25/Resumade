@@ -28,6 +28,10 @@ class PDFService:
         "executive-corporate": "executive-corporate.html",
         "marketing-professional": "marketing-professional.html",
         "academic-research": "academic-research.html",
+        
+        # New minimal templates
+        "sidebar-minimal": "sidebar-minimal.html",
+        "traditional-compact": "traditional-compact.html",
     }
     
     def __init__(self):
@@ -101,20 +105,20 @@ class PDFService:
             # Marketing Templates
             {
                 "name": "marketing-professional",
-                "display_name": "Marketing Professional",
-                "description": "Dynamic layout for marketing roles",
-                "category": "marketing",
-                "industry": ["marketing", "sales", "advertising"],
-                "ats_score": 88
+                "display_name": "Modern Professional",
+                "description": "Clean professional layout with modern styling",
+                "category": "professional",
+                "industry": ["business", "marketing", "general"],
+                "ats_score": 90
             },
             
             # Academic Templates
             {
                 "name": "academic-research",
-                "display_name": "Academic Research",
-                "description": "Traditional CV format for academia",
-                "category": "academic",
-                "industry": ["research", "academia", "education"],
+                "display_name": "Classic Professional",
+                "description": "Traditional format with clean typography",
+                "category": "traditional",
+                "industry": ["business", "general", "corporate"],
                 "ats_score": 93
             },
             
@@ -152,6 +156,24 @@ class PDFService:
                 "category": "traditional",
                 "industry": ["law", "academia", "government"],
                 "ats_score": 93
+            },
+            
+            # New Minimal Templates
+            {
+                "name": "sidebar-minimal",
+                "display_name": "Sidebar Minimal",
+                "description": "Clean two-column layout with sidebar details",
+                "category": "minimalist",
+                "industry": ["general", "business", "tech"],
+                "ats_score": 94
+            },
+            {
+                "name": "traditional-compact",
+                "display_name": "Traditional Compact",
+                "description": "Classic single-column professional format",
+                "category": "traditional",
+                "industry": ["general", "business", "corporate"],
+                "ats_score": 95
             }
         ]
         return templates

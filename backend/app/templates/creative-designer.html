@@ -232,7 +232,9 @@
     <div class="container">
         <div class="header">
             <h1 class="name">{{ resume.personal_info.full_name }}</h1>
-            <div class="title">Creative Designer</div>
+            {% if resume.personal_info.tagline %}
+            <div class="title">{{ resume.personal_info.tagline }}</div>
+            {% endif %}
             
             <div class="contact-grid">
                 <div class="contact-item">
@@ -255,7 +257,7 @@
         <div class="content">
             {% if resume.personal_info.summary %}
             <div class="summary">
-                <h2 class="section-title">Creative Vision</h2>
+                <h2 class="section-title">Professional Summary</h2>
                 {{ resume.personal_info.summary }}
             </div>
             {% endif %}
@@ -303,7 +305,7 @@
                 
                 {% if resume.projects %}
                 <div class="section">
-                    <h2 class="section-title">Portfolio</h2>
+                    <h2 class="section-title">Projects</h2>
                     <div class="projects-grid">
                         {% for project in resume.projects %}
                         <div class="project-item">

@@ -243,7 +243,9 @@
 <body>
     <div class="header">
         <h1 class="name">{{ resume.personal_info.full_name }}</h1>
-        <div class="title">Academic Researcher</div>
+        {% if resume.personal_info.tagline %}
+        <div class="title">{{ resume.personal_info.tagline }}</div>
+        {% endif %}
         <div class="contact-info">
             {{ resume.personal_info.email }} • {{ resume.personal_info.phone }}<br>
             {{ resume.personal_info.location }}

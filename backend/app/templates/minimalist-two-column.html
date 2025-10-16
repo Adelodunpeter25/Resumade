@@ -215,7 +215,9 @@
     <div class="resume">
         <header class="header">
             <h1 class="name">{{ resume.personal_info.full_name }}</h1>
-            {% if resume.personal_info.summary %}
+            {% if resume.personal_info.tagline %}
+            <div class="title">{{ resume.personal_info.tagline }}</div>
+            {% elif resume.personal_info.summary %}
             <div class="title">{{ resume.personal_info.summary[:80] }}</div>
             {% endif %}
             <div class="contact">

@@ -33,3 +33,6 @@ frontend/dist
 # tests and lints
 backend/.pytest_cache
 backend/.ruff_cache
+
+# other files
+backend/app/images
