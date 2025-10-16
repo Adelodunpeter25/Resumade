@@ -157,19 +157,6 @@ def update_resume(
         else:
             setattr(resume, field, value)
     
-    # Recalculate ATS score
-    resume_dict = {
-        "personal_info": resume.personal_info,
-        "experience": resume.experience,
-        "education": resume.education,
-        "skills": resume.skills,
-        "certifications": resume.certifications,
-        "projects": resume.projects
-    }
-    ats_result = ATSService.calculate_ats_score(resume_dict)
-    resume.ats_score = ats_result["percentage"]
-    resume.feedback = ats_result
-    
     db.commit()
     db.refresh(resume)
     return resume

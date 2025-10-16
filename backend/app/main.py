@@ -7,7 +7,6 @@ from slowapi.errors import RateLimitExceeded
 import logging
 
 from app.endpoints import users_router, resumes_router, auth_router, admin_router
-from app.endpoints.progress import router as progress_router
 from app.core.exceptions import (
     ResumadeException, 
     resumade_exception_handler,
@@ -47,7 +46,6 @@ app.include_router(auth_router, prefix="/api")
 app.include_router(users_router, prefix="/api")
 app.include_router(resumes_router, prefix="/api")
 app.include_router(admin_router, prefix="/api")
-app.include_router(progress_router, prefix="/api")
 
 async def preload_heavy_imports():
     """Pre-load heavy imports in background after startup"""
