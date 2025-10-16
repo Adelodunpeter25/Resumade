@@ -18,6 +18,7 @@ const ResumeShare = lazy(() => import('./pages/ResumeShare'))
 const SharedResume = lazy(() => import('./pages/SharedResume'))
 const VersionHistory = lazy(() => import('./pages/VersionHistory'))
 const ResumePreview = lazy(() => import('./pages/ResumePreview'))
+const ResumePreviewCustomize = lazy(() => import('./pages/ResumePreviewCustomize'))
 const Templates = lazy(() => import('./pages/Templates'))
 const Contact = lazy(() => import('./pages/Contact'))
 const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'))
@@ -51,7 +52,7 @@ function App() {
           <Route path="/resume/:id/ats-score" element={<ATSScore />} />
           <Route path="/resume/:id/share" element={<ResumeShare />} />
           <Route path="/resume/:id/versions" element={<VersionHistory />} />
-          <Route path="/resume/:id/preview" element={<ResumePreview />} />
+          <Route path="/resume/:id/preview" element={<ResumePreviewCustomize />} />
           <Route path="/shared/*" element={<SharedResume />} />
         </Routes>
       </Suspense>

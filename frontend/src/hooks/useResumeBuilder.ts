@@ -26,6 +26,8 @@ export const useResumeBuilder = (id?: string) => {
   // Get template from URL parameter
   const templateParam = searchParams.get('template');
   
+  const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
+  
   const [resume, setResume] = useState<Partial<Resume>>({
     title: 'Untitled Resume',
     template_name: templateParam || 'professional-blue',
@@ -45,8 +47,15 @@ export const useResumeBuilder = (id?: string) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    setIsAuthenticated(!!token);
+    const checkAuth = () => {
+      const token = localStorage.getItem('token');
+      setIsAuthenticated(!!token);
+    };
+    
+    checkAuth();
+    
+    // Check auth periodically
+    const interval = setInterval(checkAuth, 1000);
     
     loadTemplates();
     
@@ -55,26 +64,35 @@ export const useResumeBuilder = (id?: string) => {
       setResume(prev => ({ ...prev, template_name: templateParam }));
     }
     
-    if (id && id !== 'new') {
-      if (token) {
-        loadResume();
-      } else {
-        navigate('/login');
-      }
-    } else if (id === 'new' && !token) {
-      const savedResume = localStorage.getItem(GUEST_RESUME_KEY);
-      if (savedResume) {
-        const parsed = JSON.parse(savedResume);
-        // Override template if parameter is provided
-        if (templateParam) {
-          parsed.template_name = templateParam;
+    // Only load once per id
+    if (!hasLoadedOnce) {
+      if (id && id !== 'new') {
+        const token = localStorage.getItem('token');
+        if (token) {
+          loadResume();
+          setHasLoadedOnce(true);
+        } else {
+          navigate('/login');
         }
-        setResume(parsed);
+      } else if (id === 'new' && !localStorage.getItem('token')) {
+        const savedResume = localStorage.getItem(GUEST_RESUME_KEY);
+        if (savedResume) {
+          const parsed = JSON.parse(savedResume);
+          // Override template if parameter is provided
+          if (templateParam) {
+            parsed.template_name = templateParam;
+          }
+          setResume(parsed);
+        }
+        setLoading(false);
+        setHasLoadedOnce(true);
+      } else {
+        setLoading(false);
+        setHasLoadedOnce(true);
       }
-      setLoading(false);
-    } else {
-      setLoading(false);
     }
+    
+    return () => clearInterval(interval);
   }, [id, templateParam]);
 
   const loadTemplates = async () => {

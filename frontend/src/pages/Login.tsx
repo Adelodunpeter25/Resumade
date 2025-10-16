@@ -19,7 +19,15 @@ export default function Login() {
       const response = await authService.login(email, password)
       if (response.success && response.data) {
         localStorage.setItem('token', response.data.access_token)
-        window.location.href = '/dashboard'
+        
+        // Check if there's a redirect URL
+        const redirectUrl = localStorage.getItem('redirect_after_login')
+        if (redirectUrl) {
+          localStorage.removeItem('redirect_after_login')
+          window.location.href = redirectUrl
+        } else {
+          window.location.href = '/dashboard'
+        }
       } else {
         setError(response.error || 'Login failed')
       }

@@ -25,8 +25,7 @@ const steps = [
   { id: 'skills', label: 'Skills', component: SkillsForm },
   { id: 'certifications', label: 'Certifications', component: CertificationsForm },
   { id: 'projects', label: 'Projects', component: ProjectsForm },
-  { id: 'sections', label: 'Manage Sections', component: SectionManager },
-  { id: 'customize', label: 'Customize', component: TemplateCustomizer }
+  { id: 'sections', label: 'Manage Sections', component: SectionManager }
 ];
 
 export default function ResumeBuilder() {
@@ -63,6 +62,9 @@ export default function ResumeBuilder() {
   };
 
   const handleLoginPrompt = () => {
+    // Save resume data to localStorage before redirecting
+    localStorage.setItem('guest_resume', JSON.stringify(resume));
+    localStorage.setItem('redirect_after_login', `/resume/${id || 'new'}`);
     navigate('/login');
   };
 
@@ -91,7 +93,7 @@ export default function ResumeBuilder() {
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-4">
               <button
-                onClick={() => navigate(isAuthenticated ? '/dashboard' : '/')}
+                onClick={() => navigate(-1)}
                 className="p-2 hover:bg-gray-100 rounded-lg"
               >
                 <ArrowLeft size={20} />
@@ -114,15 +116,6 @@ export default function ResumeBuilder() {
               )}
             </div>
             <div className="flex items-center gap-2">
-              {!isAuthenticated && (
-                <button
-                  onClick={handleLoginPrompt}
-                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-                >
-                  <LogIn size={20} />
-                  <span>Login to Save</span>
-                </button>
-              )}
               <div className="relative">
                 <button
                   onClick={() => setShowTemplateDropdown(!showTemplateDropdown)}
@@ -140,21 +133,25 @@ export default function ResumeBuilder() {
                 <Upload size={20} />
                 <span>Import PDF</span>
               </button>
-              <button
-                onClick={() => handleFeatureClick('versions')}
-                className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
-                title={!isAuthenticated ? 'Login required' : 'Version History'}
-              >
-                <History size={20} />
-              </button>
-              <button
-                onClick={() => handleFeatureClick('ats')}
-                className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
-                title={!isAuthenticated ? 'Login required' : 'ATS Score'}
-              >
-                <BarChart3 size={20} />
-                <span className="hidden sm:inline">ATS Score</span>
-              </button>
+              {isAuthenticated && (
+                <>
+                  <button
+                    onClick={() => handleFeatureClick('versions')}
+                    className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+                    title="Version History"
+                  >
+                    <History size={20} />
+                  </button>
+                  <button
+                    onClick={() => handleFeatureClick('ats')}
+                    className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+                    title="ATS Score"
+                  >
+                    <BarChart3 size={20} />
+                    <span className="hidden sm:inline">ATS Score</span>
+                  </button>
+                </>
+              )}
               <div className="relative">
                 <button
                   onClick={() => setShowExportDropdown(!showExportDropdown)}
@@ -205,14 +202,25 @@ export default function ResumeBuilder() {
                   </div>
                 )}
               </div>
-              <button
-                onClick={() => handleSave(false)}
-                disabled={saving}
-                className="flex items-center gap-2 bg-gradient-to-r from-emerald-600 to-teal-600 text-white px-4 py-2 rounded-lg hover:from-emerald-700 hover:to-teal-700 disabled:opacity-50"
-              >
-                <Save size={20} />
-                <span>{saving ? 'Saving...' : 'Save'}</span>
-              </button>
+              {!isAuthenticated && (
+                <button
+                  onClick={handleLoginPrompt}
+                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                >
+                  <LogIn size={20} />
+                  <span>Login to Save</span>
+                </button>
+              )}
+              {isAuthenticated && (
+                <button
+                  onClick={() => handleSave(false)}
+                  disabled={saving}
+                  className="flex items-center gap-2 bg-gradient-to-r from-emerald-600 to-teal-600 text-white px-4 py-2 rounded-lg hover:from-emerald-700 hover:to-teal-700 disabled:opacity-50"
+                >
+                  <Save size={20} />
+                  <span>{saving ? 'Saving...' : 'Save'}</span>
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -319,13 +327,23 @@ export default function ResumeBuilder() {
                 >
                   Previous
                 </button>
-                <button
-                  onClick={() => setCurrentStep(prev => Math.min(steps.length - 1, prev + 1))}
-                  disabled={currentStep === steps.length - 1}
-                  className="px-6 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 disabled:opacity-50"
-                >
-                  Next
-                </button>
+                {currentStep === steps.length - 1 ? (
+                  isAuthenticated && (
+                    <button
+                      onClick={() => navigate(`/resume/${id}/preview`)}
+                      className="px-6 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700"
+                    >
+                      View Resume
+                    </button>
+                  )
+                ) : (
+                  <button
+                    onClick={() => setCurrentStep(prev => Math.min(steps.length - 1, prev + 1))}
+                    className="px-6 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700"
+                  >
+                    Next
+                  </button>
+                )}
               </div>
             </div>
           </div>

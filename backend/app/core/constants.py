@@ -151,10 +151,10 @@ class FileConstants:
 
 class CacheConstants:
     """Caching configuration"""
-    TEMPLATE_CACHE_TTL = 3600  # 1 hour
+    TEMPLATE_CACHE_TTL = 1800  # 1 hour
     TEMPLATE_CACHE_SIZE = 100
     TEMPLATE_LIST_CACHE_TTL = 86400  # 24 hours
     ATS_SCORE_CACHE_TTL = 1800  # 30 minutes
     KEYWORD_CACHE_TTL = 3600  # 1 hour
-    USER_CACHE_TTL = 900  # 15 minutes
+    USER_CACHE_TTL = 300  # 5 minutes
     RESUME_CACHE_TTL = 900  # 10 minutes

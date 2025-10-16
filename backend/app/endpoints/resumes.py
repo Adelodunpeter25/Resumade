@@ -568,6 +568,31 @@ def preview_template(template: str = Query(default="professional-blue")):
     
     return HTMLResponse(content=html_content)
 
+@router.get("/{resume_id}/preview", response_class=HTMLResponse)
+def preview_resume_by_id(
+    resume_id: str,
+    db: Session = Depends(get_db)
+):
+    """Render HTML preview of a specific resume"""
+    # Handle guest mode
+    if resume_id == "new":
+        raise HTTPException(status_code=400, detail="Cannot preview unsaved guest resume. Please save first.")
+    
+    try:
+        resume_id_int = int(resume_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid resume ID")
+    
+    resume = db.query(Resume).filter(Resume.id == resume_id_int).first()
+    
+    if not resume:
+        raise HTTPException(status_code=404, detail="Resume not found")
+    
+    pdf_service = PDFService()
+    html_content = pdf_service.render_resume_html(resume, resume.template_name)
+    
+    return HTMLResponse(content=html_content)
+
 @router.post("/preview", response_class=HTMLResponse)
 async def preview_resume_live(request: Request):
     """Render HTML preview with user's live data"""
