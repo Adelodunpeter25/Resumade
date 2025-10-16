@@ -260,6 +260,40 @@
                 {% endfor %}
             </div>
             {% endif %}
+
+            <!-- Custom Sections -->
+            {% if custom_sections %}
+                {% for section in custom_sections %}
+                <div class="section">
+                    <h2 class="section-title">{{ section.title }}</h2>
+                    {% for item in section.items %}
+                    <div class="job-item">
+                        {% if item.title %}
+                        <div class="job-header">
+                            <div class="job-title">{{ item.title }}</div>
+                            {% if item.date %}
+                            <div class="date-location">{{ item.date }}</div>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                        {% if item.subtitle %}
+                        <div class="company">{{ item.subtitle }}</div>
+                        {% endif %}
+                        {% if item.description %}
+                        <p>{{ item.description }}</p>
+                        {% endif %}
+                        {% if item.details %}
+                        <ul class="achievements">
+                            {% for detail in item.details %}
+                            <li>{{ detail }}</li>
+                            {% endfor %}
+                        </ul>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endfor %}
+            {% endif %}
         </div>
     </div>
 </body>

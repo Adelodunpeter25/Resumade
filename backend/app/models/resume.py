@@ -24,6 +24,11 @@ class Resume(Base):
     certifications = Column(JSON, default=[])
     projects = Column(JSON, default=[])
     
+    # Section management
+    section_names = Column(JSON, default={})  # Custom section names
+    custom_sections = Column(JSON, default=[])  # User-defined sections
+    section_order = Column(JSON, default=['summary', 'experience', 'education', 'skills', 'certifications', 'projects'])
+    
     # Template customization
     customization = Column(JSON, default={
         "primary_color": "#059669",  # emerald-600

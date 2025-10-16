@@ -66,6 +66,9 @@ class ResumeUpdate(BaseModel):
     skills: Optional[List[Skill]] = None
     certifications: Optional[List[Certification]] = None
     projects: Optional[List[Project]] = None
+    section_names: Optional[dict] = None
+    custom_sections: Optional[List[dict]] = None
+    section_order: Optional[List[str]] = None
 
 class Resume(BaseModel):
     id: int
@@ -78,6 +81,9 @@ class Resume(BaseModel):
     skills: List[dict]
     certifications: List[dict]
     projects: List[dict]
+    section_names: Optional[dict] = {}
+    custom_sections: Optional[List[dict]] = []
+    section_order: Optional[List[str]] = []
     views: int = 0
     downloads: int = 0
     ats_score: Optional[float] = None

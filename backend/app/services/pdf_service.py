@@ -188,7 +188,19 @@ class PDFService:
     def render_resume_html(self, resume: Resume, template: str = "professional-blue") -> str:
         """Render resume HTML from template"""
         template_obj = self._get_template(template)
-        return template_obj.render(resume=resume)
+        
+        # Prepare section order (default order if not specified)
+        default_order = ['summary', 'experience', 'education', 'skills', 'certifications', 'projects']
+        section_order = getattr(resume, 'section_order', default_order)
+        
+        # Add custom sections to the data
+        custom_sections = getattr(resume, 'custom_sections', [])
+        
+        return template_obj.render(
+            resume=resume,
+            section_order=section_order,
+            custom_sections=custom_sections
+        )
     
     def generate_resume_pdf(self, resume: Resume, template: str = "professional-blue") -> bytes:
         """Generate PDF from resume"""

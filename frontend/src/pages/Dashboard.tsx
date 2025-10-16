@@ -25,6 +25,7 @@ export default function Dashboard() {
   const [shareLinks, setShareLinks] = useState<any[]>([])
   const [expiresIn, setExpiresIn] = useState(30)
   const [creating, setCreating] = useState(false)
+  const [loadingLinks, setLoadingLinks] = useState(false)
   const [copiedToken, setCopiedToken] = useState<string | null>(null)
 
   useEffect(() => {
@@ -44,6 +45,7 @@ export default function Dashboard() {
   }, [activeTab, shareSubTab])
 
   const loadShareLinks = async () => {
+    setLoadingLinks(true)
     try {
       const allLinks: any[] = []
       for (const resume of resumes) {
@@ -55,6 +57,8 @@ export default function Dashboard() {
       setShareLinks(allLinks)
     } catch (err) {
       console.error('Failed to load share links:', err)
+    } finally {
+      setLoadingLinks(false)
     }
   }
 
@@ -524,7 +528,11 @@ export default function Dashboard() {
               {shareSubTab === 'view' && (
                 <div className="p-8">
                   <h3 className="text-xl font-bold text-gray-900 mb-6">Shared Resumes</h3>
-                  {shareLinks.length === 0 ? (
+                  {loadingLinks ? (
+                    <div className="flex justify-center items-center py-12">
+                      <div className="w-12 h-12 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin"></div>
+                    </div>
+                  ) : shareLinks.length === 0 ? (
                     <div className="text-center py-12">
                       <div className="text-gray-400 mb-4">🔗</div>
                       <h3 className="text-lg font-semibold text-gray-900 mb-2">No shared resumes yet</h3>
