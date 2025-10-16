@@ -162,7 +162,7 @@ class PDFService:
             {
                 "name": "sidebar-minimal",
                 "display_name": "Sidebar Minimal",
-                "description": "Clean two-column layout with sidebar details",
+                "description": "Clean two-column layout with sidebar",
                 "category": "minimalist",
                 "industry": ["general", "business", "tech"],
                 "ats_score": 94

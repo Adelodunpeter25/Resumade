@@ -28,13 +28,6 @@ Build and customize professional resumes with beautiful, responsive templates, r
 - 🔒 **Password Reset via Email**
 - 👤 **Guest Mode** - Create resumes without signing up
 
-### AI & Sharing Features
-- 🧠 **Gemini AI Integration** - Get 4-6 intelligent recommendations covering all resume sections
-- 📈 **Dynamic ATS Scoring** - Role-level aware scoring (entry/mid/senior) with job description matching
-- ⏰ **Expiration Control** - Set custom expiration dates (1-365 days) for shared links
-- 🔒 **Share Link Management** - View, manage, and deactivate shared resumes from dashboard
-
-
 ---
 
 ## 🏗️ Tech Stack
