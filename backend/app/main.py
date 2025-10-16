@@ -2,8 +2,6 @@ import asyncio
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.exc import IntegrityError
-from slowapi import _rate_limit_exceeded_handler
-from slowapi.errors import RateLimitExceeded
 import logging
 
 from app.endpoints import users_router, resumes_router, auth_router, admin_router
@@ -15,7 +13,6 @@ from app.core.exceptions import (
     general_exception_handler
 )
 from app.core.logging import setup_logging
-from app.core.rate_limit import limiter
 
 setup_logging()
 logger = logging.getLogger(__name__)
@@ -27,8 +24,6 @@ app = FastAPI(
     docs_url="/docs",
     redoc_url="/redoc"
 )
-app.state.limiter = limiter
-app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 # CORS Configuration
 app.add_middleware(
