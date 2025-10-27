@@ -2,7 +2,8 @@ import { memo } from 'react'
 import { useState } from 'react';
 import type { Resume } from '../../types';
 import RichTextEditor from '../common/RichTextEditor';
-import { Plus, Trash2 } from 'lucide-react';
+import AIBulletSuggester from './AIBulletSuggester';
+import { Plus, Trash2, Sparkles } from 'lucide-react';
 
 interface Props {
   data: Partial<Resume>;
@@ -11,6 +12,8 @@ interface Props {
 
 function ExperienceForm({ data, onChange }: Props) {
   const [experiences, setExperiences] = useState(data.experience || []);
+  const [showAISuggester, setShowAISuggester] = useState(false);
+  const [currentEditIndex, setCurrentEditIndex] = useState<number | null>(null);
 
   const addExperience = () => {
     const newExperience = {
@@ -42,6 +45,19 @@ function ExperienceForm({ data, onChange }: Props) {
     const updatedExperiences = experiences.filter((_, i) => i !== index);
     setExperiences(updatedExperiences);
     onChange('experience', updatedExperiences);
+  };
+
+  const handleAIInsert = (text: string) => {
+    if (currentEditIndex !== null) {
+      const currentDesc = experiences[currentEditIndex].description || '';
+      const newDesc = currentDesc ? `${currentDesc}\n${text}` : text;
+      updateExperience(currentEditIndex, 'description', newDesc);
+    }
+  };
+
+  const openAISuggester = (index: number) => {
+    setCurrentEditIndex(index);
+    setShowAISuggester(true);
   };
 
   return (
@@ -145,14 +161,29 @@ function ExperienceForm({ data, onChange }: Props) {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Description *
-            </label>
+            <div className="flex items-center justify-between mb-2">
+              <label className="block text-sm font-medium text-gray-700">
+                Description *
+              </label>
+              <button
+                type="button"
+                onClick={() => openAISuggester(index)}
+                disabled={!experience.position || !experience.company}
+                className="flex items-center gap-1 text-sm text-purple-600 hover:text-purple-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                title={!experience.position || !experience.company ? 'Fill in position and company first' : 'Generate AI suggestions'}
+              >
+                <Sparkles size={16} />
+                AI Suggestions
+              </button>
+            </div>
             <RichTextEditor
               value={experience.description}
               onChange={(content) => updateExperience(index, 'description', content)}
               placeholder="Describe your responsibilities and achievements..."
             />
+            <p className="text-xs text-gray-500 mt-1">
+              Tip: Use bullet points and start with action verbs. Click "AI Suggestions" for help!
+            </p>
           </div>
         </div>
       ))}
@@ -165,6 +196,20 @@ function ExperienceForm({ data, onChange }: Props) {
         <Plus size={20} className="mr-2" />
         Add Experience
       </button>
+
+      {showAISuggester && currentEditIndex !== null && (
+        <AIBulletSuggester
+          position={experiences[currentEditIndex].position}
+          company={experiences[currentEditIndex].company}
+          currentDescription={experiences[currentEditIndex].description}
+          seniorityLevel="mid"
+          onInsert={handleAIInsert}
+          onClose={() => {
+            setShowAISuggester(false);
+            setCurrentEditIndex(null);
+          }}
+        />
+      )}
     </div>
   );
 }

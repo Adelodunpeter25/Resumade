@@ -1,8 +1,9 @@
 import { memo } from 'react'
-import { Plus, Trash2, X } from 'lucide-react'
+import { Plus, Trash2, X, Sparkles } from 'lucide-react'
 import { useState } from 'react'
 import type { Resume, Project } from '../../types'
 import RichTextEditor from '../common/RichTextEditor'
+import AIBulletSuggester from './AIBulletSuggester'
 
 interface Props {
   data: Partial<Resume>
@@ -12,6 +13,8 @@ interface Props {
 function ProjectsForm({ data, onChange }: Props) {
   const projects = data.projects || []
   const [techInput, setTechInput] = useState<{ [key: number]: string }>({})
+  const [showAISuggester, setShowAISuggester] = useState(false)
+  const [currentEditIndex, setCurrentEditIndex] = useState<number | null>(null)
 
   const addProject = () => {
     onChange('projects', [...projects, {
@@ -54,6 +57,19 @@ function ProjectsForm({ data, onChange }: Props) {
     onChange('projects', updated)
   }
 
+  const handleAIInsert = (text: string) => {
+    if (currentEditIndex !== null) {
+      const currentDesc = projects[currentEditIndex].description || ''
+      const newDesc = currentDesc ? `${currentDesc}\n${text}` : text
+      updateProject(currentEditIndex, 'description', newDesc)
+    }
+  }
+
+  const openAISuggester = (index: number) => {
+    setCurrentEditIndex(index)
+    setShowAISuggester(true)
+  }
+
   return (
     <div className="space-y-6">
       {projects.map((project, index) => (
@@ -93,14 +109,29 @@ function ProjectsForm({ data, onChange }: Props) {
           </div>
 
           <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Description *
-            </label>
+            <div className="flex items-center justify-between mb-2">
+              <label className="block text-sm font-medium text-gray-700">
+                Description *
+              </label>
+              <button
+                type="button"
+                onClick={() => openAISuggester(index)}
+                disabled={!project.name}
+                className="flex items-center gap-1 text-sm text-purple-600 hover:text-purple-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                title={!project.name ? 'Fill in project name first' : 'Generate AI suggestions'}
+              >
+                <Sparkles size={16} />
+                AI Suggestions
+              </button>
+            </div>
             <RichTextEditor
               value={project.description}
               onChange={(value) => updateProject(index, 'description', value)}
               placeholder="Describe the project and your role..."
             />
+            <p className="text-xs text-gray-500 mt-1">
+              Tip: Highlight your contributions and impact. Click "AI Suggestions" for help!
+            </p>
           </div>
 
           <div>
@@ -152,6 +183,20 @@ function ProjectsForm({ data, onChange }: Props) {
         <Plus size={20} />
         <span>Add Project</span>
       </button>
+
+      {showAISuggester && currentEditIndex !== null && (
+        <AIBulletSuggester
+          position={projects[currentEditIndex].name}
+          company="Personal Project"
+          currentDescription={projects[currentEditIndex].description}
+          seniorityLevel="mid"
+          onInsert={handleAIInsert}
+          onClose={() => {
+            setShowAISuggester(false)
+            setCurrentEditIndex(null)
+          }}
+        />
+      )}
     </div>
   )
 }

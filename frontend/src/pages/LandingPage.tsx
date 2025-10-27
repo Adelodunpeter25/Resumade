@@ -22,7 +22,7 @@ export default function LandingPage() {
     {
       icon: '🎨',
       title: 'Professional Templates',
-      description: 'Choose from 15+ expertly designed templates that are ATS-friendly and recruiter-approved.'
+      description: 'Choose from 10+ expertly designed templates that are ATS-friendly and recruiter-approved.'
     },
     {
       icon: '⚡',
@@ -192,7 +192,7 @@ export default function LandingPage() {
                 <div className="text-gray-600">Resumes Created</div>
               </div>
               <div className="text-center">
-                <div className="text-3xl md:text-4xl font-bold text-emerald-600 mb-2">15+</div>
+                <div className="text-3xl md:text-4xl font-bold text-emerald-600 mb-2">10+</div>
                 <div className="text-gray-600">Professional Templates</div>
               </div>
               <div className="text-center">

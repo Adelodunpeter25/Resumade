@@ -1,6 +1,8 @@
-import { memo, useCallback } from 'react'
+import { memo, useCallback, useState } from 'react'
 import type { Resume } from '../../types'
 import RichTextEditor from '../common/RichTextEditor'
+import { Sparkles, Loader2 } from 'lucide-react'
+import { useAISuggestions } from '../../hooks/useAISuggestions'
 
 interface Props {
   data: Partial<Resume>
@@ -8,9 +10,45 @@ interface Props {
 }
 
 function PersonalInfoForm({ data, onChange }: Props) {
+  const [generatingSummary, setGeneratingSummary] = useState(false)
+  const [summaryError, setSummaryError] = useState('')
+  const { generateSummary } = useAISuggestions()
+
   const updateField = useCallback((field: string, value: string) => {
     onChange('personal_info', { ...data.personal_info, [field]: value })
   }, [data.personal_info, onChange])
+
+  const handleGenerateSummary = async () => {
+    const tagline = data.personal_info?.tagline
+    if (!tagline) {
+      setSummaryError('Please fill in your professional tagline first')
+      return
+    }
+
+    setGeneratingSummary(true)
+    setSummaryError('')
+
+    try {
+      // Extract position from tagline (first part before |)
+      const position = tagline.split('|')[0].trim()
+      
+      // Get skills from resume if available
+      const skills = (data.skills || []).map(s => s.name).slice(0, 8)
+      
+      // Estimate years of experience from experience section
+      const yearsExp = data.experience?.length ? data.experience.length * 2 : 3
+
+      const summary = await generateSummary(position, yearsExp, skills.length > 0 ? skills : ['various technical skills'])
+      
+      if (summary) {
+        updateField('summary', summary)
+      }
+    } catch (err: any) {
+      setSummaryError(err.message || 'Failed to generate summary')
+    } finally {
+      setGeneratingSummary(false)
+    }
+  }
 
   return (
     <div className="space-y-6">
@@ -111,14 +149,41 @@ function PersonalInfoForm({ data, onChange }: Props) {
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Professional Summary
-        </label>
+        <div className="flex items-center justify-between mb-2">
+          <label className="block text-sm font-medium text-gray-700">
+            Professional Summary
+          </label>
+          <button
+            type="button"
+            onClick={handleGenerateSummary}
+            disabled={generatingSummary || !data.personal_info?.tagline}
+            className="flex items-center gap-1 text-sm text-purple-600 hover:text-purple-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            title={!data.personal_info?.tagline ? 'Fill in professional tagline first' : 'Generate AI summary'}
+          >
+            {generatingSummary ? (
+              <>
+                <Loader2 size={16} className="animate-spin" />
+                Generating...
+              </>
+            ) : (
+              <>
+                <Sparkles size={16} />
+                Generate with AI
+              </>
+            )}
+          </button>
+        </div>
         <RichTextEditor
           value={data.personal_info?.summary || ''}
           onChange={(value) => updateField('summary', value)}
           placeholder="Brief overview of your professional background and career goals..."
         />
+        <p className="text-xs text-gray-500 mt-1">
+          Tip: A strong summary highlights your experience and key skills. Click "Generate with AI" for help!
+        </p>
+        {summaryError && (
+          <p className="text-xs text-red-600 mt-1">{summaryError}</p>
+        )}
       </div>
     </div>
   )

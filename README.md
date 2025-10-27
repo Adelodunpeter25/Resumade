@@ -14,6 +14,7 @@ Build and customize professional resumes with beautiful, responsive templates, r
 - 🎨 **Multiple Professional Templates** - Choose from modern, professional designs
 - 📝 **Real-time Preview** - See changes instantly as you type
 - 🤖 **AI-Powered ATS Optimization** - Google Gemini AI provides intelligent scoring and personalized recommendations
+- ✨ **AI Content Generation** - Generate professional bullet points and summaries with AI assistance
 - 📊 **Skill Validation** - 120+ validated technical and soft skills
 - 📄 **Multiple Export Formats** - PDF, DOCX, and TXT
 - 📤 **PDF Upload & Parse** - Extract data from existing resumes
@@ -47,9 +48,10 @@ Build and customize professional resumes with beautiful, responsive templates, r
 - **Alembic** - Database migrations
 - **WeasyPrint** - PDF generation
 - **python-docx** - DOCX generation
-- **Google Gemini AI** - AI-powered resume feedback
+- **Google Gemini AI** - AI-powered resume feedback and content generation
 - **Resend** - Email service
 - **Supabase** - File storage
+- **Redis (Upstash)** - Caching for performance optimization
 
 ### Infrastructure
 - **Asyncpg** - Async PostgreSQL driver
@@ -86,11 +88,8 @@ source venv/bin/activate  # On Windows: venv\Scripts\activate
 # Install dependencies
 pip3 install -r requirements.txt
 
-# Copy environment file
+# Copy environment file and edit
 cp .env.example .env
-
-# Edit .env with your configuration
-# DATABASE_URL, SECRET_KEY, etc.
 
 # Run migrations
 alembic upgrade head
@@ -121,6 +120,12 @@ npm run dev
 - Backend API: http://localhost:8000
 - API Docs: http://localhost:8000/docs
 
+#### 5. Get Gemini API Key (for AI features)
+1. Visit [Google AI Studio](https://makersuite.google.com/app/apikey)
+2. Create a new API key
+3. Add to your `.env` file: `GEMINI_API_KEY=your_key_here`
+4. AI features will be automatically enabled
+
 ---
 
 ## 📁 Project Structure
@@ -130,10 +135,12 @@ resumade/
 ├── backend/
 │   ├── app/
 │   │   ├── core/           # Core configuration
-│   │   ├── endpoints/      # API endpoints
+│   │   ├── endpoints/      # API endpoints (including ai_content.py)
 │   │   ├── models/         # Database models
 │   │   ├── schemas/        # Pydantic schemas
 │   │   ├── services/       # Business logic
+│   │   │   ├── ats/        # ATS scoring service
+│   │   │   └── ai_content_service.py  # AI content generation
 │   │   └── main.py         # FastAPI app
 │   ├── migrations/         # Alembic migrations
 │   ├── requirements.txt
@@ -142,15 +149,19 @@ resumade/
 ├── frontend/
 │   ├── src/
 │   │   ├── components/     # React components
-│   │   ├── hooks/          # Custom hooks
+│   │   │   ├── resume/     # Resume form components
+│   │   │   │   └── AIBulletSuggester.tsx  # AI suggestion modal
+│   │   │   ├── common/     # Shared components
+│   │   │   └── ui/         # UI components
+│   │   ├── hooks/          # Custom hooks (useAISuggestions)
 │   │   ├── pages/          # Page components
-│   │   ├── services/       # API services
+│   │   ├── services/       # API services (aiService.ts)
 │   │   ├── types/          # TypeScript types
 │   │   ├── App.tsx         # Main app
 │   │   └── main.tsx        # Entry point
 │   ├── package.json
 │   └── vite.config.ts
-│
+│        
 └── README.md
 ```
 ---
@@ -168,6 +179,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - [Tailwind CSS](https://tailwindcss.com/) - Utility-first CSS
 - [WeasyPrint](https://weasyprint.org/) - PDF generation
 - [Lucide](https://lucide.dev/) - Beautiful icons
+- [Google Gemini AI](https://ai.google.dev/) - AI-powered content generation
 
 ---
 
