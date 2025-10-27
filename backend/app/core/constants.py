@@ -1,7 +1,9 @@
 """Application constants and configuration values"""
 
+
 class ScoringConfig:
     """ATS Scoring configuration"""
+
     # Personal Info
     PERSONAL_INFO_MAX_SCORE = 20
     PERSONAL_INFO_NAME_SCORE = 5
@@ -10,7 +12,7 @@ class ScoringConfig:
     PERSONAL_INFO_LOCATION_SCORE = 3
     PERSONAL_INFO_SUMMARY_SCORE = 2
     PERSONAL_INFO_SUMMARY_MIN_LENGTH = 50
-    
+
     # Experience
     EXPERIENCE_MAX_SCORE = 35
     EXPERIENCE_BASE_SCORE = 10
@@ -21,12 +23,12 @@ class ScoringConfig:
     EXPERIENCE_ACHIEVEMENTS_PARTIAL_SCORE = 4
     EXPERIENCE_MIN_ACTION_VERBS = 3
     EXPERIENCE_MIN_ACHIEVEMENTS = 3
-    
+
     # Education
     EDUCATION_MAX_SCORE = 15
     EDUCATION_BASE_SCORE = 10
     EDUCATION_COMPLETE_SCORE = 5
-    
+
     # Skills
     SKILLS_MAX_SCORE = 20
     SKILLS_MINIMAL_COUNT = 5
@@ -36,13 +38,13 @@ class ScoringConfig:
     SKILLS_GOOD_SCORE = 15
     SKILLS_FULL_SCORE = 20
     SKILLS_JD_MATCH_THRESHOLD = 3
-    
+
     # Certifications & Projects
     CERTIFICATIONS_MAX_SCORE = 5
     PROJECTS_MAX_SCORE = 5
     PROJECTS_BASE_SCORE = 3
     PROJECTS_TECH_SCORE = 2
-    
+
     # General
     MAX_TOTAL_SCORE = 100
     MAX_FEEDBACK_ITEMS = 10
@@ -55,8 +57,10 @@ class ScoringConfig:
     MAX_KEYWORD_SUGGESTIONS = 15
     MAX_JD_KEYWORDS = 20
 
+
 class ValidationConfig:
     """Input validation limits"""
+
     MAX_RESUME_TITLE_LENGTH = 200
     MAX_NAME_LENGTH = 100
     MIN_NAME_LENGTH = 2
@@ -75,15 +79,19 @@ class ValidationConfig:
     MIN_PASSWORD_LENGTH = 8
     MAX_PASSWORD_LENGTH = 128
 
+
 class RateLimitConfig:
     """Rate limiting configuration"""
+
     GUEST_RESUME_CREATE_PER_HOUR = 5
     AUTH_RESUME_CREATE_PER_HOUR = 50
     EXPORT_PER_HOUR = 20
     SCORE_CHECK_PER_HOUR = 30
 
+
 class DatabaseConfig:
     """Database connection configuration"""
+
     POOL_SIZE = 20
     MAX_OVERFLOW = 40
     POOL_PRE_PING = True
@@ -91,8 +99,10 @@ class DatabaseConfig:
     ECHO_SQL = False
     STATEMENT_TIMEOUT = 30000  # 30 seconds in milliseconds
 
+
 class ResponseMessages:
     """Standardized response messages"""
+
     RESUME_CREATED = "Resume created successfully"
     RESUME_UPDATED = "Resume updated successfully"
     RESUME_DELETED = "Resume deleted successfully"
@@ -105,8 +115,10 @@ class ResponseMessages:
     LOGIN_SUCCESS = "Login successful"
     INVALID_CREDENTIALS = "Invalid email or password"
 
+
 class ATSConstants:
     """ATS scoring and processing constants"""
+
     MAX_SKILLS = 25
     MIN_SKILLS_RECOMMENDED = 8
     MAX_FEEDBACK_ITEMS = 10
@@ -115,7 +127,7 @@ class ATSConstants:
     MAX_JD_KEYWORDS = 20
     LRU_CACHE_SIZE = 256
     JD_KEYWORDS_CACHE_SIZE = 128
-    
+
     ROLE_WEIGHTS = {
         "entry": {
             "personal_info": 0.20,
@@ -123,7 +135,7 @@ class ATSConstants:
             "education": 0.25,
             "skills": 0.20,
             "certifications": 0.05,
-            "projects": 0.05
+            "projects": 0.05,
         },
         "mid": {
             "personal_info": 0.15,
@@ -131,7 +143,7 @@ class ATSConstants:
             "education": 0.15,
             "skills": 0.25,
             "certifications": 0.05,
-            "projects": 0.05
+            "projects": 0.05,
         },
         "senior": {
             "personal_info": 0.10,
@@ -139,18 +151,22 @@ class ATSConstants:
             "education": 0.10,
             "skills": 0.25,
             "certifications": 0.05,
-            "projects": 0.05
-        }
+            "projects": 0.05,
+        },
     }
+
 
 class FileConstants:
     """File upload and processing constants"""
+
     MAX_PDF_SIZE_MB = 10
     MAX_PDF_SIZE_BYTES = 10 * 1024 * 1024
-    ALLOWED_EXTENSIONS = ['.pdf']
+    ALLOWED_EXTENSIONS = [".pdf"]
+
 
 class CacheConstants:
     """Caching configuration"""
+
     TEMPLATE_CACHE_TTL = 1800  # 1 hour
     TEMPLATE_CACHE_SIZE = 100
     TEMPLATE_LIST_CACHE_TTL = 86400  # 24 hours

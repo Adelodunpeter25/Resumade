@@ -1,4 +1,5 @@
 """Gemini AI integration for enhanced ATS feedback"""
+
 import logging
 from typing import Dict
 import google.generativeai as genai
@@ -8,36 +9,39 @@ from app.core.constants import CacheConstants
 
 logger = logging.getLogger(__name__)
 
+
 class GeminiService:
     """Service for Gemini AI-powered resume analysis"""
-    
+
     def __init__(self):
         if settings.gemini_api_key:
             genai.configure(api_key=settings.gemini_api_key)
-            self.model = genai.GenerativeModel('gemini-2.0-flash')
+            self.model = genai.GenerativeModel("gemini-2.0-flash")
             self.enabled = True
         else:
             self.enabled = False
             logger.warning("Gemini API key not found. AI-enhanced feedback disabled.")
-    
+
     @cached(CacheConstants.ATS_SCORE_CACHE_TTL)
-    def enhance_feedback(self, resume_data: dict, base_score: float, base_feedback: list) -> Dict:
+    def enhance_feedback(
+        self, resume_data: dict, base_score: float, base_feedback: list
+    ) -> Dict:
         """Enhance ATS feedback with AI-generated insights"""
         if not self.enabled:
             return {"enhanced_feedback": None, "ai_suggestions": []}
-        
+
         try:
             prompt = self._build_prompt(resume_data, base_score, base_feedback)
             response = self.model.generate_content(prompt)
-            
+
             return {
                 "enhanced_feedback": response.text,
-                "ai_suggestions": self._parse_suggestions(response.text)
+                "ai_suggestions": self._parse_suggestions(response.text),
             }
         except Exception as e:
             logger.error(f"Gemini API error: {str(e)}")
             return {"enhanced_feedback": None, "ai_suggestions": []}
-    
+
     def _build_prompt(self, resume_data: dict, score: float, feedback: list) -> str:
         """Build prompt for Gemini"""
         personal_info = resume_data.get("personal_info", {})
@@ -46,11 +50,11 @@ class GeminiService:
         skills_count = len(resume_data.get("skills", []))
         certifications_count = len(resume_data.get("certifications", []))
         projects_count = len(resume_data.get("projects", []))
-        
+
         return f"""Analyze this resume for ATS optimization. Current ATS score: {score}%
 
 Resume Summary:
-- Name: {personal_info.get('full_name', 'N/A')}
+- Name: {personal_info.get("full_name", "N/A")}
 - Experience entries: {experience_count}
 - Education entries: {education_count}
 - Skills: {skills_count}
@@ -83,15 +87,15 @@ Format example:
 2. Experience section recommendation
    • Action step
    • Expected impact"""
-    
+
     def _parse_suggestions(self, text: str) -> list:
         """Parse AI response into list of suggestions"""
-        lines = text.strip().split('\n')
+        lines = text.strip().split("\n")
         suggestions = []
         for line in lines:
             line = line.strip()
-            if line and line[0].isdigit() and '.' in line[:3]:
-                clean = line.split('.', 1)[1].strip()
-                if clean and not clean.startswith('•'):
+            if line and line[0].isdigit() and "." in line[:3]:
+                clean = line.split(".", 1)[1].strip()
+                if clean and not clean.startswith("•"):
                     suggestions.append(clean)
         return suggestions[:6]

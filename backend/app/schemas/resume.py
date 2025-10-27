@@ -2,6 +2,7 @@ from pydantic import BaseModel, EmailStr
 from typing import List, Optional
 from datetime import datetime
 
+
 class PersonalInfo(BaseModel):
     full_name: str
     email: EmailStr
@@ -11,6 +12,7 @@ class PersonalInfo(BaseModel):
     website: Optional[str] = None
     tagline: Optional[str] = None
     summary: Optional[str] = None
+
 
 class Experience(BaseModel):
     company: str
@@ -22,6 +24,7 @@ class Experience(BaseModel):
     description: Optional[str] = None
     achievements: Optional[List[str]] = []
 
+
 class Education(BaseModel):
     institution: str
     degree: str
@@ -31,9 +34,11 @@ class Education(BaseModel):
     end_date: Optional[str] = None
     gpa: Optional[str] = None
 
+
 class Skill(BaseModel):
     name: str
     level: Optional[str] = None
+
 
 class Certification(BaseModel):
     name: str
@@ -41,11 +46,13 @@ class Certification(BaseModel):
     date: str
     credential_id: Optional[str] = None
 
+
 class Project(BaseModel):
     name: str
     description: str
     technologies: Optional[List[str]] = []
     link: Optional[str] = None
+
 
 class ResumeCreate(BaseModel):
     title: str
@@ -56,6 +63,7 @@ class ResumeCreate(BaseModel):
     skills: List[Skill] = []
     certifications: List[Certification] = []
     projects: List[Project] = []
+
 
 class ResumeUpdate(BaseModel):
     title: Optional[str] = None
@@ -69,6 +77,7 @@ class ResumeUpdate(BaseModel):
     section_names: Optional[dict] = None
     custom_sections: Optional[List[dict]] = None
     section_order: Optional[List[str]] = None
+
 
 class Resume(BaseModel):
     id: int
@@ -90,9 +99,10 @@ class Resume(BaseModel):
     feedback: Optional[dict] = None
     created_at: datetime
     updated_at: Optional[datetime]
-    
+
     class Config:
         from_attributes = True
+
 
 class ResumeVersion(BaseModel):
     id: int
@@ -107,6 +117,6 @@ class ResumeVersion(BaseModel):
     certifications: List[dict]
     projects: List[dict]
     created_at: datetime
-    
+
     class Config:
         from_attributes = True

@@ -4,6 +4,7 @@ from app.core.config import settings
 
 logger = logging.getLogger(__name__)
 
+
 class EmailService:
     @staticmethod
     def send_password_reset_email(email: str, token: str):
@@ -11,7 +12,7 @@ class EmailService:
         try:
             resend.api_key = settings.resend_api_key
             reset_link = f"{settings.frontend_url}/reset-password?token={token}"
-            
+
             params = {
                 "from": settings.email_from,
                 "to": [email],
@@ -27,9 +28,9 @@ class EmailService:
                     <p style="color: #666; font-size: 14px; margin-top: 30px;">This link will expire in 1 hour.</p>
                     <p style="color: #666; font-size: 14px;">If you didn't request this, please ignore this email.</p>
                 </div>
-                """
+                """,
             }
-            
+
             resend.Emails.send(params)
             logger.info(f"Password reset email sent to: {email}")
             return True

@@ -12,10 +12,11 @@ engine = create_engine(
     echo=DatabaseConfig.ECHO_SQL,
     connect_args={
         "options": f"-c statement_timeout={DatabaseConfig.STATEMENT_TIMEOUT}"
-    }
+    },
 )
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
 
 def get_db():
     db = SessionLocal()
