@@ -124,7 +124,7 @@ class TestEndpointCache:
     
     def test_cache_with_none_values(self):
         """Test caching behavior with None values (non-existent records)"""
-        with patch('app.endpoints.users.Session') as mock_session:
+        with patch('app.endpoints.users.Session'):
             mock_db = MagicMock()
             mock_query = MagicMock()
             mock_query.filter.return_value.first.return_value = None  # User not found

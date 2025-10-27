@@ -26,7 +26,7 @@ def get_dashboard_stats(
     
     # User stats
     total_users = db.query(func.count(User.id)).scalar()
-    active_users = db.query(func.count(User.id)).filter(User.is_active == True).scalar()
+    active_users = db.query(func.count(User.id)).filter(User.is_active).scalar()
     
     # Resume stats
     total_resumes = db.query(func.count(Resume.id)).scalar()
@@ -48,7 +48,7 @@ def get_dashboard_stats(
     avg_ats_score = db.query(func.avg(Resume.ats_score)).filter(Resume.ats_score.isnot(None)).scalar()
     
     # Active share links
-    active_shares = db.query(func.count(ShareLink.id)).filter(ShareLink.is_active == True).scalar()
+    active_shares = db.query(func.count(ShareLink.id)).filter(ShareLink.is_active).scalar()
     
     return APIResponse(
         success=True,

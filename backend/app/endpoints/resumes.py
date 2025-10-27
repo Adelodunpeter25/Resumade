@@ -232,11 +232,16 @@ def _generate_txt_resume(resume) -> bytes:
             lines.append('')
         
         contact = []
-        if pi.get('email'): contact.append(f"Email: {pi['email']}")
-        if pi.get('phone'): contact.append(f"Phone: {pi['phone']}")
-        if pi.get('location'): contact.append(f"Location: {pi['location']}")
-        if pi.get('linkedin'): contact.append(f"LinkedIn: {pi['linkedin']}")
-        if pi.get('website'): contact.append(f"Website: {pi['website']}")
+        if pi.get('email'):
+            contact.append(f"Email: {pi['email']}")
+        if pi.get('phone'):
+            contact.append(f"Phone: {pi['phone']}")
+        if pi.get('location'):
+            contact.append(f"Location: {pi['location']}")
+        if pi.get('linkedin'):
+            contact.append(f"LinkedIn: {pi['linkedin']}")
+        if pi.get('website'):
+            contact.append(f"Website: {pi['website']}")
         
         if contact:
             lines.extend(contact)
@@ -707,7 +712,7 @@ def get_share_links(
     
     share_links = db.query(ShareLink).filter(
         ShareLink.resume_id == resume_id,
-        ShareLink.is_active == True
+        ShareLink.is_active
     ).all()
     
     from app.models.resume_analytics import ResumeAnalytics
@@ -756,7 +761,7 @@ def create_share_link(
     now = datetime.now(timezone.utc)
     existing_link = db.query(ShareLink).filter(
         ShareLink.resume_id == resume_id,
-        ShareLink.is_active == True
+        ShareLink.is_active
     ).first()
     
     if existing_link:
@@ -797,9 +802,9 @@ def preview_shared_resume(slug: str, db: Session = Depends(get_db)):
     """Render shared resume with its template"""
     from types import SimpleNamespace
     
-    share_link = db.query(ShareLink).filter(ShareLink.slug == slug, ShareLink.is_active == True).first()
+    share_link = db.query(ShareLink).filter(ShareLink.slug == slug, ShareLink.is_active).first()
     if not share_link:
-        share_link = db.query(ShareLink).filter(ShareLink.token == slug, ShareLink.is_active == True).first()
+        share_link = db.query(ShareLink).filter(ShareLink.token == slug, ShareLink.is_active).first()
     
     if not share_link:
         return HTMLResponse(content="<h1>Share link not found</h1>", status_code=404)
@@ -840,9 +845,9 @@ def get_shared_resume(slug: str, request: Request, db: Session = Depends(get_db)
     """Access resume via public share link"""
     from app.models.resume_analytics import ResumeAnalytics
     
-    share_link = db.query(ShareLink).filter(ShareLink.slug == slug, ShareLink.is_active == True).first()
+    share_link = db.query(ShareLink).filter(ShareLink.slug == slug, ShareLink.is_active).first()
     if not share_link:
-        share_link = db.query(ShareLink).filter(ShareLink.token == slug, ShareLink.is_active == True).first()
+        share_link = db.query(ShareLink).filter(ShareLink.token == slug, ShareLink.is_active).first()
     
     if not share_link:
         raise HTTPException(status_code=404, detail="Share link not found")

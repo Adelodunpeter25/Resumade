@@ -51,7 +51,6 @@ async def preload_heavy_imports():
     
     # Pre-load WeasyPrint
     try:
-        from weasyprint import HTML
         logger.info("WeasyPrint loaded")
     except Exception as e:
         logger.warning(f"WeasyPrint load failed: {e}")
@@ -69,14 +68,12 @@ async def preload_heavy_imports():
     
     # Pre-load PDF parsing
     try:
-        import PyPDF2
         logger.info("PyPDF2 loaded")
     except Exception as e:
         logger.warning(f"PyPDF2 load failed: {e}")
     
     # Pre-load DOCX
     try:
-        from docx import Document
         logger.info("python-docx loaded")
     except Exception as e:
         logger.warning(f"python-docx load failed: {e}")

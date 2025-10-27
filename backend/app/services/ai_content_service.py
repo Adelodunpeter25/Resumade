@@ -147,7 +147,7 @@ Return ONLY the improved description, no explanations."""
         industry_context = f"\nIndustry: {industry}" if industry else ""
         current_context = f"\n\nCurrent description to improve:\n{current_description}" if current_description else ""
         
-        return f"""Generate 5 professional, ATS-friendly resume bullet points for this role:
+        prompt = f"""Generate 5 professional, ATS-friendly resume bullet points for this role:
 
 Position: {position}
 Company: {company}
@@ -171,7 +171,7 @@ Example format:
 • Led cross-functional team of 8 engineers to deliver product feature, increasing user engagement by 35%
 • Developed automated testing framework reducing QA time by 40% and improving code quality
 • Optimized database queries improving application performance by 50% and reducing server costs by $20K annually"""
-
+        
         return prompt
     
     def _parse_bullets(self, text: str) -> List[str]:

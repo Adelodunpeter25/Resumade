@@ -4,8 +4,7 @@ from io import BytesIO
 from typing import Dict, List, Tuple
 from dateutil import parser as date_parser
 import logging
-from app.core.constants import ATSConstants, CacheConstants
-from app.core.cache import cached
+from app.core.constants import ATSConstants
 
 logger = logging.getLogger(__name__)
 
@@ -82,7 +81,7 @@ class PDFParserService:
             try:
                 parsed = date_parser.parse(parts[0], fuzzy=True)
                 start_date = parsed.strftime("%Y-%m")
-            except:
+            except Exception:
                 # Fallback to year extraction
                 year_match = re.search(r'\b(19|20)\d{2}\b', parts[0])
                 if year_match:
@@ -96,7 +95,7 @@ class PDFParserService:
                 try:
                     parsed = date_parser.parse(parts[1], fuzzy=True)
                     end_date = parsed.strftime("%Y-%m")
-                except:
+                except Exception:
                     # Fallback to year extraction
                     year_match = re.search(r'\b(19|20)\d{2}\b', parts[1])
                     if year_match:
@@ -363,7 +362,7 @@ class PDFParserService:
                     try:
                         parsed = date_parser.parse(line, fuzzy=True)
                         current_edu["end_date"] = parsed.strftime("%Y")
-                    except:
+                    except Exception:
                         year_match = re.search(r'\b(19|20)\d{2}\b', line)
                         if year_match:
                             current_edu["end_date"] = year_match.group()
@@ -459,7 +458,7 @@ class PDFParserService:
                 try:
                     parsed = date_parser.parse(line, fuzzy=True)
                     date = parsed.strftime("%Y-%m")
-                except:
+                except Exception:
                     year_match = re.search(r'\b(19|20)\d{2}\b', line)
                     if year_match:
                         date = year_match.group()

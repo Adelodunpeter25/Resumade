@@ -1,5 +1,5 @@
 from upstash_redis import Redis
-from fastapi import Request, HTTPException, Depends
+from fastapi import Request, HTTPException
 from app.core.config import settings
 import time
 from functools import wraps
